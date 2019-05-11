@@ -49,8 +49,6 @@ class Compiler
 
     private:
 
-        /* === Functions === */
-
         bool ReturnWithError(const std::string& msg);
         void Warning(const std::string& msg);
 
@@ -62,7 +60,7 @@ class Compiler
             Reflection::ReflectionData* reflectionData
         );
 
-        /* === Members === */
+    private:
 
         Log*            log_        = nullptr;
 

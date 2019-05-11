@@ -39,12 +39,12 @@ bool ControlPathAnalyzer::PopReturnPath()
     return false;
 }
 
-void ControlPathAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
+void ControlPathAnalyzer::VisitStmtList(const std::vector<StmtPtr>& stmts)
 {
     /* Search for return statement */
     bool hasReturnPath = false;
 
-    for (auto& ast : stmnts)
+    for (auto& ast : stmts)
     {
         if (hasReturnPath)
         {
@@ -70,7 +70,7 @@ void ControlPathAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    VisitStmntList(ast->stmnts);
+    VisitStmtList(ast->stmts);
 }
 
 /* --- Declaration statements --- */
@@ -95,70 +95,70 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
     PushReturnPath(false);
 }
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(NullStmnt)
+IMPLEMENT_VISIT_PROC(NullStmt)
 {
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
     auto thenPath = PopReturnPath();
 
-    Visit(ast->elseStmnt);
+    Visit(ast->elseStmt);
     auto elsePath = PopReturnPath();
 
     PushReturnPath(thenPath && elsePath);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     bool hasDefaultCase = false;
 
@@ -169,7 +169,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
             hasDefaultCase = true;
 
         /* Has this case a non-return-path? */
-        VisitStmntList(switchCase->stmnts);
+        VisitStmtList(switchCase->stmts);
         if (!PopReturnPath())
         {
             PushReturnPath(false);
@@ -181,18 +181,18 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     PushReturnPath(hasDefaultCase);
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     /* Found return statement */
     PushReturnPath(true);
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
 {
     PushReturnPath(false);
 }

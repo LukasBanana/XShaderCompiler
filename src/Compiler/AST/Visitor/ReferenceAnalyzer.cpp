@@ -23,11 +23,11 @@ void ReferenceAnalyzer::MarkReferences(Program& program)
     shaderTarget_   = ShaderTarget::Undefined;
 
     /* Visit all functions */
-    for (const auto& stmnt : program.globalStmnts)
+    for (const auto& stmt : program.globalStmts)
     {
-        if (auto declStmnt = stmnt->As<BasicDeclStmnt>())
+        if (auto declStmt = stmt->As<BasicDeclStmt>())
         {
-            if (auto funcDecl = declStmnt->declObject->As<FunctionDecl>())
+            if (auto funcDecl = declStmt->declObject->As<FunctionDecl>())
                 Visit(funcDecl);
         }
     }
@@ -53,12 +53,12 @@ bool ReferenceAnalyzer::Reachable(AST* ast)
     return (ast ? ast->flags.SetOnce(AST::isReachable) : false);
 }
 
-void ReferenceAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
+void ReferenceAnalyzer::VisitStmtList(const std::vector<StmtPtr>& stmts)
 {
-    for (auto& stmnt : stmnts)
+    for (auto& stmt : stmts)
     {
-        if (!stmnt->flags(AST::isDeadCode))
-            Visit(stmnt);
+        if (!stmt->flags(AST::isDeadCode))
+            Visit(stmt);
     }
 }
 
@@ -97,13 +97,13 @@ void ReferenceAnalyzer::MarkLValueExprObject(const ObjectExpr* objectExpr)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    VisitStmntList(ast->stmnts);
+    VisitStmtList(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
-    VisitStmntList(ast->stmnts);
+    VisitStmtList(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
@@ -121,7 +121,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 {
     if (Reachable(ast))
     {
-        Visit(ast->declStmntRef);
+        Visit(ast->declStmtRef);
         Visit(ast->bufferDeclRef);
         Visit(ast->staticMemberVarRef);
         VISIT_DEFAULT(VarDecl);
@@ -134,26 +134,26 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     {
         /* Only visit member variables (functions must only be visited by a call expression) */
         Visit(ast->varMembers);
-        Reachable(ast->declStmntRef);
+        Reachable(ast->declStmtRef);
     }
 }
 
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     if (Reachable(ast))
-        Visit(ast->declStmntRef);
+        Visit(ast->declStmtRef);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerDecl)
 {
     if (Reachable(ast))
-        Visit(ast->declStmntRef);
+        Visit(ast->declStmtRef);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
 {
     if (Reachable(ast))
-        Visit(ast->declStmntRef);
+        Visit(ast->declStmtRef);
 }
 
 IMPLEMENT_VISIT_PROC(FunctionDecl)
@@ -182,7 +182,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
         PopFunctionDecl();
 
         /* Mark parent node as reachable */
-        Reachable(ast->declStmntRef);
+        Reachable(ast->declStmtRef);
     }
 }
 
@@ -191,13 +191,13 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (Reachable(ast))
     {
         VISIT_DEFAULT(UniformBufferDecl);
-        Reachable(ast->declStmntRef);
+        Reachable(ast->declStmtRef);
     }
 }
 
 /* --- Declaration statements --- */
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     if (Reachable(ast))
     {
@@ -210,25 +210,25 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
             }
         }
 
-        VISIT_DEFAULT(BufferDeclStmnt);
+        VISIT_DEFAULT(BufferDeclStmt);
     }
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
     Reachable(ast);
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
     if (Reachable(ast))
-        VISIT_DEFAULT(VarDeclStmnt);
+        VISIT_DEFAULT(VarDeclStmt);
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     if (Reachable(ast))
-        VISIT_DEFAULT(AliasDeclStmnt);
+        VISIT_DEFAULT(AliasDeclStmt);
 }
 
 /* --- Expressions --- */

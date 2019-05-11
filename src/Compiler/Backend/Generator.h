@@ -108,6 +108,11 @@ class Generator : protected VisitorTracker
 
     private:
 
+        // Writes all prefixes that have not already been written.
+        void FlushWritePrefixes();
+
+    private:
+
         /*
         Prefix text that can be written in front of the text of the next "Write"/"WriteLn" call.
         This can be used to insert an optional output text before it is clear, if this text is need.
@@ -120,8 +125,7 @@ class Generator : protected VisitorTracker
             bool        written;    // Specifies whether this prefix has already been written out.
         };
 
-        // Writes all prefixes that have not already been written.
-        void FlushWritePrefixes();
+    private:
 
         CodeWriter                  writer_;
         ReportHandler               reportHandler_;

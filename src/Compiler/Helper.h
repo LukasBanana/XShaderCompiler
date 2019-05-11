@@ -86,9 +86,9 @@ template <
     class Allocator = std::allocator<CharT>
 >
 void Replace(
-    std::basic_string<CharT, Traits, Allocator>& s,
-    const std::basic_string<CharT, Traits, Allocator>& from,
-    const std::basic_string<CharT, Traits, Allocator>& to)
+    std::basic_string<CharT, Traits, Allocator>&        s,
+    const std::basic_string<CharT, Traits, Allocator>&  from,
+    const std::basic_string<CharT, Traits, Allocator>&  to)
 {
     using T = std::basic_string<CharT, Traits, Allocator>;
     for (typename T::size_type pos = 0; ( pos = s.find(from, pos) ) != T::npos; pos += to.size())
@@ -102,9 +102,9 @@ template <
     class Allocator = std::allocator<CharT>
 >
 void Replace(
-    std::basic_string<CharT, Traits, Allocator>& s,
-    const char* from,
-    const char* to)
+    std::basic_string<CharT, Traits, Allocator>&    s,
+    const char*                                     from,
+    const char*                                     to)
 {
     Replace(s, std::basic_string<CharT, Traits, Allocator>(from), std::basic_string<CharT, Traits, Allocator>(to));
 }
@@ -116,9 +116,9 @@ template <
     class Allocator = std::allocator<CharT>
 >
 void Replace(
-    std::basic_string<CharT, Traits, Allocator>& s,
-    const std::basic_string<CharT, Traits, Allocator>& from,
-    const char* to)
+    std::basic_string<CharT, Traits, Allocator>&        s,
+    const std::basic_string<CharT, Traits, Allocator>&  from,
+    const char*                                         to)
 {
     Replace(s, from, std::basic_string<CharT, Traits, Allocator>(to));
 }
@@ -130,9 +130,9 @@ template <
     class Allocator = std::allocator<CharT>
 >
 void Replace(
-    std::basic_string<CharT, Traits, Allocator>& s,
-    const char* from,
-    const std::basic_string<CharT, Traits, Allocator>& to)
+    std::basic_string<CharT, Traits, Allocator>&        s,
+    const char*                                         from,
+    const std::basic_string<CharT, Traits, Allocator>&  to)
 {
     Replace(s, std::basic_string<CharT, Traits, Allocator>(from), to);
 }

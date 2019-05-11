@@ -97,25 +97,25 @@ class VisitorTracker : public Visitor
 
         /* ----- Variable declaration statement tracker ----- */
 
-        void PushVarDeclStmnt(VarDeclStmnt* varDeclStmnt);
-        void PopVarDeclStmnt();
+        void PushVarDeclStmt(VarDeclStmt* varDeclStmt);
+        void PopVarDeclStmt();
 
         // Returns true if the visitor is currently inside a variable declaration statement.
-        bool InsideVarDeclStmnt() const;
+        bool InsideVarDeclStmt() const;
 
         // Returns the active (inner most) variable declaration statement.
-        VarDeclStmnt* ActiveVarDeclStmnt() const;
+        VarDeclStmt* ActiveVarDeclStmt() const;
 
         /* ----- Alias declaration statement tracker ----- */
 
-        void PushAliasDeclStmnt(AliasDeclStmnt* aliasDeclStmnt);
-        void PopAliasDeclStmnt();
+        void PushAliasDeclStmt(AliasDeclStmt* aliasDeclStmt);
+        void PopAliasDeclStmt();
 
         // Returns true if the visitor is currently inside an alias declaration statement.
-        bool InsideAliasDeclStmnt() const;
+        bool InsideAliasDeclStmt() const;
 
         // Returns the active (inner most) alias declaration statement.
-        AliasDeclStmnt* ActiveAliasDeclStmnt() const;
+        AliasDeclStmt* ActiveAliasDeclStmt() const;
 
     private:
 
@@ -135,10 +135,10 @@ class VisitorTracker : public Visitor
         std::vector<UniformBufferDecl*> uniformBufferDeclStack_;
 
         // Variable declaration stack.
-        std::stack<VarDeclStmnt*>       varDeclStmntStack_;
+        std::stack<VarDeclStmt*>        varDeclStmtStack_;
 
         // Alias declaration stack.
-        std::stack<AliasDeclStmnt*>     aliasDeclStmntStack_;
+        std::stack<AliasDeclStmt*>      aliasDeclStmtStack_;
 
         // Function declaration level of the main entry point.
         std::size_t                     stackLevelOfEntryPoint_     = ~0;

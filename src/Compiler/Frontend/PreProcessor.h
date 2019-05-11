@@ -134,8 +134,6 @@ class PreProcessor : public Parser
 
     private:
 
-        /* === Structures === */
-
         struct IfBlock
         {
             void SetActive(bool activate);
@@ -150,7 +148,7 @@ class PreProcessor : public Parser
 
         using MacroPtr = std::shared_ptr<Macro>;
 
-        /* === Functions === */
+    private:
 
         ScannerPtr MakeScanner() override;
 
@@ -207,7 +205,7 @@ class PreProcessor : public Parser
 
         std::string     ParseDefinedMacro();
 
-        /* === Members === */
+    private:
 
         IncludeHandler&                     includeHandler_;
 

@@ -44,7 +44,7 @@ class GLSLPreProcessor : public PreProcessor
 
         bool VerifyVersionNo(const int* validVersions) const;
 
-        /* === Members === */
+    private:
 
         bool    versionDefined_ = false;
         int     versionNo_      = 0;

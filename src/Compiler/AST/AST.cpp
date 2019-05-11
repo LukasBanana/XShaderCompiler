@@ -40,14 +40,14 @@ bool IsExprAST(const AST::Types t)
     return (t >= AST::Types::NullExpr && t <= AST::Types::InitializerExpr);
 }
 
-bool IsStmntAST(const AST::Types t)
+bool IsStmtAST(const AST::Types t)
 {
-    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::CtrlTransferStmnt);
+    return (t >= AST::Types::VarDeclStmt && t <= AST::Types::CtrlTransferStmt);
 }
 
-bool IsDeclStmntAST(const AST::Types t)
+bool IsDeclStmtAST(const AST::Types t)
 {
-    return (t >= AST::Types::VarDeclStmnt && t <= AST::Types::BasicDeclStmnt);
+    return (t >= AST::Types::VarDeclStmt && t <= AST::Types::BasicDeclStmt);
 }
 
 
@@ -59,9 +59,9 @@ AST::~AST()
 }
 
 
-/* ----- Stmnt ----- */
+/* ----- Stmt ----- */
 
-void Stmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+void Stmt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
 {
     // dummy
 }
@@ -525,18 +525,18 @@ TypeDenoterPtr VarDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenot
     }
     else
     {
-        if (declStmntRef)
+        if (declStmtRef)
         {
             /* Get base type denoter from declaration statement */
-            return declStmntRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
+            return declStmtRef->typeSpecifier->typeDenoter->AsArray(arrayDims);
         }
-        RuntimeErr(R_MissingDeclStmntRefToDeriveType(ident), this);
+        RuntimeErr(R_MissingDeclStmtRefToDeriveType(ident), this);
     }
 }
 
 TypeSpecifier* VarDecl::FetchTypeSpecifier() const
 {
-    return (declStmntRef != nullptr ? declStmntRef->typeSpecifier.get() : nullptr);
+    return (declStmtRef != nullptr ? declStmtRef->typeSpecifier.get() : nullptr);
 }
 
 VarDecl* VarDecl::FetchStaticVarDeclRef() const
@@ -559,16 +559,16 @@ bool VarDecl::IsStatic() const
 
 bool VarDecl::IsParameter() const
 {
-    return (declStmntRef != nullptr && declStmntRef->flags(VarDeclStmnt::isParameter));
+    return (declStmtRef != nullptr && declStmtRef->flags(VarDeclStmt::isParameter));
 }
 
 bool VarDecl::HasStaticConstInitializer() const
 {
     return
     (
-        declStmntRef != nullptr &&
-        declStmntRef->IsConstOrUniform() &&
-        !declStmntRef->flags(VarDeclStmnt::isParameter) &&
+        declStmtRef != nullptr &&
+        declStmtRef->IsConstOrUniform() &&
+        !declStmtRef->flags(VarDeclStmt::isParameter) &&
         initializerValue
     );
 }
@@ -626,7 +626,7 @@ TypeDenoterPtr BufferDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
 
 BufferType BufferDecl::GetBufferType() const
 {
-    return (declStmntRef ? declStmntRef->typeDenoter->bufferType : BufferType::Undefined);
+    return (declStmtRef ? declStmtRef->typeDenoter->bufferType : BufferType::Undefined);
 }
 
 
@@ -639,7 +639,7 @@ TypeDenoterPtr SamplerDecl::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeD
 
 SamplerType SamplerDecl::GetSamplerType() const
 {
-    return (declStmntRef ? declStmntRef->typeDenoter->samplerType : SamplerType::Undefined);
+    return (declStmtRef ? declStmtRef->typeDenoter->samplerType : SamplerType::Undefined);
 }
 
 
@@ -697,9 +697,9 @@ bool StructDecl::IsCastableTo(const BaseTypeDenoter& rhs) const
 VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** owner) const
 {
     /* Fetch symbol from members first */
-    for (const auto& varDeclStmnt : varMembers)
+    for (const auto& varDeclStmt : varMembers)
     {
-        if (auto symbol = varDeclStmnt->FetchVarDecl(ident))
+        if (auto symbol = varDeclStmt->FetchVarDecl(ident))
         {
             if (owner)
                 *owner = this;
@@ -719,7 +719,7 @@ VarDecl* StructDecl::FetchVarDecl(const std::string& ident, const StructDecl** o
 
 VarDecl* StructDecl::FetchBaseMember() const
 {
-    if (!varMembers.empty() && varMembers.front()->flags(VarDeclStmnt::isBaseMember))
+    if (!varMembers.empty() && varMembers.front()->flags(VarDeclStmt::isBaseMember))
         return varMembers.front()->varDecls.front().get();
     else
         return nullptr;
@@ -1158,7 +1158,7 @@ std::string FunctionDecl::ToString(bool useParamNames) const
 
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        if (!parameters[i]->flags(VarDeclStmt::isSelfParameter))
         {
             s += parameters[i]->ToString(useParamNames);
             if (i + 1 < parameters.size())
@@ -1183,7 +1183,7 @@ std::string FunctionDecl::ToTypeDenoterString() const
 
     for (std::size_t i = 0; i < parameters.size(); ++i)
     {
-        if (!parameters[i]->flags(VarDeclStmnt::isSelfParameter))
+        if (!parameters[i]->flags(VarDeclStmt::isSelfParameter))
         {
             s += parameters[i]->ToString(false);
             if (i + 1 < parameters.size())
@@ -1465,9 +1465,9 @@ ShaderTarget FunctionDecl::DetermineEntryPointType() const
     if (numCalls == 0)
     {
         /* Determine type by attributes */
-        if (auto declStmnt = declStmntRef)
+        if (auto declStmt = declStmtRef)
         {
-            for (const auto& attr : declStmnt->attribs)
+            for (const auto& attr : declStmt->attribs)
             {
                 if (attr->attributeType == AttributeType::NumThreads)
                     return ShaderTarget::ComputeShader;
@@ -1552,9 +1552,9 @@ TypeModifier UniformBufferDecl::DeriveCommonStorageLayout(const TypeModifier def
     std::size_t numRowMajors = 0,
                 numColMajors = 0;
 
-    for (const auto& varDeclStmnt : varMembers)
+    for (const auto& varDeclStmt : varMembers)
     {
-        const auto& typeModifers = varDeclStmnt->typeSpecifier->typeModifiers;
+        const auto& typeModifers = varDeclStmt->typeSpecifier->typeModifiers;
         if (typeModifers.find(TypeModifier::RowMajor) != typeModifers.end())
             ++numRowMajors;
         else if (typeModifers.find(TypeModifier::ColumnMajor) != typeModifers.end())
@@ -1595,33 +1595,33 @@ bool UniformBufferDecl::AccumAlignedVectorSize(unsigned int& size, unsigned int&
 }
 
 
-/* ----- BufferDeclStmnt ----- */
+/* ----- BufferDeclStmt ----- */
 
-void BufferDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+void BufferDeclStmt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
 {
     for (const auto& ast : bufferDecls)
         declASTIdents[ast.get()] = ast->ident;
 }
 
 
-/* ----- SamplerDeclStmnt ----- */
+/* ----- SamplerDeclStmt ----- */
 
-void SamplerDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+void SamplerDeclStmt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
 {
     for (const auto& ast : samplerDecls)
         declASTIdents[ast.get()] = ast->ident;
 }
 
 
-/* ----- VarDelcStmnt ----- */
+/* ----- VarDelcStmt ----- */
 
-void VarDeclStmnt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
+void VarDeclStmt::CollectDeclIdents(std::map<const AST*, std::string>& declASTIdents) const
 {
     for (const auto& ast : varDecls)
         declASTIdents[ast.get()] = ast->ident;
 }
 
-std::string VarDeclStmnt::ToString(bool useVarNames) const
+std::string VarDeclStmt::ToString(bool useVarNames) const
 {
     auto s = typeSpecifier->ToString();
 
@@ -1649,13 +1649,13 @@ std::string VarDeclStmnt::ToString(bool useVarNames) const
     }
 
     /* Append indicator for optional parameters */
-    if (flags(VarDeclStmnt::isParameter) && !varDecls.empty() && varDecls.front()->initializer)
+    if (flags(VarDeclStmt::isParameter) && !varDecls.empty() && varDecls.front()->initializer)
         return '[' + s + ']';
 
     return s;
 }
 
-VarDecl* VarDeclStmnt::FetchVarDecl(const std::string& ident) const
+VarDecl* VarDeclStmt::FetchVarDecl(const std::string& ident) const
 {
     for (const auto& var : varDecls)
     {
@@ -1665,7 +1665,7 @@ VarDecl* VarDeclStmnt::FetchVarDecl(const std::string& ident) const
     return nullptr;
 }
 
-VarDecl* VarDeclStmnt::FetchUniqueVarDecl() const
+VarDecl* VarDeclStmt::FetchUniqueVarDecl() const
 {
     if (varDecls.size() == 1)
         return varDecls.front().get();
@@ -1673,37 +1673,37 @@ VarDecl* VarDeclStmnt::FetchUniqueVarDecl() const
         return nullptr;
 }
 
-bool VarDeclStmnt::IsInput() const
+bool VarDeclStmt::IsInput() const
 {
     return typeSpecifier->IsInput();
 }
 
-bool VarDeclStmnt::IsOutput() const
+bool VarDeclStmt::IsOutput() const
 {
     return typeSpecifier->IsOutput();
 }
 
-bool VarDeclStmnt::IsUniform() const
+bool VarDeclStmt::IsUniform() const
 {
     return typeSpecifier->isUniform;
 }
 
-bool VarDeclStmnt::IsConstOrUniform() const
+bool VarDeclStmt::IsConstOrUniform() const
 {
     return typeSpecifier->IsConstOrUniform();
 }
 
-void VarDeclStmnt::SetTypeModifier(const TypeModifier modifier)
+void VarDeclStmt::SetTypeModifier(const TypeModifier modifier)
 {
     typeSpecifier->SetTypeModifier(modifier);
 }
 
-bool VarDeclStmnt::HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const
+bool VarDeclStmt::HasAnyTypeModifierOf(const std::initializer_list<TypeModifier>& modifiers) const
 {
     return typeSpecifier->HasAnyTypeModifierOf(modifiers);
 }
 
-void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
+void VarDeclStmt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
 {
     if (iterator)
     {
@@ -1712,7 +1712,7 @@ void VarDeclStmnt::ForEachVarDecl(const VarDeclIteratorFunctor& iterator)
     }
 }
 
-void VarDeclStmnt::MakeImplicitConst()
+void VarDeclStmt::MakeImplicitConst()
 {
     /* Is this variable type currenlty not constant, uniform, static, or shared? */
     if ( !IsConstOrUniform() &&
@@ -1726,12 +1726,12 @@ void VarDeclStmnt::MakeImplicitConst()
         }
 
         /* Mark as implicitly constant */
-        flags << VarDeclStmnt::isImplicitConst;
+        flags << VarDeclStmt::isImplicitConst;
         typeSpecifier->isUniform = true;
     }
 }
 
-StructDecl* VarDeclStmnt::FetchStructDeclRef() const
+StructDecl* VarDeclStmt::FetchStructDeclRef() const
 {
     if (varDecls.empty())
         return nullptr;
@@ -1739,7 +1739,7 @@ StructDecl* VarDeclStmnt::FetchStructDeclRef() const
         return varDecls.front()->structDeclRef;
 }
 
-bool VarDeclStmnt::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset)
+bool VarDeclStmt::AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset)
 {
     for (const auto& varDecl : varDecls)
     {

@@ -57,31 +57,31 @@ ArrayDimensionPtr SLParser::ParseArrayDimension(bool allowDynamicDimension)
 
 /* --- Statements --- */
 
-NullStmntPtr SLParser::ParseNullStmnt()
+NullStmtPtr SLParser::ParseNullStmt()
 {
     /* Parse null statement */
-    auto ast = Make<NullStmnt>();
+    auto ast = Make<NullStmt>();
     Semi();
     return ast;
 }
 
-CodeBlockStmntPtr SLParser::ParseCodeBlockStmnt()
+CodeBlockStmtPtr SLParser::ParseCodeBlockStmt()
 {
     /* Parse code block statement */
-    auto ast = Make<CodeBlockStmnt>();
+    auto ast = Make<CodeBlockStmt>();
     ast->codeBlock = ParseCodeBlock();
     return ast;
 }
 
-ForLoopStmntPtr SLParser::ParseForLoopStmnt()
+ForLoopStmtPtr SLParser::ParseForLoopStmt()
 {
-    auto ast = Make<ForLoopStmnt>();
+    auto ast = Make<ForLoopStmt>();
 
     /* Parse loop initializer statement (attributes not allowed here) */
     Accept(Tokens::For);
     Accept(Tokens::LBracket);
 
-    ast->initStmnt = ParseForLoopInitializer();
+    ast->initStmt = ParseForLoopInitializer();
 
     /* Parse loop condExpr */
     if (!Is(Tokens::Semicolon))
@@ -94,14 +94,14 @@ ForLoopStmntPtr SLParser::ParseForLoopStmnt()
     Accept(Tokens::RBracket);
 
     /* Parse loop body */
-    ast->bodyStmnt = ParseLocalStmnt();
+    ast->bodyStmt = ParseLocalStmt();
 
     return ast;
 }
 
-WhileLoopStmntPtr SLParser::ParseWhileLoopStmnt()
+WhileLoopStmtPtr SLParser::ParseWhileLoopStmt()
 {
-    auto ast = Make<WhileLoopStmnt>();
+    auto ast = Make<WhileLoopStmt>();
 
     /* Parse loop condExpr */
     Accept(Tokens::While);
@@ -111,18 +111,18 @@ WhileLoopStmntPtr SLParser::ParseWhileLoopStmnt()
     Accept(Tokens::RBracket);
 
     /* Parse loop body */
-    ast->bodyStmnt = ParseLocalStmnt();
+    ast->bodyStmt = ParseLocalStmt();
 
     return ast;
 }
 
-DoWhileLoopStmntPtr SLParser::ParseDoWhileLoopStmnt()
+DoWhileLoopStmtPtr SLParser::ParseDoWhileLoopStmt()
 {
-    auto ast = Make<DoWhileLoopStmnt>();
+    auto ast = Make<DoWhileLoopStmt>();
 
     /* Parse loop body */
     Accept(Tokens::Do);
-    ast->bodyStmnt = ParseLocalStmnt();
+    ast->bodyStmt = ParseLocalStmt();
 
     /* Parse loop condExpr */
     Accept(Tokens::While);
@@ -136,9 +136,9 @@ DoWhileLoopStmntPtr SLParser::ParseDoWhileLoopStmnt()
     return ast;
 }
 
-IfStmntPtr SLParser::ParseIfStmnt()
+IfStmtPtr SLParser::ParseIfStmt()
 {
-    auto ast = Make<IfStmnt>();
+    auto ast = Make<IfStmt>();
 
     /* Parse if condExpr */
     Accept(Tokens::If);
@@ -148,25 +148,25 @@ IfStmntPtr SLParser::ParseIfStmnt()
     Accept(Tokens::RBracket);
 
     /* Parse if body */
-    ast->bodyStmnt = ParseLocalStmnt();
+    ast->bodyStmt = ParseLocalStmt();
 
     /* Parse optional else statement */
     if (Is(Tokens::Else))
-        ast->elseStmnt = ParseElseStmnt();
+        ast->elseStmt = ParseElseStmt();
 
     return ast;
 }
 
-StmntPtr SLParser::ParseElseStmnt()
+StmtPtr SLParser::ParseElseStmt()
 {
     /* Parse else statment */
     Accept(Tokens::Else);
-    return ParseLocalStmnt();
+    return ParseLocalStmt();
 }
 
-SwitchStmntPtr SLParser::ParseSwitchStmnt()
+SwitchStmtPtr SLParser::ParseSwitchStmt()
 {
-    auto ast = Make<SwitchStmnt>();
+    auto ast = Make<SwitchStmt>();
 
     /* Parse switch selector */
     Accept(Tokens::Switch);
@@ -183,10 +183,10 @@ SwitchStmntPtr SLParser::ParseSwitchStmnt()
     return ast;
 }
 
-CtrlTransferStmntPtr SLParser::ParseCtrlTransferStmnt()
+CtrlTransferStmtPtr SLParser::ParseCtrlTransferStmt()
 {
     /* Parse control transfer statement */
-    auto ast = Make<CtrlTransferStmnt>();
+    auto ast = Make<CtrlTransferStmt>();
 
     auto ctrlTransfer = Accept(Tokens::CtrlTransfer)->Spell();
     ast->transfer = StringToCtrlTransfer(ctrlTransfer);
@@ -198,9 +198,9 @@ CtrlTransferStmntPtr SLParser::ParseCtrlTransferStmnt()
     return ast;
 }
 
-ReturnStmntPtr SLParser::ParseReturnStmnt()
+ReturnStmtPtr SLParser::ParseReturnStmt()
 {
-    auto ast = Make<ReturnStmnt>();
+    auto ast = Make<ReturnStmt>();
 
     Accept(Tokens::Return);
 
@@ -214,10 +214,10 @@ ReturnStmntPtr SLParser::ParseReturnStmnt()
     return ast;
 }
 
-ExprStmntPtr SLParser::ParseExprStmnt(const ExprPtr& expr)
+ExprStmtPtr SLParser::ParseExprStmt(const ExprPtr& expr)
 {
     /* Parse expression statement */
-    auto ast = Make<ExprStmnt>();
+    auto ast = Make<ExprStmt>();
 
     if (expr)
     {
@@ -311,14 +311,14 @@ InitializerExprPtr SLParser::ParseInitializerExpr()
 
 /* --- Lists --- */
 
-std::vector<VarDeclPtr> SLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn)
+std::vector<VarDeclPtr> SLParser::ParseVarDeclList(VarDeclStmt* declStmtRef, TokenPtr firstIdentTkn)
 {
     std::vector<VarDeclPtr> varDecls;
 
     /* Parse variable declaration list */
     while (true)
     {
-        varDecls.push_back(ParseVarDecl(declStmntRef, firstIdentTkn));
+        varDecls.push_back(ParseVarDecl(declStmtRef, firstIdentTkn));
         firstIdentTkn = nullptr;
         if (Is(Tokens::Comma))
             AcceptIt();
@@ -329,9 +329,9 @@ std::vector<VarDeclPtr> SLParser::ParseVarDeclList(VarDeclStmnt* declStmntRef, T
     return varDecls;
 }
 
-std::vector<VarDeclStmntPtr> SLParser::ParseParameterList()
+std::vector<VarDeclStmtPtr> SLParser::ParseParameterList()
 {
-    std::vector<VarDeclStmntPtr> parameters;
+    std::vector<VarDeclStmtPtr> parameters;
 
     Accept(Tokens::LBracket);
 
@@ -353,22 +353,22 @@ std::vector<VarDeclStmntPtr> SLParser::ParseParameterList()
     return parameters;
 }
 
-std::vector<StmntPtr> SLParser::ParseLocalStmntList()
+std::vector<StmtPtr> SLParser::ParseLocalStmtList()
 {
-    std::vector<StmntPtr> stmnts;
+    std::vector<StmtPtr> stmts;
 
     while (!Is(Tokens::RCurly))
     {
-        ParseStmntWithCommentOpt(
-            stmnts,
+        ParseStmtWithCommentOpt(
+            stmts,
             [this]()
             {
-                return this->ParseLocalStmnt();
+                return this->ParseLocalStmt();
             }
         );
     }
 
-    return stmnts;
+    return stmts;
 }
 
 std::vector<ExprPtr> SLParser::ParseExprList(const Tokens listTerminatorToken, bool allowLastComma)
@@ -531,13 +531,13 @@ int SLParser::ParseAndEvaluateVectorDimension()
     return value;
 }
 
-void SLParser::ParseStmntWithCommentOpt(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction)
+void SLParser::ParseStmtWithCommentOpt(std::vector<StmtPtr>& stmts, const std::function<StmtPtr()>& parseFunction)
 {
     /* Parse next statement with optional commentary */
     auto comment = GetScanner().GetComment();
 
     auto ast = parseFunction();
-    stmnts.push_back(ast);
+    stmts.push_back(ast);
 
     ast->comment = std::move(comment);
 }

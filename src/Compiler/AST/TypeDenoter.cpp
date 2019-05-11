@@ -714,9 +714,9 @@ BufferTypeDenoter::BufferTypeDenoter(const BufferType bufferType) :
 BufferTypeDenoter::BufferTypeDenoter(BufferDecl* bufferDeclRef) :
     bufferDeclRef { bufferDeclRef }
 {
-    if (bufferDeclRef && bufferDeclRef->declStmntRef)
+    if (bufferDeclRef && bufferDeclRef->declStmtRef)
     {
-        auto sourceTypeDen = bufferDeclRef->declStmntRef->typeDenoter.get();
+        auto sourceTypeDen = bufferDeclRef->declStmtRef->typeDenoter.get();
         bufferType          = sourceTypeDen->bufferType;
         genericTypeDenoter  = sourceTypeDen->genericTypeDenoter;
         genericSize         = sourceTypeDen->genericSize;

@@ -89,32 +89,30 @@ class ExprConverter : public VisitorTracker
 
     private:
 
-        /* === Functions === */
-
         /* ----- Visitor implementation ----- */
 
-        DECL_VISIT_PROC( VarDecl          );
+        DECL_VISIT_PROC( VarDecl         );
 
-        DECL_VISIT_PROC( FunctionDecl     );
+        DECL_VISIT_PROC( FunctionDecl    );
 
-        DECL_VISIT_PROC( ForLoopStmnt     );
-        DECL_VISIT_PROC( WhileLoopStmnt   );
-        DECL_VISIT_PROC( DoWhileLoopStmnt );
-        DECL_VISIT_PROC( IfStmnt          );
-        DECL_VISIT_PROC( SwitchStmnt      );
-        DECL_VISIT_PROC( ExprStmnt        );
-        DECL_VISIT_PROC( ReturnStmnt      );
+        DECL_VISIT_PROC( ForLoopStmt     );
+        DECL_VISIT_PROC( WhileLoopStmt   );
+        DECL_VISIT_PROC( DoWhileLoopStmt );
+        DECL_VISIT_PROC( IfStmt          );
+        DECL_VISIT_PROC( SwitchStmt      );
+        DECL_VISIT_PROC( ExprStmt        );
+        DECL_VISIT_PROC( ReturnStmt      );
 
-        DECL_VISIT_PROC( LiteralExpr      );
-        DECL_VISIT_PROC( TernaryExpr      );
-        DECL_VISIT_PROC( BinaryExpr       );
-        DECL_VISIT_PROC( UnaryExpr        );
-        DECL_VISIT_PROC( CallExpr         );
-        DECL_VISIT_PROC( BracketExpr      );
-        DECL_VISIT_PROC( CastExpr         );
-        DECL_VISIT_PROC( ObjectExpr       );
-        DECL_VISIT_PROC( AssignExpr       );
-        DECL_VISIT_PROC( ArrayExpr        );
+        DECL_VISIT_PROC( LiteralExpr     );
+        DECL_VISIT_PROC( TernaryExpr     );
+        DECL_VISIT_PROC( BinaryExpr      );
+        DECL_VISIT_PROC( UnaryExpr       );
+        DECL_VISIT_PROC( CallExpr        );
+        DECL_VISIT_PROC( BracketExpr     );
+        DECL_VISIT_PROC( CastExpr        );
+        DECL_VISIT_PROC( ObjectExpr      );
+        DECL_VISIT_PROC( AssignExpr      );
+        DECL_VISIT_PROC( ArrayExpr       );
 
         /* ----- Conversion ----- */
 
@@ -174,7 +172,7 @@ class ExprConverter : public VisitorTracker
         // Converts the specified expression from the literal 1.#INF to the binary expression (1.0/0.0).
         void ConvertExprInfConst(ExprPtr& expr);
 
-        /* === Members === */
+    private:
 
         Flags           conversionFlags_;
         NameMangling    nameMangling_;

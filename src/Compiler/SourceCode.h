@@ -69,6 +69,8 @@ class SourceCode
         // Returns the line (if it has already been read) by the zero-based line index.
         std::string GetLine(std::size_t lineIndex) const;
 
+    private:
+
         std::shared_ptr<std::istream>   stream_;
         std::string                     currentLine_;
         std::vector<std::string>        lines_;

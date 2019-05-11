@@ -35,7 +35,7 @@ namespace Xsc
  * Internal structures
  */
 
-struct IfStmntArgs
+struct IfStmtArgs
 {
     bool inHasElseParentNode;
 };
@@ -383,14 +383,14 @@ IMPLEMENT_VISIT_PROC(Program)
     }
 
     /* Write global program statements */
-    WriteStmntList(ast->globalStmnts, true);
+    WriteStmtList(ast->globalStmts, true);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     WriteScopeOpen();
     {
-        WriteStmntList(ast->stmnts);
+        WriteStmtList(ast->stmts);
     }
     WriteScopeClose();
 }
@@ -414,7 +414,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     /* Write statement list */
     IncIndent();
     {
-        Visit(ast->stmnts);
+        Visit(ast->stmts);
     }
     DecIndent();
 }
@@ -517,10 +517,10 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     if (versionOut_ < OutputShaderVersion::GLSL140)
     {
         /* Write individual uniforms */
-        for (auto& varDeclStmnt : ast->varMembers)
+        for (auto& varDeclStmt : ast->varMembers)
         {
-            varDeclStmnt->typeSpecifier->isUniform = true;
-            Visit(varDeclStmnt);
+            varDeclStmt->typeSpecifier->isUniform = true;
+            Visit(varDeclStmt);
         }
     }
     else
@@ -553,7 +553,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         {
             PushUniformBufferDecl(ast);
             {
-                WriteStmntList(ast->varMembers);
+                WriteStmtList(ast->varMembers);
             }
             PopUniformBufferDecl();
         }
@@ -564,7 +564,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     if (ast->flags(AST::isReachable))
     {
@@ -574,7 +574,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
     if (ast->flags(AST::isReachable))
     {
@@ -584,7 +584,7 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
     if (!ast->flags(AST::isReachable) && !InsideFunctionDecl() && !InsideStructDecl())
         return;
@@ -632,7 +632,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     if (ast->typeSpecifier->HasAnyStorageClassOf({ StorageClass::Static }) && ast->FetchStructDeclRef() != nullptr)
         return;
 
-    PushVarDeclStmnt(ast);
+    PushVarDeclStmt(ast);
     {
         BeginLn();
 
@@ -656,9 +656,9 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Separator();
 
         /* Write input modifiers */
-        if (ast->flags(VarDeclStmnt::isShaderInput))
+        if (ast->flags(VarDeclStmt::isShaderInput))
             Write("in ");
-        else if (ast->flags(VarDeclStmnt::isShaderOutput))
+        else if (ast->flags(VarDeclStmt::isShaderOutput))
             Write("out ");
         else if (ast->IsUniform())
             Write("uniform ");
@@ -695,13 +695,13 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Write(";");
         EndLn();
     }
-    PopVarDeclStmnt();
+    PopVarDeclStmt();
 
     if (InsideGlobalScope())
         Blank();
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     if (ast->structDecl && !ast->structDecl->IsAnonymous())
     {
@@ -715,7 +715,7 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
     if (ast->flags(AST::isReachable))
     {
@@ -743,17 +743,17 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(NullStmnt)
+IMPLEMENT_VISIT_PROC(NullStmt)
 {
     WriteLn(";");
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
     /* Write loop header */
     BeginLn();
@@ -762,11 +762,11 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     PushOptions({ false, false });
     {
-        if (ast->initStmnt->Type() == AST::Types::SamplerDeclStmnt && !UseSeparateSamplers())
+        if (ast->initStmt->Type() == AST::Types::SamplerDeclStmt && !UseSeparateSamplers())
             Write(";");
         else
-            Visit(ast->initStmnt);
-        Write(" "); // initStmnt already has the ';'!
+            Visit(ast->initStmt);
+        Write(" "); // initStmt already has the ';'!
         Visit(ast->condition);
         Write("; ");
         Visit(ast->iteration);
@@ -775,10 +775,10 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     Write(")");
 
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     /* Write loop condExpr */
     BeginLn();
@@ -787,15 +787,15 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     Visit(ast->condition);
     Write(")");
 
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     BeginLn();
 
     Write("do");
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 
     /* Write loop condExpr */
     WriteScopeContinue();
@@ -807,9 +807,9 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
-    bool hasElseParentNode = (args != nullptr ? reinterpret_cast<IfStmntArgs*>(args)->inHasElseParentNode : false);
+    bool hasElseParentNode = (args != nullptr ? reinterpret_cast<IfStmtArgs*>(args)->inHasElseParentNode : false);
 
     /* Write if condExpr */
     if (hasElseParentNode)
@@ -822,26 +822,26 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     Write(")");
 
     /* Write if body */
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 
-    if (auto elseBody = ast->elseStmnt.get())
+    if (auto elseBody = ast->elseStmt.get())
     {
         /* Write else if statement */
         WriteScopeContinue();
         Write("else");
 
-        if (elseBody->Type() == AST::Types::IfStmnt)
+        if (elseBody->Type() == AST::Types::IfStmt)
         {
-            IfStmntArgs ifStmntArgs;
-            ifStmntArgs.inHasElseParentNode = true;
-            Visit(elseBody, &ifStmntArgs);
+            IfStmtArgs ifStmtArgs;
+            ifStmtArgs.inHasElseParentNode = true;
+            Visit(elseBody, &ifStmtArgs);
         }
         else
             Visit(elseBody);
     }
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     /* Write selector */
     BeginLn();
@@ -858,7 +858,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     WriteScopeClose();
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     BeginLn();
     {
@@ -868,7 +868,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     if (InsideEntryPoint() || InsideSecondaryEntryPoint())
     {
@@ -876,7 +876,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         WriteOutputSemanticsAssignment(ast->expr.get());
 
         /* Is this return statement at the end of the function scope? */
-        if (!ast->flags(ReturnStmnt::isEndOfFunction))
+        if (!ast->flags(ReturnStmt::isEndOfFunction))
             WriteLn("return;");
     }
     else
@@ -891,12 +891,12 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
             }
             EndLn();
         }
-        else if (!ast->flags(ReturnStmnt::isEndOfFunction))
+        else if (!ast->flags(ReturnStmt::isEndOfFunction))
             WriteLn("return;");
     }
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
 {
     WriteLn(CtrlTransformToString(ast->transfer) + ";");
 }
@@ -1639,7 +1639,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
     BeginLn();
     {
         /* Write desired variable type and identifier */
-        auto typeSpecifier = varDecl->declStmntRef->typeSpecifier.get();
+        auto typeSpecifier = varDecl->declStmtRef->typeSpecifier.get();
 
         Visit(typeSpecifier);
         Write(" " + varDecl->ident + " = ");
@@ -1660,7 +1660,7 @@ void GLSLGenerator::WriteLocalInputSemanticsVarDecl(VarDecl* varDecl)
     EndLn();
 }
 
-void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
+void GLSLGenerator::WriteLocalInputSemanticsStructDeclParam(VarDeclStmt* param, StructDecl* structDecl)
 {
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderInput))
     {
@@ -1738,7 +1738,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     /* Write global variable definition statement */
     BeginLn();
     {
-        const auto& interpModifiers = varDecl->declStmntRef->typeSpecifier->interpModifiers;
+        const auto& interpModifiers = varDecl->declStmtRef->typeSpecifier->interpModifiers;
 
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
@@ -1753,7 +1753,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         }
         else
         {
-            WriteInterpModifiers(interpModifiers, varDecl->declStmntRef);
+            WriteInterpModifiers(interpModifiers, varDecl->declStmtRef);
             Separator();
 
             if ( ( !IsESSL() && explicitBinding_ ) || ( IsESSL() && IsVertexShader() ) )
@@ -1794,7 +1794,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             Separator();
         }
 
-        Visit(varDecl->declStmntRef->typeSpecifier);
+        Visit(varDecl->declStmtRef->typeSpecifier);
         Separator();
 
         Write(" " + varDecl->ident);
@@ -1821,7 +1821,7 @@ void GLSLGenerator::WriteLocalOutputSemantics(FunctionDecl* entryPoint)
     }
 }
 
-void GLSLGenerator::WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl)
+void GLSLGenerator::WriteLocalOutputSemanticsStructDeclParam(VarDeclStmt* param, StructDecl* structDecl)
 {
     if (structDecl && structDecl->flags(StructDecl::isNonEntryPointParam) && structDecl->flags(StructDecl::isShaderOutput))
     {
@@ -1886,7 +1886,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool use
 {
     /* Write global variable definition statement */
     WriteGlobalOutputSemanticsSlot(
-        varDecl->declStmntRef->typeSpecifier.get(),
+        varDecl->declStmtRef->typeSpecifier.get(),
         varDecl->semantic,
         (useSemanticName ? varDecl->semantic.ToString() : varDecl->ident.Final()),
         varDecl
@@ -1898,11 +1898,11 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     /* Write global output semantic slot */
     BeginLn();
     {
-        VarDeclStmnt* varDeclStmnt = (varDecl != nullptr ? varDecl->declStmntRef : nullptr);
+        VarDeclStmt* varDeclStmt = (varDecl != nullptr ? varDecl->declStmtRef : nullptr);
 
         if (versionOut_ <= OutputShaderVersion::GLSL120)
         {
-            if (WarnEnabled(Warnings::Basic) && varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
+            if (WarnEnabled(Warnings::Basic) && varDeclStmt && !varDeclStmt->typeSpecifier->interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
 
             Write("varying ");
@@ -1910,8 +1910,8 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
         }
         else
         {
-            if (varDeclStmnt)
-                WriteInterpModifiers(varDeclStmnt->typeSpecifier->interpModifiers, varDecl);
+            if (varDeclStmt)
+                WriteInterpModifiers(varDeclStmt->typeSpecifier->interpModifiers, varDecl);
             Separator();
 
             if ( ( !IsESSL() && explicitBinding_ ) || ( IsESSL() && IsFragmentShader() ) )
@@ -2079,7 +2079,7 @@ void GLSLGenerator::WriteGlobalUniforms()
         Blank();
 }
 
-void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmnt* param)
+void GLSLGenerator::WriteGlobalUniformsParameter(VarDeclStmt* param)
 {
     /* Write uniform type */
     BeginLn();
@@ -2501,10 +2501,10 @@ void GLSLGenerator::WriteFunctionEntryPointBody(FunctionDecl* ast)
     WriteLocalOutputSemantics(ast);
 
     /* Write code block (without additional scope) */
-    WriteStmntList(ast->codeBlock->stmnts);
+    WriteStmtList(ast->codeBlock->stmts);
 
     /* Is the last statement a return statement? (ignore if the function has a non-void return type) */
-    if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmnts.empty() || ast->codeBlock->stmnts.back()->Type() != AST::Types::ReturnStmnt ) )
+    if ( ast->HasVoidReturnType() && ( ast->codeBlock->stmts.empty() || ast->codeBlock->stmts.back()->Type() != AST::Types::ReturnStmt ) )
     {
         /* Write output semantic at the end of the code block, if no return statement was written before */
         WriteOutputSemanticsAssignment(nullptr);
@@ -3144,23 +3144,23 @@ bool GLSLGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicolo
     WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
-        WriteStmntList(structDecl->varMembers);
+        WriteStmtList(structDecl->varMembers);
     }
     EndSep();
     WriteScopeClose();
 
     /* Only append blank line if struct is not part of a variable declaration */
-    if (!InsideVarDeclStmnt())
+    if (!InsideVarDeclStmt())
         Blank();
 
     /* Write member functions */
-    std::vector<BasicDeclStmnt*> funcMemberStmnts;
-    funcMemberStmnts.reserve(structDecl->funcMembers.size());
+    std::vector<BasicDeclStmt*> funcMemberStmts;
+    funcMemberStmts.reserve(structDecl->funcMembers.size());
 
     for (auto& funcDecl : structDecl->funcMembers)
-        funcMemberStmnts.push_back(funcDecl->declStmntRef);
+        funcMemberStmts.push_back(funcDecl->declStmtRef);
 
-    WriteStmntList(funcMemberStmnts);
+    WriteStmtList(funcMemberStmts);
 
     return true;
 }
@@ -3189,12 +3189,12 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         SamplerType samplerType = TextureTypeToSamplerType(bufferDecl->GetBufferType());
         SamplerType shadowSamplerType = SamplerTypeToShadowSamplerType(samplerType);
 
-        bufferTypeKeyword = SamplerTypeToKeyword(shadowSamplerType, bufferDecl->declStmntRef);
+        bufferTypeKeyword = SamplerTypeToKeyword(shadowSamplerType, bufferDecl->declStmtRef);
     }
     else
     {
         /* Determine GLSL sampler type (or VKSL texture type) */
-        bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
+        bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmtRef);
     }
 
     if (!bufferTypeKeyword)
@@ -3213,7 +3213,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         if (extensions_(Extensions::LayoutAttribute))
         {
             /* Take image layout format from type denoter */
-            imageLayoutFormat = bufferDecl->declStmntRef->typeDenoter->layoutFormat;
+            imageLayoutFormat = bufferDecl->declStmtRef->typeDenoter->layoutFormat;
         }
 
         #endif
@@ -3221,9 +3221,9 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         /* Attempt to derive a default format */
         if (imageLayoutFormat == ImageLayoutFormat::Undefined)
         {
-            if (bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
+            if (bufferDecl->declStmtRef->typeDenoter->genericTypeDenoter)
             {
-                if (auto baseTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter->As<BaseTypeDenoter>())
+                if (auto baseTypeDen = bufferDecl->declStmtRef->typeDenoter->genericTypeDenoter->As<BaseTypeDenoter>())
                     imageLayoutFormat = DataTypeToImageLayoutFormat(baseTypeDen->dataType);
             }
         }
@@ -3257,7 +3257,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
         Write("uniform ");
 
         /* Write sampler type and identifier */
-        if (auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->genericTypeDenoter)
+        if (auto genericTypeDen = bufferDecl->declStmtRef->typeDenoter->genericTypeDenoter)
         {
             if (auto baseTypeDen = genericTypeDen->As<BaseTypeDenoter>())
             {
@@ -3280,7 +3280,7 @@ void GLSLGenerator::WriteBufferDeclTexture(BufferDecl* bufferDecl)
 void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
 {
     /* Determine GLSL buffer type */
-    auto bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmntRef);
+    auto bufferTypeKeyword = BufferTypeToKeyword(bufferDecl->GetBufferType(), bufferDecl->declStmtRef);
     if (!bufferTypeKeyword)
         return;
 
@@ -3311,7 +3311,7 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
                 Write("readonly ");
 
             /* Write generic type denoterand identifier */
-            auto genericTypeDen = bufferDecl->declStmntRef->typeDenoter->GetGenericTypeDenoter();
+            auto genericTypeDen = bufferDecl->declStmtRef->typeDenoter->GetGenericTypeDenoter();
             WriteTypeDenoter(*genericTypeDen, IsESSL(), bufferDecl);
             Write(" " + bufferDecl->ident + "[];");
         }
@@ -3324,10 +3324,10 @@ void GLSLGenerator::WriteBufferDeclStorageBuffer(BufferDecl* bufferDecl)
 
 void GLSLGenerator::WriteSamplerDecl(SamplerDecl& samplerDecl)
 {
-    if (UseSeparateSamplers() || !IsSamplerStateType(samplerDecl.declStmntRef->typeDenoter->samplerType))
+    if (UseSeparateSamplers() || !IsSamplerStateType(samplerDecl.declStmtRef->typeDenoter->samplerType))
     {
         /* Determine GLSL sampler type */
-        auto samplerTypeKeyword = SamplerTypeToKeyword(samplerDecl.GetSamplerType(), samplerDecl.declStmntRef);
+        auto samplerTypeKeyword = SamplerTypeToKeyword(samplerDecl.GetSamplerType(), samplerDecl.declStmtRef);
         if (!samplerTypeKeyword)
             return;
 
@@ -3353,7 +3353,7 @@ void GLSLGenerator::WriteSamplerDecl(SamplerDecl& samplerDecl)
 
 /* ----- Misc ----- */
 
-void GLSLGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
+void GLSLGenerator::WriteStmtComment(Stmt* ast, bool insertBlank)
 {
     if (ast && !ast->comment.empty())
     {
@@ -3376,17 +3376,17 @@ T* GetRawPtr(const std::shared_ptr<T>& ptr)
 }
 
 template <typename T>
-void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope)
+void GLSLGenerator::WriteStmtList(const std::vector<T>& stmts, bool isGlobalScope)
 {
     if (preserveComments_)
     {
         /* Write statements with optional commentaries */
-        for (std::size_t i = 0; i < stmnts.size(); ++i)
+        for (std::size_t i = 0; i < stmts.size(); ++i)
         {
-            auto ast = GetRawPtr(stmnts[i]);
+            auto ast = GetRawPtr(stmts[i]);
 
             if (!isGlobalScope || ast->flags(AST::isReachable))
-                WriteStmntComment(ast, (!isGlobalScope && (i > 0)));
+                WriteStmtComment(ast, (!isGlobalScope && (i > 0)));
 
             Visit(ast);
         }
@@ -3394,11 +3394,11 @@ void GLSLGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalSc
     else
     {
         /* Write statements only */
-        Visit(stmnts);
+        Visit(stmts);
     }
 }
 
-void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
+void GLSLGenerator::WriteParameter(VarDeclStmt* ast)
 {
     /* Write input modifier */
     if (ast->IsOutput())
@@ -3427,11 +3427,11 @@ void GLSLGenerator::WriteParameter(VarDeclStmnt* ast)
         Error(R_InvalidParamVarCount, ast);
 }
 
-void GLSLGenerator::WriteScopedStmnt(Stmnt* ast)
+void GLSLGenerator::WriteScopedStmt(Stmt* ast)
 {
     if (ast)
     {
-        if (ast->Type() != AST::Types::CodeBlockStmnt)
+        if (ast->Type() != AST::Types::CodeBlockStmt)
         {
             WriteScopeOpen(false, false, alwaysBracedScopes_);
             {

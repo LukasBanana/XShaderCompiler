@@ -75,7 +75,7 @@ float ReflectionAnalyzer::EvaluateConstExprFloat(Expr& expr)
 IMPLEMENT_VISIT_PROC(Program)
 {
     /* Visit both active and disabled code */
-    Visit(ast->globalStmnts);
+    Visit(ast->globalStmts);
     Visit(ast->disabledAST);
 
     if (auto entryPoint = ast->entryPointRef)
@@ -166,7 +166,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(FunctionDecl::isEntryPoint))
-        ReflectAttributes(ast->declStmntRef->attribs);
+        ReflectAttributes(ast->declStmtRef->attribs);
 
     Visitor::VisitFunctionDecl(ast, args);
 
@@ -207,7 +207,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     data_->constantBuffers.push_back(constantBuffer);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     for (auto& bufferDecl : ast->bufferDecls)
     {

@@ -15,7 +15,7 @@ namespace Xsc
 
 
 //TODO: combine two code blocks for global statements and function parameters in a generic way
-void UniformPacker::Convert(Program& program, const CbufferAttributes& cbufferAttribs, bool onlyReachableStmnts)
+void UniformPacker::Convert(Program& program, const CbufferAttributes& cbufferAttribs, bool onlyReachableStmts)
 {
     if (cbufferAttribs.name.empty())
         return;
@@ -23,44 +23,44 @@ void UniformPacker::Convert(Program& program, const CbufferAttributes& cbufferAt
     cbufferAttribs_ = cbufferAttribs;
 
     /* Convert global statements */
-    auto& globalStmnts = program.globalStmnts;
+    auto& globalStmts = program.globalStmts;
 
-    for (auto it = globalStmnts.begin(); it != globalStmnts.end();)
+    for (auto it = globalStmts.begin(); it != globalStmts.end();)
     {
         bool isReachable = (*it)->flags(AST::isReachable);
-        if ((*it)->Type() == AST::Types::VarDeclStmnt && (isReachable || !onlyReachableStmnts))
+        if ((*it)->Type() == AST::Types::VarDeclStmt && (isReachable || !onlyReachableStmts))
         {
-            auto varDeclStmnt = std::static_pointer_cast<VarDeclStmnt>(*it);
+            auto varDeclStmt = std::static_pointer_cast<VarDeclStmt>(*it);
 
             /* Check if variable declarations have a uniform type that is neither a sampler nor buffer */
-            if (varDeclStmnt->IsUniform() && CanConvertUniformWithTypeDenoter(*(varDeclStmnt->typeSpecifier->typeDenoter)))
+            if (varDeclStmt->IsUniform() && CanConvertUniformWithTypeDenoter(*(varDeclStmt->typeSpecifier->typeDenoter)))
             {
                 /* Check if uniform buffer has not been created yet */
-                if (!declStmnt_)
+                if (!declStmt_)
                 {
                     /* Make initial uniform buffer */
                     MakeUniformBuffer();
 
                     /* Append uniform into constant buffer and remove it from global statements */
-                    AppendUniform(varDeclStmnt);
-                    it = globalStmnts.erase(it);
+                    AppendUniform(varDeclStmt);
+                    it = globalStmts.erase(it);
 
                     /* Insert uniform buffer into global statement list */
-                    it = globalStmnts.insert(it, declStmnt_);
+                    it = globalStmts.insert(it, declStmt_);
                 }
                 else
                 {
                     /* Append uniform into constant buffer and remove it from global statements */
-                    AppendUniform(varDeclStmnt);
-                    it = globalStmnts.erase(it);
+                    AppendUniform(varDeclStmt);
+                    it = globalStmts.erase(it);
                     continue;
                 }
 
                 /* Mark as reachable, if only a single variable of it is reachable */
                 if (isReachable)
                 {
-                    declStmnt_->flags << AST::isReachable;
-                    declStmnt_->declObject->flags << AST::isReachable;
+                    declStmt_->flags << AST::isReachable;
+                    declStmt_->declObject->flags << AST::isReachable;
                 }
             }
         }
@@ -74,36 +74,36 @@ void UniformPacker::Convert(Program& program, const CbufferAttributes& cbufferAt
         auto& parameters = entryPoint->parameters;
         for (auto it = parameters.begin(); it != parameters.end();)
         {
-            auto varDeclStmnt = *it;
+            auto varDeclStmt = *it;
 
             /* Check if variable declarations have a uniform type that is neither a sampler nor buffer */
-            if (varDeclStmnt->IsUniform() && CanConvertUniformWithTypeDenoter(*(varDeclStmnt->typeSpecifier->typeDenoter)))
+            if (varDeclStmt->IsUniform() && CanConvertUniformWithTypeDenoter(*(varDeclStmt->typeSpecifier->typeDenoter)))
             {
                 /* Check if uniform buffer has not been created yet */
-                if (!declStmnt_)
+                if (!declStmt_)
                 {
                     /* Make initial uniform buffer */
                     MakeUniformBuffer();
 
                     /* Append uniform into constant buffer and remove it from global statements */
-                    AppendUniform(varDeclStmnt);
+                    AppendUniform(varDeclStmt);
                     it = parameters.erase(it);
 
                     /* Insert uniform buffer into global statement list */
-                    globalStmnts.insert(globalStmnts.begin(), declStmnt_);
+                    globalStmts.insert(globalStmts.begin(), declStmt_);
                 }
                 else
                 {
                     /* Append uniform into constant buffer and remove it from global statements */
-                    AppendUniform(varDeclStmnt);
+                    AppendUniform(varDeclStmt);
                     it = parameters.erase(it);
                 }
 
                 /* Mark as reachable, if only a single variable of it is reachable */
                 //if (isReachable)
                 {
-                    declStmnt_->flags << AST::isReachable;
-                    declStmnt_->declObject->flags << AST::isReachable;
+                    declStmt_->flags << AST::isReachable;
+                    declStmt_->declObject->flags << AST::isReachable;
                 }
             }
             else
@@ -120,25 +120,25 @@ void UniformPacker::Convert(Program& program, const CbufferAttributes& cbufferAt
 void UniformPacker::MakeUniformBuffer()
 {
     /* Make single constant buffer to pack uniforms into */
-    declStmnt_ = std::make_shared<BasicDeclStmnt>(SourcePosition::ignore);
+    declStmt_ = std::make_shared<BasicDeclStmt>(SourcePosition::ignore);
     {
         uniformBufferDecl_ = ASTFactory::MakeUniformBufferDecl(cbufferAttribs_.name, cbufferAttribs_.bindingSlot);
-        uniformBufferDecl_->declStmntRef = declStmnt_.get();
+        uniformBufferDecl_->declStmtRef = declStmt_.get();
     }
-    declStmnt_->declObject = uniformBufferDecl_;
+    declStmt_->declObject = uniformBufferDecl_;
 }
 
-void UniformPacker::AppendUniform(const VarDeclStmntPtr& varDeclStmnt)
+void UniformPacker::AppendUniform(const VarDeclStmtPtr& varDeclStmt)
 {
     /* Append shared pointer to both local statements (main list), and the variable members (secondary list) */
-    uniformBufferDecl_->localStmnts.push_back(varDeclStmnt);
-    uniformBufferDecl_->varMembers.push_back(varDeclStmnt);
+    uniformBufferDecl_->localStmts.push_back(varDeclStmt);
+    uniformBufferDecl_->varMembers.push_back(varDeclStmt);
 
     /* Remove "uniform" specifier */
-    varDeclStmnt->typeSpecifier->isUniform = false;
+    varDeclStmt->typeSpecifier->isUniform = false;
 
     /* Remove default initializer */
-    for (auto& varDecl : varDeclStmnt->varDecls)
+    for (auto& varDecl : varDeclStmt->varDecls)
         varDecl->initializer.reset();
 }
 

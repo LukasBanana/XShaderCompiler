@@ -103,7 +103,7 @@ DECL_REPORT( InvalidSubscriptBaseType,          "invalid base type denoter for v
 DECL_REPORT( IllegalStaticAccessForSubscript,   "illegal static access for subscript '{0}'"                                                                     );
 DECL_REPORT( MissingVarIdentSymbolRef,          "missing symbol reference to derive type denoter of variable identifier '{0}'"                                  );
 DECL_REPORT( MissingFuncRefToDeriveExprType,    "missing function reference to derive expression type"                                                          );
-DECL_REPORT( MissingDeclStmntRefToDeriveType,   "missing reference to declaration statement to derive type denoter of variable identifier '{0}'"                );
+DECL_REPORT( MissingDeclStmtRefToDeriveType,    "missing reference to declaration statement to derive type denoter of variable identifier '{0}'"                );
 DECL_REPORT( MissingObjectExprSymbolRef,        "missing symbol reference in object expression[ '{0}']"                                                         );
 DECL_REPORT( FuncDoesntTake1Param,              "function '{0}' does not take {1} parameter"                                                                    );
 DECL_REPORT( FuncDoesntTakeNParams,             "function '{0}' does not take {1} parameters"                                                                   );
@@ -232,8 +232,8 @@ DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow
 DECL_REPORT( LValueExprStackUnderflow,          "l-value expression stack underflow"                                                                            ); // internal error
 DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         ); // internal error
 DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow"                                                                    ); // internal error
-DECL_REPORT( VarDeclStmntStackUnderflow,        "variable declaration statement stack underflow"                                                                ); // internal error
-DECL_REPORT( AliasDeclStmntStackUnderflow,      "alias declaration statement stack underflow"                                                                   ); // internal error
+DECL_REPORT( VarDeclStmtStackUnderflow,         "variable declaration statement stack underflow"                                                                ); // internal error
+DECL_REPORT( AliasDeclStmtStackUnderflow,       "alias declaration statement stack underflow"                                                                   ); // internal error
 DECL_REPORT( WritePrefixStackUnderflow,         "write prefix stack underflow"                                                                                  ); // internal error
 
 /* ----- Analyzer ----- */
@@ -287,8 +287,8 @@ DECL_REPORT( FailedToInitializeSamplerValue,    "{0} to initialize sampler value
 /* ----- Converter ----- */
 
 DECL_REPORT( SelfParamStackUnderflow,           "'self'-parameter stack underflow"                                                                              );
-DECL_REPORT( NoActiveStmntScopeHandler,         "no active statement scope handler"                                                                             );
-DECL_REPORT( MissingScopedStmntRef,             "missing reference to scoped statement"                                                                         );
+DECL_REPORT( NoActiveStmtScopeHandler,          "no active statement scope handler"                                                                             );
+DECL_REPORT( MissingScopedStmtRef,              "missing reference to scoped statement"                                                                         );
 
 /* ----- GLSLConverter ----- */
 
@@ -400,7 +400,7 @@ DECL_REPORT( InvalidHLSLPragmaAfterPP,          "only 'pack_matrix' pragma direc
 DECL_REPORT( InvalidModifierForGenericTypeDen,  "invalid modifier for generic type denoter[: '{0}']"                                                            );
 DECL_REPORT( IllegalRecursiveInheritance,       "illegal recursive inheritance"                                                                                 );
 DECL_REPORT( IllegalMultipleInheritance,        "illegal multiple inheritance"                                                                                  );
-DECL_REPORT( IllegalDeclStmntInsideDeclOf,      "illegal declaration statement inside declaration of '{0}'"                                                     );
+DECL_REPORT( IllegalDeclStmtInsideDeclOf,       "illegal declaration statement inside declaration of '{0}'"                                                     );
 DECL_REPORT( IllegalBufferTypeGenericSize,      "illegal usage of generic size in texture, buffer, or stream object"                                            );
 DECL_REPORT( IllegalPackOffset,                 "packoffset is only allowed in a constant buffer"                                                               );
 DECL_REPORT( TextureSampleCountLimitIs128,      "number of samples in texture must be in the range [1, 128), but got {0}"                                       );

@@ -214,8 +214,6 @@ class Parser
 
     private:
 
-        /* === Structures === */
-
         struct ScannerStackEntry
         {
             ScannerPtr  scanner;
@@ -223,7 +221,7 @@ class Parser
             TokenPtr    nextToken;
         };
 
-        /* === Functions === */
+    private:
 
         // Parse left-to-right associative binary expression.
         ExprPtr ParseLTRBinaryExpr(const std::function<ExprPtr()>& parseSubExprFunc, const BinaryOpList& binaryOps);

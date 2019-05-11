@@ -44,8 +44,6 @@ class GLSLGenerator : public Generator
         // Function callback interface for entries in a layout qualifier.
         using LayoutEntryFunctor = std::function<void()>;
 
-        /* === Functions === */
-
         void GenerateCodePrimary(
             Program&            program,
             const ShaderInput&  inputDesc,
@@ -108,22 +106,22 @@ class GLSLGenerator : public Generator
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( SamplerDeclStmnt  );
-        DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AliasDeclStmnt    );
-        DECL_VISIT_PROC( BasicDeclStmnt    );
+        DECL_VISIT_PROC( BufferDeclStmt   );
+        DECL_VISIT_PROC( SamplerDeclStmt  );
+        DECL_VISIT_PROC( VarDeclStmt      );
+        DECL_VISIT_PROC( AliasDeclStmt    );
+        DECL_VISIT_PROC( BasicDeclStmt    );
 
-        DECL_VISIT_PROC( NullStmnt         );
-        DECL_VISIT_PROC( CodeBlockStmnt    );
-        DECL_VISIT_PROC( ForLoopStmnt      );
-        DECL_VISIT_PROC( WhileLoopStmnt    );
-        DECL_VISIT_PROC( DoWhileLoopStmnt  );
-        DECL_VISIT_PROC( IfStmnt           );
-        DECL_VISIT_PROC( SwitchStmnt       );
-        DECL_VISIT_PROC( ExprStmnt         );
-        DECL_VISIT_PROC( ReturnStmnt       );
-        DECL_VISIT_PROC( CtrlTransferStmnt );
+        DECL_VISIT_PROC( NullStmt         );
+        DECL_VISIT_PROC( CodeBlockStmt    );
+        DECL_VISIT_PROC( ForLoopStmt      );
+        DECL_VISIT_PROC( WhileLoopStmt    );
+        DECL_VISIT_PROC( DoWhileLoopStmt  );
+        DECL_VISIT_PROC( IfStmt           );
+        DECL_VISIT_PROC( SwitchStmt       );
+        DECL_VISIT_PROC( ExprStmt         );
+        DECL_VISIT_PROC( ReturnStmt       );
+        DECL_VISIT_PROC( CtrlTransferStmt );
 
         DECL_VISIT_PROC( SequenceExpr      );
         DECL_VISIT_PROC( LiteralExpr       );
@@ -198,7 +196,7 @@ class GLSLGenerator : public Generator
 
         void WriteLocalInputSemantics(FunctionDecl* entryPoint);
         void WriteLocalInputSemanticsVarDecl(VarDecl* varDecl);
-        void WriteLocalInputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
+        void WriteLocalInputSemanticsStructDeclParam(VarDeclStmt* param, StructDecl* structDecl);
 
         void WriteGlobalInputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl);
@@ -206,7 +204,7 @@ class GLSLGenerator : public Generator
         /* ----- Output semantics ----- */
 
         void WriteLocalOutputSemantics(FunctionDecl* entryPoint);
-        void WriteLocalOutputSemanticsStructDeclParam(VarDeclStmnt* param, StructDecl* structDecl);
+        void WriteLocalOutputSemanticsStructDeclParam(VarDeclStmt* param, StructDecl* structDecl);
 
         void WriteGlobalOutputSemantics(FunctionDecl* entryPoint);
         void WriteGlobalOutputSemanticsVarDecl(VarDecl* varDecl, bool useSemanticName = false);
@@ -220,7 +218,7 @@ class GLSLGenerator : public Generator
         /* ----- Uniforms ----- */
 
         void WriteGlobalUniforms();
-        void WriteGlobalUniformsParameter(VarDeclStmnt* param);
+        void WriteGlobalUniformsParameter(VarDeclStmt* param);
 
         // Writes the specified variable identifier or a system value if the identifier has a system value semantic.
         void WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIndex = -1);
@@ -300,23 +298,25 @@ class GLSLGenerator : public Generator
 
         /* ----- Misc ----- */
 
-        void WriteStmntComment(Stmnt* ast, bool insertBlank = false);
+        void WriteStmtComment(Stmt* ast, bool insertBlank = false);
 
         template <typename T>
-        void WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope = false);
+        void WriteStmtList(const std::vector<T>& stmts, bool isGlobalScope = false);
 
-        void WriteParameter(VarDeclStmnt* ast);
-        void WriteScopedStmnt(Stmnt* ast);
+        void WriteParameter(VarDeclStmt* ast);
+        void WriteScopedStmt(Stmt* ast);
 
         void WriteLiteral(const std::string& value, const DataType& dataType, const AST* ast = nullptr);
 
-        /* === Members === */
+    private:
 
         struct VertexSemanticLoc
         {
             int     location;
             bool    found;
         };
+
+    private:
 
         OutputShaderVersion                     versionOut_             = OutputShaderVersion::GLSL;
         NameMangling                            nameMangling_;

@@ -36,8 +36,6 @@ class GLSLParser : public SLParser
 
     private:
 
-        /* === Functions === */
-
         ScannerPtr MakeScanner() override;
 
         // Returns true if the current token is a data type.
@@ -83,44 +81,44 @@ class GLSLParser : public SLParser
         ProgramPtr                      ParseProgram(const SourceCodePtr& source);
 
         CodeBlockPtr                    ParseCodeBlock() override;
-        VarDeclStmntPtr                 ParseParameter() override;
-        StmntPtr                        ParseLocalStmnt() override;
-        StmntPtr                        ParseForLoopInitializer() override;
+        VarDeclStmtPtr                  ParseParameter() override;
+        StmtPtr                         ParseLocalStmt() override;
+        StmtPtr                         ParseForLoopInitializer() override;
         SwitchCasePtr                   ParseSwitchCase() override;
-        VarDeclPtr                      ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr) override;
+        VarDeclPtr                      ParseVarDecl(VarDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr) override;
 
         AttributePtr                    ParseAttribute();
         TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false, const TokenPtr& inputTkn = nullptr);
 
         #if 0
-        BufferDeclPtr                   ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
-        SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
+        BufferDeclPtr                   ParseBufferDecl(BufferDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr);
+        SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr);
         #endif
         StructDeclPtr                   ParseStructDecl(bool parseStructTkn = true, const TokenPtr& identTkn = nullptr);
-        FunctionDeclPtr                 ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
+        FunctionDeclPtr                 ParseFunctionDecl(BasicDeclStmt* declStmtRef, const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
         UniformBufferDeclPtr            ParseUniformBufferDecl(const TokenPtr& identTkn = nullptr);
 
-        StmntPtr                        ParseGlobalStmnt();
-        StmntPtr                        ParseGlobalStmntPrimary(bool hasAttribs = false);
-        StmntPtr                        ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn = nullptr);
-        StmntPtr                        ParseGlobalStmntWithLayoutQualifier();
+        StmtPtr                         ParseGlobalStmt();
+        StmtPtr                         ParseGlobalStmtPrimary(bool hasAttribs = false);
+        StmtPtr                         ParseGlobalStmtWithTypeSpecifier(const TokenPtr& inputTkn = nullptr);
+        StmtPtr                         ParseGlobalStmtWithLayoutQualifier();
         #if 0
-        StmntPtr                        ParseGlobalStmntWithSamplerTypeDenoter();
-        StmntPtr                        ParseGlobalStmntWithBufferTypeDenoter();
+        StmtPtr                         ParseGlobalStmtWithSamplerTypeDenoter();
+        StmtPtr                         ParseGlobalStmtWithBufferTypeDenoter();
         #endif
-        BasicDeclStmntPtr               ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
-        StmntPtr                        ParseUniformDeclStmnt();
-        BasicDeclStmntPtr               ParseUniformBufferDeclStmnt(const TokenPtr& identTkn = nullptr);
+        BasicDeclStmtPtr                ParseFunctionDeclStmt(const TypeSpecifierPtr& returnType = nullptr, const TokenPtr& identTkn = nullptr);
+        StmtPtr                         ParseUniformDeclStmt();
+        BasicDeclStmtPtr                ParseUniformBufferDeclStmt(const TokenPtr& identTkn = nullptr);
         #if 0
-        BufferDeclStmntPtr              ParseBufferDeclStmnt(const BufferTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
-        SamplerDeclStmntPtr             ParseSamplerDeclStmnt(const SamplerTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
+        BufferDeclStmtPtr               ParseBufferDeclStmt(const BufferTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
+        SamplerDeclStmtPtr              ParseSamplerDeclStmt(const SamplerTypeDenoterPtr& typeDenoter = nullptr, const TokenPtr& identTkn = nullptr);
         #endif
-        VarDeclStmntPtr                 ParseVarDeclStmnt(bool isUniform = false, const TokenPtr& identTkn = nullptr);
+        VarDeclStmtPtr                  ParseVarDeclStmt(bool isUniform = false, const TokenPtr& identTkn = nullptr);
 
-        StmntPtr                        ParseStmnt();
-        StmntPtr                        ParseStmntWithStructDecl();
+        StmtPtr                         ParseStmt();
+        StmtPtr                         ParseStmtWithStructDecl();
         #if 0
-        StmntPtr                        ParseStmntWithIdent();
+        StmtPtr                         ParseStmtWithIdent();
         #endif
 
         ExprPtr                         ParsePrimaryExpr() override;
@@ -139,11 +137,11 @@ class GLSLParser : public SLParser
         CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
         CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
 
-        std::vector<StmntPtr>           ParseGlobalStmntList();
+        std::vector<StmtPtr>            ParseGlobalStmtList();
         std::vector<AttributePtr>       ParseAttributeList();
         #if 0
-        std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
-        std::vector<SamplerDeclPtr>     ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr);
+        std::vector<BufferDeclPtr>      ParseBufferDeclList(BufferDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr);
+        std::vector<SamplerDeclPtr>     ParseSamplerDeclList(SamplerDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr);
         #endif
 
         TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
@@ -165,7 +163,7 @@ class GLSLParser : public SLParser
 
         bool                            ParseModifiers(TypeSpecifier* typeSpecifier, bool allowPrimitiveType = false, const TokenPtr& inputTkn = nullptr);
 
-        /* === Members === */
+    private:
 
         using TypeNameSymbolTable = SymbolTable<bool>;
 

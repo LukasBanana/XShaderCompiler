@@ -123,59 +123,59 @@ void Converter::LabelAnonymousDecl(Decl* declObj)
 
 /* ----- Code injection ----- */
 
-void Converter::VisitScopedStmnt(StmntPtr& stmnt, void* args)
+void Converter::VisitScopedStmt(StmtPtr& stmt, void* args)
 {
-    VisitScopedStmntsFromHandler({ stmnt }, args);
+    VisitScopedStmtsFromHandler({ stmt }, args);
 }
 
-void Converter::VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* args)
+void Converter::VisitScopedStmtList(std::vector<StmtPtr>& stmtList, void* args)
 {
-    VisitScopedStmntsFromHandler({ stmntList }, args);
+    VisitScopedStmtsFromHandler({ stmtList }, args);
 }
 
-void Converter::InsertStmntBefore(const StmntPtr& stmnt, bool globalScope)
+void Converter::InsertStmtBefore(const StmtPtr& stmt, bool globalScope)
 {
     if (globalScope)
-        stmntScopeHandlerGlobalRef_->InsertStmntBefore(stmnt);
+        stmtScopeHandlerGlobalRef_->InsertStmtBefore(stmt);
     else
-        ActiveStmntScopeHandler().InsertStmntBefore(stmnt);
+        ActiveStmtScopeHandler().InsertStmtBefore(stmt);
 }
 
-void Converter::InsertStmntAfter(const StmntPtr& stmnt, bool globalScope)
+void Converter::InsertStmtAfter(const StmtPtr& stmt, bool globalScope)
 {
     if (globalScope)
-        stmntScopeHandlerGlobalRef_->InsertStmntAfter(stmnt);
+        stmtScopeHandlerGlobalRef_->InsertStmtAfter(stmt);
     else
-        ActiveStmntScopeHandler().InsertStmntAfter(stmnt);
+        ActiveStmtScopeHandler().InsertStmtAfter(stmt);
 }
 
-void Converter::MoveNestedStructDecls(std::vector<StmntPtr>& localStmnts, bool globalScope)
+void Converter::MoveNestedStructDecls(std::vector<StmtPtr>& localStmts, bool globalScope)
 {
-    for (auto it = localStmnts.begin(); it != localStmnts.end();)
+    for (auto it = localStmts.begin(); it != localStmts.end();)
     {
-        if (auto varDeclStmnt = (*it)->As<VarDeclStmnt>())
+        if (auto varDeclStmt = (*it)->As<VarDeclStmt>())
         {
             /* Does the variable declaration has a nested structure declaration? */
-            if (varDeclStmnt->typeSpecifier->structDecl != nullptr)
+            if (varDeclStmt->typeSpecifier->structDecl != nullptr)
             {
                 /* Make global structure declaration statement */
-                auto structDeclStmnt = ASTFactory::MakeStructDeclStmnt(
-                    ExchangeWithNull(varDeclStmnt->typeSpecifier->structDecl)
+                auto structDeclStmt = ASTFactory::MakeStructDeclStmt(
+                    ExchangeWithNull(varDeclStmt->typeSpecifier->structDecl)
                 );
 
                 /* Insert the new statement */
-                InsertStmntBefore(structDeclStmnt, globalScope);
+                InsertStmtBefore(structDeclStmt, globalScope);
             }
         }
-        else if (auto basicDeclStmnt = (*it)->As<BasicDeclStmnt>())
+        else if (auto basicDeclStmt = (*it)->As<BasicDeclStmt>())
         {
-            if (basicDeclStmnt->declObject->Type() == AST::Types::StructDecl)
+            if (basicDeclStmt->declObject->Type() == AST::Types::StructDecl)
             {
                 /* Move entire statement to the upper scope */
-                InsertStmntBefore(*it, globalScope);
+                InsertStmtBefore(*it, globalScope);
 
                 /* Remove statement from the list */
-                it = localStmnts.erase(it);
+                it = localStmts.erase(it);
 
                 continue;
             }
@@ -212,12 +212,12 @@ bool Converter::IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) con
     return false;
 }
 
-void Converter::RemoveDeadCode(std::vector<StmntPtr>& stmnts)
+void Converter::RemoveDeadCode(std::vector<StmtPtr>& stmts)
 {
-    for (auto it = stmnts.begin(); it != stmnts.end();)
+    for (auto it = stmts.begin(); it != stmts.end();)
     {
         if ((*it)->flags(AST::isDeadCode))
-            it = stmnts.erase(it);
+            it = stmts.erase(it);
         else
             ++it;
     }
@@ -234,118 +234,118 @@ std::string Converter::MakeTempVarIdent()
  * ======= Private: =======
  */
 
-void Converter::VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, void* args)
+void Converter::VisitScopedStmtsFromHandler(const StmtScopeHandler& handler, void* args)
 {
     /* Push scope handler onto stack */
-    stmntScopeHandlerStack_.push(handler);
+    stmtScopeHandlerStack_.push(handler);
 
-    if (!stmntScopeHandlerGlobalRef_)
-        stmntScopeHandlerGlobalRef_ = &(stmntScopeHandlerStack_.top());
+    if (!stmtScopeHandlerGlobalRef_)
+        stmtScopeHandlerGlobalRef_ = &(stmtScopeHandlerStack_.top());
 
     /* Use active scope handler */
-    auto& activeHandler = ActiveStmntScopeHandler();
+    auto& activeHandler = ActiveStmtScopeHandler();
 
     /* Visit all statements from the scope handler */
-    while (auto stmnt = activeHandler.Next())
-        Visit(stmnt, args);
+    while (auto stmt = activeHandler.Next())
+        Visit(stmt, args);
 
     /* Pop scope handler from stack */
-    stmntScopeHandlerStack_.pop();
+    stmtScopeHandlerStack_.pop();
 
-    if (stmntScopeHandlerStack_.empty())
-        stmntScopeHandlerGlobalRef_ = nullptr;
+    if (stmtScopeHandlerStack_.empty())
+        stmtScopeHandlerGlobalRef_ = nullptr;
 }
 
-Converter::StmntScopeHandler& Converter::ActiveStmntScopeHandler()
+Converter::StmtScopeHandler& Converter::ActiveStmtScopeHandler()
 {
-    if (stmntScopeHandlerStack_.empty())
-        throw std::underflow_error(R_NoActiveStmntScopeHandler);
+    if (stmtScopeHandlerStack_.empty())
+        throw std::underflow_error(R_NoActiveStmtScopeHandler);
     else
-        return stmntScopeHandlerStack_.top();
+        return stmtScopeHandlerStack_.top();
 }
 
 
 /*
- * StmntScopeHandler class
+ * StmtScopeHandler class
  */
 
-Converter::StmntScopeHandler::StmntScopeHandler(StmntPtr& stmnt) :
-    stmnt_ { &stmnt }
+Converter::StmtScopeHandler::StmtScopeHandler(StmtPtr& stmt) :
+    stmt_ { &stmt }
 {
 }
 
-Converter::StmntScopeHandler::StmntScopeHandler(std::vector<StmntPtr>& stmnts) :
-    stmntList_ { &stmnts }
+Converter::StmtScopeHandler::StmtScopeHandler(std::vector<StmtPtr>& stmts) :
+    stmtList_ { &stmts }
 {
 }
 
-Stmnt* Converter::StmntScopeHandler::Next()
+Stmt* Converter::StmtScopeHandler::Next()
 {
-    if (stmntList_)
+    if (stmtList_)
     {
-        if (idx_ < stmntList_->size())
+        if (idx_ < stmtList_->size())
         {
             /* Return statement from the list, and increase index */
-            return stmntList_->at(idx_++).get();
+            return stmtList_->at(idx_++).get();
         }
     }
-    else if (stmnt_)
+    else if (stmt_)
     {
         if (idx_ == 0)
         {
             /* Only return the single statement once */
             ++idx_;
-            return stmnt_->get();
+            return stmt_->get();
         }
     }
     return nullptr;
 }
 
-void Converter::StmntScopeHandler::InsertStmntBefore(const StmntPtr& stmnt)
+void Converter::StmtScopeHandler::InsertStmtBefore(const StmtPtr& stmt)
 {
-    EnsureStmntList();
+    EnsureStmtList();
 
     if (idx_ > 0)
-        InsertStmntAt(stmnt, idx_ - 1);
+        InsertStmtAt(stmt, idx_ - 1);
     else
-        InsertStmntAt(stmnt, idx_);
+        InsertStmtAt(stmt, idx_);
 
     ++idx_;
 }
 
-void Converter::StmntScopeHandler::InsertStmntAfter(const StmntPtr& stmnt)
+void Converter::StmtScopeHandler::InsertStmtAfter(const StmtPtr& stmt)
 {
-    EnsureStmntList();
-    InsertStmntAt(stmnt, idx_);
+    EnsureStmtList();
+    InsertStmtAt(stmt, idx_);
 }
 
-void Converter::StmntScopeHandler::EnsureStmntList()
+void Converter::StmtScopeHandler::EnsureStmtList()
 {
-    if (!stmntList_)
+    if (!stmtList_)
     {
-        if (!stmnt_)
-            throw std::runtime_error(R_MissingScopedStmntRef);
+        if (!stmt_)
+            throw std::runtime_error(R_MissingScopedStmtRef);
 
         /* Make new code block statement to replace the single statement with */
-        auto singleStmnt    = *stmnt_;
-        auto codeBlockStmnt = ASTFactory::MakeCodeBlockStmnt(singleStmnt);
+        auto singleStmt    = *stmt_;
+        auto codeBlockStmt = ASTFactory::MakeCodeBlockStmt(singleStmt);
 
         /* Set reference to statement list of the code block */
-        stmntList_ = &(codeBlockStmnt->codeBlock->stmnts);
+        stmtList_ = &(codeBlockStmt->codeBlock->stmts);
 
         /* Replace original single statement with code block statement */
-        *stmnt_ = codeBlockStmnt;
+        *stmt_ = codeBlockStmt;
     }
 }
 
-void Converter::StmntScopeHandler::InsertStmntAt(const StmntPtr& stmnt, std::size_t pos)
+void Converter::StmtScopeHandler::InsertStmtAt(const StmtPtr& stmt, std::size_t pos)
 {
-    if (stmntList_)
+    if (stmtList_)
     {
-        if (pos < stmntList_->size())
-            stmntList_->insert(stmntList_->begin() + pos, stmnt);
+        if (pos < stmtList_->size())
+            stmtList_->insert(stmtList_->begin() + pos, stmt);
         else
-            stmntList_->push_back(stmnt);
+            stmtList_->push_back(stmt);
     }
 }
 

@@ -217,69 +217,69 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     ConvertExpr(ast->iteration, AllPreVisit);
     {
-        VISIT_DEFAULT(ForLoopStmnt);
+        VISIT_DEFAULT(ForLoopStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
     ConvertExpr(ast->iteration, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     {
-        VISIT_DEFAULT(WhileLoopStmnt);
+        VISIT_DEFAULT(WhileLoopStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     {
-        VISIT_DEFAULT(DoWhileLoopStmnt);
+        VISIT_DEFAULT(DoWhileLoopStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     {
-        VISIT_DEFAULT(IfStmnt);
+        VISIT_DEFAULT(IfStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     ConvertExpr(ast->selector, AllPreVisit);
     {
-        VISIT_DEFAULT(SwitchStmnt);
+        VISIT_DEFAULT(SwitchStmt);
     }
     ConvertExpr(ast->selector, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     ConvertExpr(ast->expr, AllPreVisit);
     {
-        VISIT_DEFAULT(ExprStmnt);
+        VISIT_DEFAULT(ExprStmt);
     }
     ConvertExpr(ast->expr, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     if (ast->expr)
     {
         ConvertExpr(ast->expr, AllPreVisit);
         {
-            VISIT_DEFAULT(ReturnStmnt);
+            VISIT_DEFAULT(ReturnStmt);
         }
         ConvertExpr(ast->expr, AllPostVisit);
 

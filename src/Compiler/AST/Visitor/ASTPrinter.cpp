@@ -90,7 +90,7 @@ IMPLEMENT_VISIT_PROC(Program)
 {
     PushPrintable(ast, WriteLabel("Program"));
     {
-        VISIT_MEMBER(globalStmnts);
+        VISIT_MEMBER(globalStmts);
     }
     PopPrintable();
 }
@@ -99,7 +99,7 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     PushPrintable(ast, WriteLabel("CodeBlock"));
     {
-        VISIT_MEMBER(stmnts);
+        VISIT_MEMBER(stmts);
     }
     PopPrintable();
 }
@@ -119,7 +119,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     PushPrintable(ast, WriteLabel("SwitchCase"));
     {
         VISIT_MEMBER(expr);
-        VISIT_MEMBER(stmnts);
+        VISIT_MEMBER(stmts);
     }
     PopPrintable();
 }
@@ -219,7 +219,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     {
         ADD_PRINTABLE_MEMBER(ident);
         ADD_PRINTABLE_MEMBER(baseStructName);
-        VISIT_MEMBER(localStmnts);
+        VISIT_MEMBER(localStmts);
     }
     PopPrintable();
 }
@@ -255,16 +255,16 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         ADD_PRINTABLE_MEMBER(ident);
         Printable(ast, "bufferType", std::string(ast->bufferType == UniformBufferType::ConstantBuffer ? "cbuffer" : "tbuffer"));
         VISIT_MEMBER(slotRegisters);
-        VISIT_MEMBER(localStmnts);
+        VISIT_MEMBER(localStmts);
     }
     PopPrintable();
 }
 
 /* --- Declaration statements --- */
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
-    PushPrintable(ast, WriteLabel("BufferDeclStmnt"));
+    PushPrintable(ast, WriteLabel("BufferDeclStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(bufferDecls);
@@ -272,9 +272,9 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
-    PushPrintable(ast, WriteLabel("SamplerDeclStmnt"));
+    PushPrintable(ast, WriteLabel("SamplerDeclStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(samplerDecls);
@@ -282,9 +282,9 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
-    PushPrintable(ast, WriteLabel("VarDeclStmnt"));
+    PushPrintable(ast, WriteLabel("VarDeclStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(typeSpecifier);
@@ -293,11 +293,11 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     if (!ast->flags(AST::isBuiltin))
     {
-        PushPrintable(ast, WriteLabel("AliasDeclStmnt"));
+        PushPrintable(ast, WriteLabel("AliasDeclStmt"));
         {
             VISIT_MEMBER(attribs);
             VISIT_MEMBER(structDecl);
@@ -307,9 +307,9 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
-    PushPrintable(ast, WriteLabel("BasicDeclStmnt"));
+    PushPrintable(ast, WriteLabel("BasicDeclStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(declObject);
@@ -319,18 +319,18 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(NullStmnt)
+IMPLEMENT_VISIT_PROC(NullStmt)
 {
-    PushPrintable(ast, WriteLabel("NullStmnt"));
+    PushPrintable(ast, WriteLabel("NullStmt"));
     {
         VISIT_MEMBER(attribs);
     }
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
-    PushPrintable(ast, WriteLabel("CodeBlockStmnt"));
+    PushPrintable(ast, WriteLabel("CodeBlockStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(codeBlock);
@@ -338,56 +338,56 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
-    PushPrintable(ast, WriteLabel("ForLoopStmnt"));
+    PushPrintable(ast, WriteLabel("ForLoopStmt"));
     {
         VISIT_MEMBER(attribs);
-        VISIT_MEMBER(initStmnt);
+        VISIT_MEMBER(initStmt);
         VISIT_MEMBER(condition);
         VISIT_MEMBER(iteration);
-        VISIT_MEMBER(bodyStmnt);
+        VISIT_MEMBER(bodyStmt);
     }
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
-    PushPrintable(ast, WriteLabel("WhileLoopStmnt"));
+    PushPrintable(ast, WriteLabel("WhileLoopStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(condition);
-        VISIT_MEMBER(bodyStmnt);
+        VISIT_MEMBER(bodyStmt);
     }
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
-    PushPrintable(ast, WriteLabel("DoWhileLoopStmnt"));
+    PushPrintable(ast, WriteLabel("DoWhileLoopStmt"));
     {
         VISIT_MEMBER(attribs);
-        VISIT_MEMBER(bodyStmnt);
+        VISIT_MEMBER(bodyStmt);
         VISIT_MEMBER(condition);
     }
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
-    PushPrintable(ast, WriteLabel("IfStmnt"));
+    PushPrintable(ast, WriteLabel("IfStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(condition);
-        VISIT_MEMBER(bodyStmnt);
-        VISIT_MEMBER(elseStmnt);
+        VISIT_MEMBER(bodyStmt);
+        VISIT_MEMBER(elseStmt);
     }
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
-    PushPrintable(ast, WriteLabel("SwitchStmnt"));
+    PushPrintable(ast, WriteLabel("SwitchStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(selector);
@@ -396,9 +396,9 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
-    PushPrintable(ast, WriteLabel("ExprStmnt"));
+    PushPrintable(ast, WriteLabel("ExprStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(expr);
@@ -406,9 +406,9 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
-    PushPrintable(ast, WriteLabel("ReturnStmnt"));
+    PushPrintable(ast, WriteLabel("ReturnStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(expr);
@@ -416,9 +416,9 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
 {
-    PushPrintable(ast, WriteLabel("CtrlTransferStmnt"));
+    PushPrintable(ast, WriteLabel("CtrlTransferStmt"));
     {
         VISIT_MEMBER(attribs);
         Printable(ast, "transfer", CtrlTransformToString(ast->transfer));
@@ -426,9 +426,9 @@ IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(LayoutStmnt)
+IMPLEMENT_VISIT_PROC(LayoutStmt)
 {
-    PushPrintable(ast, WriteLabel("LayoutStmnt"));
+    PushPrintable(ast, WriteLabel("LayoutStmt"));
     {
         VISIT_MEMBER(attribs);
         Printable(ast, "isInput", (ast->isInput ? "true" : "false"));

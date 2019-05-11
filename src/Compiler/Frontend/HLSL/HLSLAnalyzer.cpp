@@ -96,25 +96,25 @@ bool HLSLAnalyzer::IsD3D9ShaderModel() const
 IMPLEMENT_VISIT_PROC(Program)
 {
     /* Analyze context of the entire program */
-    for (auto it = ast->globalStmnts.begin(); it != ast->globalStmnts.end(); ++it)
+    for (auto it = ast->globalStmts.begin(); it != ast->globalStmts.end(); ++it)
     {
-        auto stmnt = it->get();
+        auto stmt = it->get();
 
         /* Visit current global statement */
-        Visit(stmnt);
+        Visit(stmt);
 
-        if (auto uniformBufferDecl = stmnt->As<UniformBufferDecl>())
+        if (auto uniformBufferDecl = stmt->As<UniformBufferDecl>())
         {
             /* Move all non-variable-declaration statements from buffer declaration into global scope */
-            for (auto itSub = uniformBufferDecl->localStmnts.begin(); itSub != uniformBufferDecl->localStmnts.end();)
+            for (auto itSub = uniformBufferDecl->localStmts.begin(); itSub != uniformBufferDecl->localStmts.end();)
             {
-                auto subStmnt = itSub->get();
-                if (subStmnt->Type() != AST::Types::VarDeclStmnt)
+                auto subStmt = itSub->get();
+                if (subStmt->Type() != AST::Types::VarDeclStmt)
                 {
                     /* Move current sub statement from uniform buffer into global scope */
                     ++it;
-                    it = ast->globalStmnts.insert(it, *itSub);
-                    itSub = uniformBufferDecl->localStmnts.erase(itSub);
+                    it = ast->globalStmts.insert(it, *itSub);
+                    itSub = uniformBufferDecl->localStmts.erase(itSub);
                 }
                 else
                     ++itSub;
@@ -129,7 +129,7 @@ IMPLEMENT_VISIT_PROC(Program)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    Visit(ast->stmnts);
+    Visit(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(Attribute)
@@ -214,10 +214,10 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     /* Report warnings for member variables, that shadow a base member */
     if (WarnEnabled(Warnings::DeclarationShadowing) && ast->baseStructRef)
     {
-        for (const auto& varDeclStmnt : ast->varMembers)
+        for (const auto& varDeclStmt : ast->varMembers)
         {
             /* Remove all duplicate variables in current declaration statement */
-            for (const auto& varDecl : varDeclStmnt->varDecls)
+            for (const auto& varDecl : varDeclStmt->varDecls)
             {
                 /* Does the base structure has a variable with the same identifier? */
                 const StructDecl* varDeclOwner = nullptr;
@@ -242,7 +242,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 
         OpenScope();
         {
-            Visit(ast->localStmnts);
+            Visit(ast->localStmts);
         }
         CloseScope();
     }
@@ -286,13 +286,13 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     AnalyzeSemanticFunctionReturn(ast->semantic);
 
     /* Visit attributes */
-    Visit(ast->declStmntRef->attribs);
+    Visit(ast->declStmtRef->attribs);
 
     /* Visit function return type */
     Visit(ast->returnType);
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
-    AnalyzeExtAttributes(ast->declStmntRef->attribs, ast->returnType->typeDenoter->GetSub());
+    AnalyzeExtAttributes(ast->declStmtRef->attribs, ast->returnType->typeDenoter->GetSub());
     #endif // XSC_ENABLE_LANGUAGE_EXT
 
     /* Analyze parameter type denoters (required before function can be registered in symbol table) */
@@ -347,7 +347,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
     GetReportHandler().PopContextDesc();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     /* Analyze generic type */
     AnalyzeTypeDenoter(ast->typeDenoter->genericTypeDenoter, ast);
@@ -374,12 +374,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 
     PushUniformBufferDecl(ast);
     {
-        Visit(ast->localStmnts);
+        Visit(ast->localStmts);
     }
     PopUniformBufferDecl();
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
     /* Global variables are implicitly constant (or rather uniform) */
     if (InsideGlobalScope() && !InsideUniformBufferDecl())
@@ -444,7 +444,7 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
     /* Only visit declaration object (not attributes here) */
     Visit(ast->declObject);
@@ -452,7 +452,7 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
     Visit(ast->attribs);
     OpenScope();
@@ -462,9 +462,9 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
-    WarningOnNullStmnt(ast->bodyStmnt, "for loop");
+    WarningOnNullStmt(ast->bodyStmt, "for loop");
 
     Visit(ast->attribs);
 
@@ -475,7 +475,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
         Variable declarations inside a for-loop header, that conflict with previously defined variables, will result in a warning.
         */
         std::map<const AST*, std::string> astIdentPairs;
-        ast->initStmnt->CollectDeclIdents(astIdentPairs);
+        ast->initStmt->CollectDeclIdents(astIdentPairs);
 
         for (const auto& it : astIdentPairs)
         {
@@ -492,65 +492,65 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     OpenScope();
     {
-        Visit(ast->initStmnt);
+        Visit(ast->initStmt);
         AnalyzeConditionalExpression(ast->condition.get());
         Visit(ast->iteration);
 
         OpenScope();
         {
-            Visit(ast->bodyStmnt);
+            Visit(ast->bodyStmt);
         }
         CloseScope();
     }
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
-    WarningOnNullStmnt(ast->bodyStmnt, "while loop");
+    WarningOnNullStmt(ast->bodyStmt, "while loop");
 
     Visit(ast->attribs);
 
     OpenScope();
     {
         AnalyzeConditionalExpression(ast->condition.get());
-        Visit(ast->bodyStmnt);
+        Visit(ast->bodyStmt);
     }
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
-    WarningOnNullStmnt(ast->bodyStmnt, "do-while loop");
+    WarningOnNullStmt(ast->bodyStmt, "do-while loop");
 
     Visit(ast->attribs);
 
     OpenScope();
     {
-        Visit(ast->bodyStmnt);
+        Visit(ast->bodyStmt);
         AnalyzeConditionalExpression(ast->condition.get());
     }
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
-    WarningOnNullStmnt(ast->bodyStmnt, "if");
-    WarningOnNullStmnt(ast->elseStmnt, "else");
+    WarningOnNullStmt(ast->bodyStmt, "if");
+    WarningOnNullStmt(ast->elseStmt, "else");
 
     Visit(ast->attribs);
 
     OpenScope();
     {
         AnalyzeConditionalExpression(ast->condition.get());
-        Visit(ast->bodyStmnt);
+        Visit(ast->bodyStmt);
     }
     CloseScope();
 
-    Visit(ast->elseStmnt);
+    Visit(ast->elseStmt);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     Visit(ast->attribs);
 
@@ -562,7 +562,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     Visit(ast->expr);
 
@@ -577,7 +577,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     /* Check if return expression matches the function return type */
     TypeDenoterPtr returnTypeDen;
@@ -750,9 +750,9 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
         if (!varDecl->initializerValue.IsValid() && varDecl->IsParameter())
             Error(R_ExpectedConstExpr(R_DefaultArgOfFuncParam(varDecl->ident)), varDecl->initializer.get());
     }
-    else if (auto varDeclStmnt = varDecl->declStmntRef)
+    else if (auto varDeclStmt = varDecl->declStmtRef)
     {
-        if (registerVarIdent && !InsideGlobalScope() && varDeclStmnt->typeSpecifier->IsConst() && !varDeclStmnt->flags(VarDeclStmnt::isParameter))
+        if (registerVarIdent && !InsideGlobalScope() && varDeclStmt->typeSpecifier->IsConst() && !varDeclStmt->flags(VarDeclStmt::isParameter))
         {
             /* Local variables declared as constant must be initialized */
             Error(R_MissingInitializerForConstant(varDecl->ident), varDecl);
@@ -796,9 +796,9 @@ void HLSLAnalyzer::AnalyzeVarDeclStaticMember(VarDecl* varDecl)
                 else
                 {
                     /* Validate declaration type match (without array types from the VarDecl array indices) */
-                    if (auto declVarType = GetTypeDenoterFrom(memberVarDecl->declStmntRef->typeSpecifier.get()))
+                    if (auto declVarType = GetTypeDenoterFrom(memberVarDecl->declStmtRef->typeSpecifier.get()))
                     {
-                        if (auto defVarType = GetTypeDenoterFrom(varDecl->declStmntRef->typeSpecifier.get()))
+                        if (auto defVarType = GetTypeDenoterFrom(varDecl->declStmtRef->typeSpecifier.get()))
                         {
                             if (!declVarType->Equals(*defVarType))
                             {
@@ -1425,8 +1425,8 @@ void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast, VarDecl* param)
         else
         {
             ast = (ast != nullptr ? ast : expr);
-            if (param && param->declStmntRef)
-                Error(R_IllegalRValueAssignment(param->declStmntRef->ToString()), ast);
+            if (param && param->declStmtRef)
+                Error(R_IllegalRValueAssignment(param->declStmtRef->ToString()), ast);
             else
                 Error(R_IllegalRValueAssignment, ast);
         }
@@ -1454,19 +1454,19 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* as
                 if (!lhsTypeDen->Equals(*rhsTypeDen))
                 {
                     Error(
-                        R_IllegalLValueAssignmentToTypeCast(objectExpr->ident, param->declStmntRef->ToString()),
+                        R_IllegalLValueAssignmentToTypeCast(objectExpr->ident, param->declStmtRef->ToString()),
                         (ast != nullptr ? ast : objectExpr)
                     );
                 }
             }
 
-            if (varDecl->declStmntRef->IsConstOrUniform())
+            if (varDecl->declStmtRef->IsConstOrUniform())
             {
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
                 Error(
                     R_IllegalLValueAssignmentToConst(
                         objectExpr->ident,
-                        (varDecl->declStmntRef->flags(VarDeclStmnt::isImplicitConst) ? R_Implicitly : "")
+                        (varDecl->declStmtRef->flags(VarDeclStmt::isImplicitConst) ? R_Implicitly : "")
                     ),
                     (ast != nullptr ? ast : objectExpr)
                 );
@@ -1565,7 +1565,7 @@ void HLSLAnalyzer::AnalyzeEntryPoint(FunctionDecl* funcDecl)
         AnalyzeEntryPointInputOutput(funcDecl);
 
         /* Analyze entry point attributes (also possibly missing attributes such as "numthreads" for compute shaders) */
-        AnalyzeEntryPointAttributes(funcDecl->declStmntRef->attribs);
+        AnalyzeEntryPointAttributes(funcDecl->declStmtRef->attribs);
     }
 }
 
@@ -1619,7 +1619,7 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
             [&](VarDecl* varDecl)
             {
                 /* Ignore function parameters */
-                if (!varDecl->declStmntRef->flags(VarDeclStmnt::isParameter))
+                if (!varDecl->declStmtRef->flags(VarDeclStmt::isParameter))
                 {
                     /* Override semantic for non-parameters and increment semantic index */
                     varDecl->semantic = IndexedSemantic(funcDecl->semantic, semanticIndex);
@@ -1656,7 +1656,7 @@ void HLSLAnalyzer::AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl)
     }
 }
 
-void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param)
+void HLSLAnalyzer::AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmt* param)
 {
     auto varDecl = param->varDecls.front().get();
 
@@ -1709,7 +1709,7 @@ void HLSLAnalyzer::AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDe
         if (input)
         {
             /* Fetch geometry input primitive type */
-            const auto primitiveType = varDecl->declStmntRef->typeSpecifier->primitiveType;
+            const auto primitiveType = varDecl->declStmtRef->typeSpecifier->primitiveType;
             if (primitiveType != PrimitiveType::Undefined)
                 program_->layoutGeometry.inputPrimitive = primitiveType;
         }
@@ -2089,7 +2089,7 @@ void HLSLAnalyzer::AnalyzeSecondaryEntryPoint(FunctionDecl* funcDecl, bool isPat
         AnalyzeEntryPointInputOutput(funcDecl);
 
         /* Analyze secondary entry point attributes */
-        AnalyzeSecondaryEntryPointAttributes(funcDecl->declStmntRef->attribs);
+        AnalyzeSecondaryEntryPointAttributes(funcDecl->declStmtRef->attribs);
     }
 }
 
@@ -2580,7 +2580,7 @@ void HLSLAnalyzer::AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr
     }
 }
 
-void HLSLAnalyzer::AnalyzeParameter(VarDeclStmnt* param)
+void HLSLAnalyzer::AnalyzeParameter(VarDeclStmt* param)
 {
     /* Default visitor for parameter */
     Visit(param);

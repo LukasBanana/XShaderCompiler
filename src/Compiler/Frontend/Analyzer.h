@@ -61,7 +61,7 @@ class Analyzer : protected VisitorTracker
         void ErrorInternal(const std::string& msg, const AST* ast = nullptr);
 
         void Warning(const std::string& msg, const AST* ast = nullptr);
-        void WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName);
+        void WarningOnNullStmt(const StmtPtr& ast, const std::string& stmtTypeName);
 
         // Returns the report handler.
         inline ReportHandler& GetReportHandler()
@@ -162,8 +162,6 @@ class Analyzer : protected VisitorTracker
 
     private:
 
-        /* === Functions === */
-
         bool CollectArgumentTypeDenoters(const std::vector<ExprPtr>& args, std::vector<TypeDenoterPtr>& argTypeDens);
 
         // Tries to find a similar identifier in the following order: symbol table, structure (if enabled).
@@ -172,7 +170,7 @@ class Analyzer : protected VisitorTracker
         // Callback for the symbol table when a symbol is realsed from its scope.
         void OnReleaseSymbol(const ASTSymbolOverloadPtr& symbol);
 
-        /* === Members === */
+    private:
 
         ReportHandler           reportHandler_;
         SourceCode*             sourceCode_     = nullptr;

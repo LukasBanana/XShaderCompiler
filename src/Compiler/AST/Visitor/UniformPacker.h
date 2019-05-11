@@ -44,23 +44,21 @@ class UniformPacker
         };
 
         // Converts the program by moving all global uniform declarations into a single uniform buffer.
-        void Convert(Program& program, const CbufferAttributes& cbufferAttribs = {}, bool onlyReachableStmnts = true);
+        void Convert(Program& program, const CbufferAttributes& cbufferAttribs = {}, bool onlyReachableStmts = true);
 
     private:
 
-        /* === Functions === */
-
         void MakeUniformBuffer();
-        void AppendUniform(const VarDeclStmntPtr& varDeclStmnt);
+        void AppendUniform(const VarDeclStmtPtr& varDeclStmt);
 
         bool CanConvertUniformWithTypeDenoter(const TypeDenoter& typeDen) const;
 
-        /* === Members === */
+    private:
 
         CbufferAttributes       cbufferAttribs_;
 
         UniformBufferDeclPtr    uniformBufferDecl_;
-        BasicDeclStmntPtr       declStmnt_;
+        BasicDeclStmtPtr        declStmt_;
 
 };
 

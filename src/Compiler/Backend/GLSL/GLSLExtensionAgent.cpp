@@ -238,7 +238,7 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 {
     if (ast->flags(AST::isReachable))
     {
-        Visit(ast->declStmntRef->attribs);
+        Visit(ast->declStmtRef->attribs);
 
         VISIT_DEFAULT(FunctionDecl);
     }
@@ -264,7 +264,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     }
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     /* Check for explicit binding point */
     if (explicitBinding_)
@@ -280,10 +280,10 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     if (IsTextureMSBufferType(ast->typeDenoter->bufferType))
         AcquireExtension(E_GL_ARB_texture_multisample, R_MultiSampledTexture, ast);
 
-    VISIT_DEFAULT(BufferDeclStmnt);
+    VISIT_DEFAULT(BufferDeclStmt);
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
     /* Only visit declaration object (not attributes here) */
     Visit(ast->declObject);

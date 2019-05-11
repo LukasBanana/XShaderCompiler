@@ -90,19 +90,19 @@ class Converter : public VisitorTracker
         /* ----- Code injection ----- */
 
         // Visits the specified statements, and allows insertion of further statements (i.e. replace the single statement by a code block statement).
-        void VisitScopedStmnt(StmntPtr& stmnt, void* args = nullptr);
+        void VisitScopedStmt(StmtPtr& stmt, void* args = nullptr);
 
         // Visits the specified list of statements, and allows insertion of further statements.
-        void VisitScopedStmntList(std::vector<StmntPtr>& stmntList, void* args = nullptr);
+        void VisitScopedStmtList(std::vector<StmtPtr>& stmtList, void* args = nullptr);
 
         // Inserts the specified statement before the current statement.
-        void InsertStmntBefore(const StmntPtr& stmnt, bool globalScope = false);
+        void InsertStmtBefore(const StmtPtr& stmt, bool globalScope = false);
 
         // Inserts the specified statement after the current statement.
-        void InsertStmntAfter(const StmntPtr& stmnt, bool globalScope = false);
+        void InsertStmtAfter(const StmtPtr& stmt, bool globalScope = false);
 
         // Moves all structure declaration within the specified statement list into the respective upper scope.
-        void MoveNestedStructDecls(std::vector<StmntPtr>& localStmnts, bool globalScope = false);
+        void MoveNestedStructDecls(std::vector<StmtPtr>& localStmts, bool globalScope = false);
 
         /* ----- Misc ----- */
 
@@ -113,7 +113,7 @@ class Converter : public VisitorTracker
         bool IsSamplerStateTypeDenoter(const TypeDenoterPtr& typeDenoter) const;
 
         // Removes all statements that are marked as dead code.
-        void RemoveDeadCode(std::vector<StmntPtr>& stmnts);
+        void RemoveDeadCode(std::vector<StmtPtr>& stmts);
 
         // Returns an identifier for a new temporary variable.
         std::string MakeTempVarIdent();
@@ -133,38 +133,38 @@ class Converter : public VisitorTracker
     private:
 
         // Helper class to handle code injection during traversal.
-        class StmntScopeHandler
+        class StmtScopeHandler
         {
 
             public:
 
-                StmntScopeHandler(const StmntScopeHandler&) = default;
-                StmntScopeHandler& operator = (const StmntScopeHandler&) = default;
+                StmtScopeHandler(const StmtScopeHandler&) = default;
+                StmtScopeHandler& operator = (const StmtScopeHandler&) = default;
 
-                StmntScopeHandler(StmntPtr& stmnt);
-                StmntScopeHandler(std::vector<StmntPtr>& stmnts);
+                StmtScopeHandler(StmtPtr& stmt);
+                StmtScopeHandler(std::vector<StmtPtr>& stmts);
 
                 // Returns the next statement to visit, or null if there is no more statement.
-                Stmnt* Next();
+                Stmt* Next();
 
-                void InsertStmntBefore(const StmntPtr& stmnt);
-                void InsertStmntAfter(const StmntPtr& stmnt);
+                void InsertStmtBefore(const StmtPtr& stmt);
+                void InsertStmtAfter(const StmtPtr& stmt);
 
             private:
 
-                void EnsureStmntList();
+                void EnsureStmtList();
 
-                void InsertStmntAt(const StmntPtr& stmnt, std::size_t pos);
+                void InsertStmtAt(const StmtPtr& stmt, std::size_t pos);
 
-                StmntPtr*               stmnt_      = nullptr;
-                std::vector<StmntPtr>*  stmntList_  = nullptr;
+                StmtPtr*                stmt_       = nullptr;
+                std::vector<StmtPtr>*   stmtList_   = nullptr;
                 std::size_t             idx_        = 0;
 
         };
 
-        void VisitScopedStmntsFromHandler(const StmntScopeHandler& handler, void* args);
+        void VisitScopedStmtsFromHandler(const StmtScopeHandler& handler, void* args);
 
-        StmntScopeHandler& ActiveStmntScopeHandler();
+        StmtScopeHandler& ActiveStmtScopeHandler();
 
     private:
 
@@ -177,8 +177,8 @@ class Converter : public VisitorTracker
         // Stack with information of the current 'self' parameter of a member function.
         std::vector<VarDecl*>           selfParamStack_;
 
-        std::stack<StmntScopeHandler>   stmntScopeHandlerStack_;
-        StmntScopeHandler*              stmntScopeHandlerGlobalRef_ = nullptr;
+        std::stack<StmtScopeHandler>   stmtScopeHandlerStack_;
+        StmtScopeHandler*              stmtScopeHandlerGlobalRef_ = nullptr;
 
         unsigned int                    anonymCounter_              = 0;
         unsigned int                    obfuscationCounter_         = 0;

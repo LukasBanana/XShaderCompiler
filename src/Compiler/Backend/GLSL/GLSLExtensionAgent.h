@@ -55,8 +55,8 @@ class GLSLExtensionAgent : private Visitor
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( BasicDeclStmnt    );
+        DECL_VISIT_PROC( BufferDeclStmt    );
+        DECL_VISIT_PROC( BasicDeclStmt     );
 
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
@@ -64,7 +64,7 @@ class GLSLExtensionAgent : private Visitor
         DECL_VISIT_PROC( AssignExpr        );
         DECL_VISIT_PROC( InitializerExpr   );
 
-        /* === Members === */
+    private:
 
         ShaderTarget                        shaderTarget_       = ShaderTarget::Undefined;
 

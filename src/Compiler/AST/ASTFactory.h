@@ -50,17 +50,17 @@ LiteralExprPtr                  MakeLiteralExpr(const DataType literalType, cons
 // Makes a new LiteralExpr if the specified variant is either a boolean, integral, or real type. Otherwise, null is returned.
 LiteralExprPtr                  MakeLiteralExprOrNull(const Variant& literalValue);
 
-AliasDeclStmntPtr               MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
+AliasDeclStmtPtr                MakeBaseTypeAlias(const DataType dataType, const std::string& ident);
 
 TypeSpecifierPtr                MakeTypeSpecifier(const StructDeclPtr& structDecl);
 TypeSpecifierPtr                MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter);
 TypeSpecifierPtr                MakeTypeSpecifier(const DataType dataType);
 
-VarDeclStmntPtr                 MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer = nullptr);
-VarDeclStmntPtr                 MakeVarDeclStmnt(const DataType dataType, const std::string& ident, const ExprPtr& initializer = nullptr);
+VarDeclStmtPtr                  MakeVarDeclStmt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer = nullptr);
+VarDeclStmtPtr                  MakeVarDeclStmt(const DataType dataType, const std::string& ident, const ExprPtr& initializer = nullptr);
 
-// Returns a new VarDeclStmnt with the specified VarDecl index and removes the specified VarDecl from the input statement, except there is only one VarDecl.
-VarDeclStmntPtr                 MakeVarDeclStmntSplit(const VarDeclStmntPtr& varDeclStmnt, std::size_t idx);
+// Returns a new VarDeclStmt with the specified VarDecl index and removes the specified VarDecl from the input statement, except there is only one VarDecl.
+VarDeclStmtPtr                  MakeVarDeclStmtSplit(const VarDeclStmtPtr& varDeclStmt, std::size_t idx);
 
 ObjectExprPtr                   MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef = nullptr);
 ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
@@ -91,17 +91,17 @@ BracketExprPtr                  MakeBracketExpr(const ExprPtr& expr);
 ExprPtr                         MakeConstructorListExpr(const ExprPtr& expr, const std::vector<TypeDenoterPtr>& listTypeDens);
 
 // Makes an expression statement with an assignment expression.
-ExprStmntPtr                    MakeAssignStmnt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExpr, const AssignOp op = AssignOp::Set);
+ExprStmtPtr                     MakeAssignStmt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExpr, const AssignOp op = AssignOp::Set);
 
 // Makes an expression statement with an array element assignment for the specified variable, array indices, and assignment expression.
-ExprStmntPtr                    MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
+ExprStmtPtr                     MakeArrayAssignStmt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr);
 
 ArrayDimensionPtr               MakeArrayDimension(int arraySize);
 
 // Makes a code block statement with initial code block and the specified statement inserted.
-CodeBlockStmntPtr               MakeCodeBlockStmnt(const StmntPtr& stmnt);
+CodeBlockStmtPtr                MakeCodeBlockStmt(const StmtPtr& stmt);
 
-BasicDeclStmntPtr               MakeStructDeclStmnt(const StructDeclPtr& structDecl);
+BasicDeclStmtPtr                MakeStructDeclStmt(const StructDeclPtr& structDecl);
 
 // Makes a uniform buffer declaration with the specified identifier.
 UniformBufferDeclPtr            MakeUniformBufferDecl(

@@ -22,7 +22,7 @@ namespace Xsc
 
 bool VisitorTracker::InsideGlobalScope() const
 {
-    return (!InsideFunctionDecl() && !InsideStructDecl() && !InsideUniformBufferDecl() && !InsideVarDeclStmnt());
+    return (!InsideFunctionDecl() && !InsideStructDecl() && !InsideUniformBufferDecl() && !InsideVarDeclStmt());
 }
 
 /* ----- Function declaration tracker ----- */
@@ -165,52 +165,52 @@ bool VisitorTracker::InsideUniformBufferDecl() const
 
 /* ----- Variable declaration statement tracker ----- */
 
-void VisitorTracker::PushVarDeclStmnt(VarDeclStmnt* varDeclStmnt)
+void VisitorTracker::PushVarDeclStmt(VarDeclStmt* varDeclStmt)
 {
-    varDeclStmntStack_.push(varDeclStmnt);
+    varDeclStmtStack_.push(varDeclStmt);
 }
 
-void VisitorTracker::PopVarDeclStmnt()
+void VisitorTracker::PopVarDeclStmt()
 {
-    if (!varDeclStmntStack_.empty())
-        varDeclStmntStack_.pop();
+    if (!varDeclStmtStack_.empty())
+        varDeclStmtStack_.pop();
     else
-        throw std::underflow_error(R_VarDeclStmntStackUnderflow);
+        throw std::underflow_error(R_VarDeclStmtStackUnderflow);
 }
 
-bool VisitorTracker::InsideVarDeclStmnt() const
+bool VisitorTracker::InsideVarDeclStmt() const
 {
-    return (!varDeclStmntStack_.empty());
+    return (!varDeclStmtStack_.empty());
 }
 
-VarDeclStmnt* VisitorTracker::ActiveVarDeclStmnt() const
+VarDeclStmt* VisitorTracker::ActiveVarDeclStmt() const
 {
-    return (varDeclStmntStack_.empty() ? nullptr : varDeclStmntStack_.top());
+    return (varDeclStmtStack_.empty() ? nullptr : varDeclStmtStack_.top());
 }
 
 /* ----- Alias declaration statement tracker ----- */
 
-void VisitorTracker::PushAliasDeclStmnt(AliasDeclStmnt* aliasDeclStmnt)
+void VisitorTracker::PushAliasDeclStmt(AliasDeclStmt* aliasDeclStmt)
 {
-    aliasDeclStmntStack_.push(aliasDeclStmnt);
+    aliasDeclStmtStack_.push(aliasDeclStmt);
 }
 
-void VisitorTracker::PopAliasDeclStmnt()
+void VisitorTracker::PopAliasDeclStmt()
 {
-    if (!aliasDeclStmntStack_.empty())
-        aliasDeclStmntStack_.pop();
+    if (!aliasDeclStmtStack_.empty())
+        aliasDeclStmtStack_.pop();
     else
-        throw std::underflow_error(R_AliasDeclStmntStackUnderflow);
+        throw std::underflow_error(R_AliasDeclStmtStackUnderflow);
 }
 
-bool VisitorTracker::InsideAliasDeclStmnt() const
+bool VisitorTracker::InsideAliasDeclStmt() const
 {
-    return (!aliasDeclStmntStack_.empty());
+    return (!aliasDeclStmtStack_.empty());
 }
 
-AliasDeclStmnt* VisitorTracker::ActiveAliasDeclStmnt() const
+AliasDeclStmt* VisitorTracker::ActiveAliasDeclStmt() const
 {
-    return (aliasDeclStmntStack_.empty() ? nullptr : aliasDeclStmntStack_.top());
+    return (aliasDeclStmtStack_.empty() ? nullptr : aliasDeclStmtStack_.top());
 }
 
 

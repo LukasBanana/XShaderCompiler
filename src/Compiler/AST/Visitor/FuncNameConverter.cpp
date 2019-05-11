@@ -92,12 +92,12 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     // ignore sub nodes here
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     // ignore sub nodes here
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
     // ignore sub nodes here
 }

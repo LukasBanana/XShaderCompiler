@@ -144,15 +144,15 @@ LiteralExprPtr MakeLiteralExprOrNull(const Variant& literalValue)
     }
 }
 
-AliasDeclStmntPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
+AliasDeclStmtPtr MakeBaseTypeAlias(const DataType dataType, const std::string& ident)
 {
-    auto ast = MakeAST<AliasDeclStmnt>();
+    auto ast = MakeAST<AliasDeclStmt>();
     {
         auto aliasDecl = MakeAST<AliasDecl>();
         {
             aliasDecl->ident        = ident;
             aliasDecl->typeDenoter  = std::make_shared<BaseTypeDenoter>(dataType);
-            aliasDecl->declStmntRef = ast.get();
+            aliasDecl->declStmtRef = ast.get();
         }
         ast->aliasDecls.push_back(aliasDecl);
     }
@@ -184,9 +184,9 @@ TypeSpecifierPtr MakeTypeSpecifier(const DataType dataType)
     return MakeTypeSpecifier(std::make_shared<BaseTypeDenoter>(dataType));
 }
 
-VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer)
+VarDeclStmtPtr MakeVarDeclStmt(const TypeSpecifierPtr& typeSpecifier, const std::string& ident, const ExprPtr& initializer)
 {
-    auto ast = MakeAST<VarDeclStmnt>();
+    auto ast = MakeAST<VarDeclStmt>();
     {
         ast->typeSpecifier = typeSpecifier;
 
@@ -194,36 +194,36 @@ VarDeclStmntPtr MakeVarDeclStmnt(const TypeSpecifierPtr& typeSpecifier, const st
         {
             varDecl->ident          = ident;
             varDecl->initializer    = initializer;
-            varDecl->declStmntRef   = ast.get();
+            varDecl->declStmtRef   = ast.get();
         }
         ast->varDecls.push_back(varDecl);
     }
     return ast;
 }
 
-VarDeclStmntPtr MakeVarDeclStmnt(const DataType dataType, const std::string& ident, const ExprPtr& initializer)
+VarDeclStmtPtr MakeVarDeclStmt(const DataType dataType, const std::string& ident, const ExprPtr& initializer)
 {
-    return MakeVarDeclStmnt(MakeTypeSpecifier(dataType), ident, initializer);
+    return MakeVarDeclStmt(MakeTypeSpecifier(dataType), ident, initializer);
 }
 
-VarDeclStmntPtr MakeVarDeclStmntSplit(const VarDeclStmntPtr& varDeclStmnt, std::size_t idx)
+VarDeclStmtPtr MakeVarDeclStmtSplit(const VarDeclStmtPtr& varDeclStmt, std::size_t idx)
 {
-    if (varDeclStmnt->varDecls.size() >= 2 && idx < varDeclStmnt->varDecls.size())
+    if (varDeclStmt->varDecls.size() >= 2 && idx < varDeclStmt->varDecls.size())
     {
         /* Move VarDecl out of statement */
-        auto varDecl = varDeclStmnt->varDecls[idx];
-        varDeclStmnt->varDecls.erase(varDeclStmnt->varDecls.begin() + idx);
+        auto varDecl = varDeclStmt->varDecls[idx];
+        varDeclStmt->varDecls.erase(varDeclStmt->varDecls.begin() + idx);
 
         /* Create new statement */
-        auto ast = MakeAST<VarDeclStmnt>();
+        auto ast = MakeAST<VarDeclStmt>();
         {
-            ast->flags          = varDeclStmnt->flags;
-            ast->typeSpecifier  = varDeclStmnt->typeSpecifier;
+            ast->flags          = varDeclStmt->flags;
+            ast->typeSpecifier  = varDeclStmt->typeSpecifier;
             ast->varDecls.push_back(varDecl);
         }
         return ast;
     }
-    return varDeclStmnt;
+    return varDeclStmt;
 }
 
 ObjectExprPtr MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef)
@@ -383,9 +383,9 @@ ExprPtr MakeConstructorListExpr(const ExprPtr& expr, const std::vector<TypeDenot
 
 #endif
 
-ExprStmntPtr MakeAssignStmnt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExpr, const AssignOp op)
+ExprStmtPtr MakeAssignStmt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExpr, const AssignOp op)
 {
-    auto ast = MakeAST<ExprStmnt>();
+    auto ast = MakeAST<ExprStmt>();
     {
         auto assignExpr = MakeAST<AssignExpr>();
         {
@@ -398,9 +398,9 @@ ExprStmntPtr MakeAssignStmnt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExp
     return ast;
 }
 
-ExprStmntPtr MakeArrayAssignStmnt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
+ExprStmtPtr MakeArrayAssignStmt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
 {
-    return MakeAssignStmnt(MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices), assignExpr);
+    return MakeAssignStmt(MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices), assignExpr);
 }
 
 ArrayDimensionPtr MakeArrayDimension(int arraySize)
@@ -421,22 +421,22 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
     return ast;
 }
 
-CodeBlockStmntPtr MakeCodeBlockStmnt(const StmntPtr& stmnt)
+CodeBlockStmtPtr MakeCodeBlockStmt(const StmtPtr& stmt)
 {
-    auto ast = MakeASTWithOrigin<CodeBlockStmnt>(stmnt);
+    auto ast = MakeASTWithOrigin<CodeBlockStmt>(stmt);
     {
-        ast->codeBlock = MakeASTWithOrigin<CodeBlock>(stmnt);
-        ast->codeBlock->stmnts.push_back(stmnt);
+        ast->codeBlock = MakeASTWithOrigin<CodeBlock>(stmt);
+        ast->codeBlock->stmts.push_back(stmt);
     }
     return ast;
 }
 
-BasicDeclStmntPtr MakeStructDeclStmnt(const StructDeclPtr& structDecl)
+BasicDeclStmtPtr MakeStructDeclStmt(const StructDeclPtr& structDecl)
 {
-    auto ast = MakeAST<BasicDeclStmnt>();
+    auto ast = MakeAST<BasicDeclStmt>();
     {
         ast->declObject = structDecl;
-        structDecl->declStmntRef = ast.get();
+        structDecl->declStmtRef = ast.get();
     }
     return ast;
 }

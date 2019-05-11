@@ -41,7 +41,7 @@ class ReferenceAnalyzer : private VisitorTracker
         // Marks the specified AST node as reachable and returns false if the AST node has already been marked as reachable.
         bool Reachable(AST* ast);
 
-        void VisitStmntList(const std::vector<StmntPtr>& stmnts);
+        void VisitStmtList(const std::vector<StmtPtr>& stmts);
 
         void MarkLValueExpr(const Expr* expr);
         void MarkLValueExprObject(const ObjectExpr* objectExpr);
@@ -60,10 +60,10 @@ class ReferenceAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
 
-        DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( SamplerDeclStmnt  );
-        DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AliasDeclStmnt    );
+        DECL_VISIT_PROC( BufferDeclStmt    );
+        DECL_VISIT_PROC( SamplerDeclStmt   );
+        DECL_VISIT_PROC( VarDeclStmt       );
+        DECL_VISIT_PROC( AliasDeclStmt     );
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );

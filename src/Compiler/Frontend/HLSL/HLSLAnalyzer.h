@@ -37,15 +37,11 @@ class HLSLAnalyzer : public Analyzer
         using OnValidAttributeValueProc = std::function<bool(const AttributeValue)>;
         using OnAssignTypeDenoterProc   = std::function<void(const TypeDenoterPtr&)>;
 
-        /* === Structures === */
-
         struct PrefixArgs
         {
             bool        inIsPostfixStatic;
             StructDecl* outPrefixBaseStruct;
         };
-
-        /* === Functions === */
 
         void DecorateASTPrimary(
             Program&            program,
@@ -73,19 +69,19 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( AliasDecl         );
         DECL_VISIT_PROC( FunctionDecl      );
 
-        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( BufferDeclStmt   );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( BasicDeclStmnt    );
+        DECL_VISIT_PROC( VarDeclStmt      );
+        DECL_VISIT_PROC( BasicDeclStmt    );
 
-        DECL_VISIT_PROC( CodeBlockStmnt    );
-        DECL_VISIT_PROC( ForLoopStmnt      );
-        DECL_VISIT_PROC( WhileLoopStmnt    );
-        DECL_VISIT_PROC( DoWhileLoopStmnt  );
-        DECL_VISIT_PROC( IfStmnt           );
-        DECL_VISIT_PROC( SwitchStmnt       );
-        DECL_VISIT_PROC( ExprStmnt         );
-        DECL_VISIT_PROC( ReturnStmnt       );
+        DECL_VISIT_PROC( CodeBlockStmt    );
+        DECL_VISIT_PROC( ForLoopStmt      );
+        DECL_VISIT_PROC( WhileLoopStmt    );
+        DECL_VISIT_PROC( DoWhileLoopStmt  );
+        DECL_VISIT_PROC( IfStmt           );
+        DECL_VISIT_PROC( SwitchStmt       );
+        DECL_VISIT_PROC( ExprStmt         );
+        DECL_VISIT_PROC( ReturnStmt       );
 
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
@@ -133,7 +129,7 @@ class HLSLAnalyzer : public Analyzer
         void AnalyzeEntryPointInputOutput(FunctionDecl* funcDecl);
         //void AnalyzeEntryPointInputOutputGeometryShader(FunctionDecl* funcDecl);
 
-        void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmnt* param);
+        void AnalyzeEntryPointParameter(FunctionDecl* funcDecl, VarDeclStmt* param);
         void AnalyzeEntryPointParameterInOut(FunctionDecl* funcDecl, VarDecl* varDecl, bool input, TypeDenoterPtr varTypeDen = nullptr);
         void AnalyzeEntryPointParameterInOutVariable(FunctionDecl* funcDecl, VarDecl* varDecl, bool input);
         void AnalyzeEntryPointParameterInOutStruct(FunctionDecl* funcDecl, StructDecl* structDecl, bool input);
@@ -219,9 +215,9 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeArrayDimensionList(const std::vector<ArrayDimensionPtr>& arrayDims);
 
-        void AnalyzeParameter(VarDeclStmnt* param);
+        void AnalyzeParameter(VarDeclStmt* param);
 
-        /* === Members === */
+    private:
 
         Program*            program_                    = nullptr;
 

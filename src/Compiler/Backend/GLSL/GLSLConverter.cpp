@@ -33,7 +33,7 @@ static const char* g_stdNameDummy       = "dummy";
  * Internal structures
  */
 
-struct CodeBlockStmntArgs
+struct CodeBlockStmtArgs
 {
     bool disableNewScope;
 };
@@ -57,7 +57,7 @@ bool GLSLConverter::ConvertVarDeclType(VarDecl& varDecl)
 
 bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataType dataType)
 {
-    if (auto varDeclStmnt = varDecl.declStmntRef)
+    if (auto varDeclStmt = varDecl.declStmtRef)
     {
         if (auto varTypeDen = varDecl.GetTypeDenoter()->GetAliased().As<BaseTypeDenoter>())
         {
@@ -65,8 +65,8 @@ bool GLSLConverter::ConvertVarDeclBaseTypeDenoter(VarDecl& varDecl, const DataTy
             {
                 auto newVarTypeDen = std::make_shared<BaseTypeDenoter>(dataType);
 
-                varDeclStmnt->typeSpecifier->typeDenoter = newVarTypeDen;
-                varDeclStmnt->typeSpecifier->ResetTypeDenoter();
+                varDeclStmt->typeSpecifier->typeDenoter = newVarTypeDen;
+                varDeclStmt->typeSpecifier->ResetTypeDenoter();
 
                 /* Set custom type denoter for this variable */
                 varDecl.SetCustomTypeDenoter(newVarTypeDen);
@@ -163,16 +163,16 @@ IMPLEMENT_VISIT_PROC(Program)
     if (shaderTarget_ != ShaderTarget::FragmentShader && shaderTarget_ != ShaderTarget::ComputeShader)
         AddMissingInterpModifiers(entryPoint->outputSemantics.varDeclRefs);
 
-    VisitScopedStmntList(ast->globalStmnts);
+    VisitScopedStmtList(ast->globalStmts);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    RemoveDeadCode(ast->stmnts);
+    RemoveDeadCode(ast->stmts);
 
-    UnrollStmnts(ast->stmnts);
+    UnrollStmts(ast->stmts);
 
-    VisitScopedStmntList(ast->stmnts);
+    VisitScopedStmtList(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)
@@ -221,10 +221,10 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
-    RemoveDeadCode(ast->stmnts);
+    RemoveDeadCode(ast->stmts);
 
     Visit(ast->expr);
-    VisitScopedStmntList(ast->stmnts);
+    VisitScopedStmtList(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
@@ -300,34 +300,34 @@ IMPLEMENT_VISIT_PROC(StructDecl)
         /* Insert member of 'base' object */
         auto baseMemberTypeDen  = std::make_shared<StructTypeDenoter>(baseStruct);
         auto baseMemberType     = ASTFactory::MakeTypeSpecifier(baseMemberTypeDen);
-        auto baseMember         = ASTFactory::MakeVarDeclStmnt(baseMemberType, GetNameMangling().namespacePrefix + g_stdNameBaseMember);
+        auto baseMember         = ASTFactory::MakeVarDeclStmt(baseMemberType, GetNameMangling().namespacePrefix + g_stdNameBaseMember);
 
-        baseMember->flags << VarDeclStmnt::isBaseMember;
+        baseMember->flags << VarDeclStmt::isBaseMember;
         baseMember->varDecls.front()->structDeclRef = ast;
 
-        ast->localStmnts.insert(ast->localStmnts.begin(), baseMember);
+        ast->localStmts.insert(ast->localStmts.begin(), baseMember);
         ast->varMembers.insert(ast->varMembers.begin(), baseMember);
     }
 
     PushStructDecl(ast);
     OpenScope();
     {
-        VisitScopedStmntList(ast->localStmnts);
+        VisitScopedStmtList(ast->localStmts);
     }
     CloseScope();
     PopStructDecl();
 
     if (!UseSeparateSamplers())
-        RemoveSamplerStateVarDeclStmnts(ast->varMembers);
+        RemoveSamplerStateVarDeclStmts(ast->varMembers);
 
     /* Moved nested struct declarations out of the uniform buffer declaration */
-    MoveNestedStructDecls(ast->localStmnts, false);
+    MoveNestedStructDecls(ast->localStmts, false);
 
     /* Is this an empty structure? */
     if (ast->NumMemberVariables(true) == 0)
     {
         /* Add dummy member if the structure is empty (GLSL does not support empty structures) */
-        auto dummyMember = ASTFactory::MakeVarDeclStmnt(DataType::Int, GetNameMangling().temporaryPrefix + g_stdNameDummy);
+        auto dummyMember = ASTFactory::MakeVarDeclStmt(DataType::Int, GetNameMangling().temporaryPrefix + g_stdNameDummy);
         ast->varMembers.push_back(dummyMember);
     }
 }
@@ -350,15 +350,15 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     PushUniformBufferDecl(ast);
     {
         ConvertSlotRegisters(ast->slotRegisters);
-        VisitScopedStmntList(ast->localStmnts);
+        VisitScopedStmtList(ast->localStmts);
 
         /* Moved nested struct declarations out of the uniform buffer declaration */
-        MoveNestedStructDecls(ast->localStmnts, true);
+        MoveNestedStructDecls(ast->localStmts, true);
     }
     PopUniformBufferDecl();
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
     /* Push optional array dimensions at the front of all variable declarations */
     auto subTypeDen = ast->typeSpecifier->typeDenoter;
@@ -402,10 +402,10 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         ast->typeSpecifier->typeModifiers.erase(TypeModifier::Const);
     }
 
-    VISIT_DEFAULT(VarDeclStmnt);
+    VISIT_DEFAULT(VarDeclStmt);
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     /* Add name to structure declaration, if the structure is anonymous */
     if (ast->structDecl && ast->structDecl->ident.Empty() && !ast->aliasDecls.empty())
@@ -418,14 +418,14 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
             aliasDecl->typeDenoter->SetIdentIfAnonymous(ast->structDecl->ident);
     }
 
-    VISIT_DEFAULT(AliasDeclStmnt);
+    VISIT_DEFAULT(AliasDeclStmt);
 }
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
-    bool disableNewScope = (args != nullptr ? reinterpret_cast<CodeBlockStmntArgs*>(args)->disableNewScope : false);
+    bool disableNewScope = (args != nullptr ? reinterpret_cast<CodeBlockStmtArgs*>(args)->disableNewScope : false);
 
     if (!disableNewScope)
     {
@@ -439,26 +439,26 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
         Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
+    ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
 
     OpenScope();
     {
-        Visit(ast->initStmnt);
+        Visit(ast->initStmt);
         Visit(ast->condition);
         Visit(ast->iteration);
 
-        if (ast->bodyStmnt->Type() == AST::Types::CodeBlockStmnt)
+        if (ast->bodyStmt->Type() == AST::Types::CodeBlockStmt)
         {
             /* Do NOT open a new scope for the body code block in GLSL */
-            CodeBlockStmntArgs bodyStmntArgs;
-            bodyStmntArgs.disableNewScope = true;
-            VisitScopedStmnt(ast->bodyStmnt, &bodyStmntArgs);
+            CodeBlockStmtArgs bodyStmtArgs;
+            bodyStmtArgs.disableNewScope = true;
+            VisitScopedStmt(ast->bodyStmt, &bodyStmtArgs);
         }
         else
-            VisitScopedStmnt(ast->bodyStmnt);
+            VisitScopedStmt(ast->bodyStmt);
     }
     CloseScope();
 
@@ -466,15 +466,15 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
+    ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
 
     OpenScope();
     {
         Visit(ast->condition);
-        VisitScopedStmnt(ast->bodyStmnt);
+        VisitScopedStmt(ast->bodyStmt);
     }
     CloseScope();
 
@@ -482,14 +482,14 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
+    ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
 
     OpenScope();
     {
-        VisitScopedStmnt(ast->bodyStmnt);
+        VisitScopedStmt(ast->bodyStmt);
         Visit(ast->condition);
     }
     CloseScope();
@@ -498,17 +498,17 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
-    ConvertEntryPointReturnStmntToCodeBlock(ast->elseStmnt);
+    ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
+    ConvertEntryPointReturnStmtToCodeBlock(ast->elseStmt);
 
     OpenScope();
     {
         Visit(ast->condition);
-        VisitScopedStmnt(ast->bodyStmnt);
-        Visit(ast->elseStmnt);
+        VisitScopedStmt(ast->bodyStmt);
+        Visit(ast->elseStmt);
     }
     CloseScope();
 
@@ -516,18 +516,18 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     OpenScope();
     {
-        VISIT_DEFAULT(SwitchStmnt);
+        VISIT_DEFAULT(SwitchStmt);
     }
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
-    VISIT_DEFAULT(ReturnStmnt);
+    VISIT_DEFAULT(ReturnStmt);
 
     /* Check for cast expressions in entry-point return statements */
     if (InsideEntryPoint() && ast->expr != nullptr)
@@ -540,7 +540,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
                 if (auto structDecl = structTypeDen->structDeclRef)
                 {
                     /* Convert cast expression to assignment of structure members */
-                    ConvertEntryPointReturnStmnt(*ast, structDecl, typeDen, castExpr->expr);
+                    ConvertEntryPointReturnStmt(*ast, structDecl, typeDen, castExpr->expr);
                 }
             }
         }
@@ -575,12 +575,12 @@ IMPLEMENT_VISIT_PROC(CastExpr)
                 /* Generate temporary variable with call expression, and insert its declaration statement before the cast expression */
                 auto tempVarIdent           = MakeTempVarIdent();
                 auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
-                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
-                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                auto tempVarDeclStmt       = ASTFactory::MakeVarDeclStmt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
+                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmt->varDecls.front().get());
 
                 ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
 
-                InsertStmntBefore(tempVarDeclStmnt);
+                InsertStmtBefore(tempVarDeclStmt);
             }
             else
             {
@@ -678,15 +678,15 @@ bool GLSLConverter::MustRenameDeclIdent(const Decl* obj) const
     return false;
 }
 
-void GLSLConverter::RemoveSamplerStateVarDeclStmnts(std::vector<VarDeclStmntPtr>& stmnts)
+void GLSLConverter::RemoveSamplerStateVarDeclStmts(std::vector<VarDeclStmtPtr>& stmts)
 {
     /* Move all variables to disabled code which are sampler state objects, since GLSL does not support sampler states */
     MoveAllIf(
-        stmnts,
+        stmts,
         GetProgram()->disabledAST,
-        [&](const VarDeclStmntPtr& varDeclStmnt)
+        [&](const VarDeclStmtPtr& varDeclStmt)
         {
-            return IsSamplerStateTypeDenoter(varDeclStmnt->typeSpecifier->GetTypeDenoter());
+            return IsSamplerStateTypeDenoter(varDeclStmt->typeSpecifier->GetTypeDenoter());
         }
     );
 }
@@ -736,9 +736,9 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
             /* Insert parameter of 'self' object */
             auto selfParamTypeDen   = std::make_shared<StructTypeDenoter>(structDecl);
             auto selfParamType      = ASTFactory::MakeTypeSpecifier(selfParamTypeDen);
-            auto selfParam          = ASTFactory::MakeVarDeclStmnt(selfParamType, GetNameMangling().namespacePrefix + g_stdNameSelfParam);
+            auto selfParam          = ASTFactory::MakeVarDeclStmt(selfParamType, GetNameMangling().namespacePrefix + g_stdNameSelfParam);
 
-            selfParam->flags << VarDeclStmnt::isSelfParameter;
+            selfParam->flags << VarDeclStmt::isSelfParameter;
 
             ast->parameters.insert(ast->parameters.begin(), selfParam);
 
@@ -757,7 +757,7 @@ void GLSLConverter::ConvertFunctionDecl(FunctionDecl* ast)
         ConvertFunctionDeclDefault(ast);
 
     if (!UseSeparateSamplers())
-        RemoveSamplerStateVarDeclStmnts(ast->parameters);
+        RemoveSamplerStateVarDeclStmts(ast->parameters);
 
     if (selfParamVar)
         PopSelfParameter();
@@ -966,12 +966,12 @@ void GLSLConverter::ConvertIntrinsicCallTextureLOD(CallExpr* ast)
                 /* Generate temporary variable with second argument, and insert its declaration statement before the intrinsic call */
                 auto tempVarIdent           = MakeTempVarIdent();
                 auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
-                auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
-                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmnt->varDecls.front().get());
+                auto tempVarDeclStmt       = ASTFactory::MakeVarDeclStmt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmt->varDecls.front().get());
 
-                InsertStmntBefore(tempVarDeclStmnt);
+                InsertStmtBefore(tempVarDeclStmt);
 
-                subExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                subExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmt->varDecls.front().get());
             }
             else
                 subExpr = args[1];
@@ -1073,16 +1073,16 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
                     /* Break up the location argument into separate coordinate and LOD arguments */
                     auto tempVarIdent           = MakeTempVarIdent();
                     auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
-                    auto tempVarDeclStmnt       = ASTFactory::MakeVarDeclStmnt(tempVarTypeSpecifier, tempVarIdent, args[1]);
+                    auto tempVarDeclStmt       = ASTFactory::MakeVarDeclStmt(tempVarTypeSpecifier, tempVarIdent, args[1]);
 
                     /* Insert temporary varibale declaration before the current statement, and visit this AST node for conversion */
-                    InsertStmntBefore(tempVarDeclStmnt);
-                    Visit(tempVarDeclStmnt);
+                    InsertStmtBefore(tempVarDeclStmt);
+                    Visit(tempVarDeclStmt);
 
                     /* Make new argument expressions */
                     const std::string vectorSubscript = "xyzw";
 
-                    auto prefixExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmnt->varDecls.front().get());
+                    auto prefixExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmt->varDecls.front().get());
                     auto arg1Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(0, textureDim));
                     auto arg2Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(textureDim, 1));
 
@@ -1374,31 +1374,31 @@ void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr*
     }
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmnt(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor)
+void GLSLConverter::ConvertEntryPointReturnStmt(ReturnStmt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor)
 {
     if (typeConstructor)
     {
         if (auto sequenceExpr = typeConstructor->As<SequenceExpr>())
-            ConvertEntryPointReturnStmntSequenceExpr(ast, structDecl, typeDen, *sequenceExpr);
+            ConvertEntryPointReturnStmtSequenceExpr(ast, structDecl, typeDen, *sequenceExpr);
         else
-            ConvertEntryPointReturnStmntCommonExpr(ast, structDecl, typeDen, typeConstructor);
+            ConvertEntryPointReturnStmtCommonExpr(ast, structDecl, typeDen, typeConstructor);
     }
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmntSequenceExpr(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor)
+void GLSLConverter::ConvertEntryPointReturnStmtSequenceExpr(ReturnStmt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor)
 {
     /* Make variable declaration of structure type */
     auto varIdent       = MakeTempVarIdent();
-    auto varDeclStmnt   = ASTFactory::MakeVarDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDen), varIdent);
-    auto varDecl        = varDeclStmnt->varDecls.front().get();
+    auto varDeclStmt   = ASTFactory::MakeVarDeclStmt(ASTFactory::MakeTypeSpecifier(typeDen), varIdent);
+    auto varDecl        = varDeclStmt->varDecls.front().get();
 
     /* Mark variable as an entry-point local (will be removed in code generation) and entry-point output */
     varDecl->flags << (VarDecl::isEntryPointLocal | VarDecl::isEntryPointOutput);
 
-    InsertStmntBefore(varDeclStmnt);
+    InsertStmtBefore(varDeclStmt);
 
     /* Convert new statement */
-    Visit(varDeclStmnt);
+    Visit(varDeclStmt);
 
     /* Make member assignments */
     auto prefixExpr = ASTFactory::MakeObjectExpr(varDecl);
@@ -1411,15 +1411,15 @@ void GLSLConverter::ConvertEntryPointReturnStmntSequenceExpr(ReturnStmnt& ast, S
             if (idx < typeConstructor.exprs.size())
             {
                 /* Make assignment statement for structure member */
-                auto assignStmnt = ASTFactory::MakeAssignStmnt(
+                auto assignStmt = ASTFactory::MakeAssignStmt(
                     ASTFactory::MakeObjectExpr(prefixExpr, varDecl->ident.Original(), varDecl.get()),
                     typeConstructor.exprs[idx++]
                 );
 
-                InsertStmntBefore(assignStmnt);
+                InsertStmtBefore(assignStmt);
 
                 /* Convert new statement */
-                Visit(assignStmnt);
+                Visit(assignStmt);
             }
         }
     );
@@ -1435,25 +1435,25 @@ void GLSLConverter::ConvertEntryPointReturnStmntSequenceExpr(ReturnStmnt& ast, S
         entryPoint->paramStructs.push_back({ ast.expr.get(), varDecl, structDecl });
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmntCommonExpr(ReturnStmnt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor)
+void GLSLConverter::ConvertEntryPointReturnStmtCommonExpr(ReturnStmt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor)
 {
     /* Convert common expression into sequence expression to make use of the primary conversion function */
     SequenceExpr sequenceExpr(SourcePosition::ignore);
     {
         sequenceExpr.exprs.push_back(typeConstructor);
     }
-    ConvertEntryPointReturnStmntSequenceExpr(ast, structDecl, typeDen, sequenceExpr);
+    ConvertEntryPointReturnStmtSequenceExpr(ast, structDecl, typeDen, sequenceExpr);
 }
 
-void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
+void GLSLConverter::ConvertEntryPointReturnStmtToCodeBlock(StmtPtr& stmt)
 {
     /* Is this statement within the entry point? */
     if (InsideEntryPoint())
     {
-        if (stmnt && stmnt->Type() == AST::Types::ReturnStmnt)
+        if (stmt && stmt->Type() == AST::Types::ReturnStmt)
         {
             /* Convert statement into a code block statement */
-            stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);
+            stmt = ASTFactory::MakeCodeBlockStmt(stmt);
         }
     }
 }
@@ -1487,8 +1487,8 @@ void GLSLConverter::ConvertObjectExpr(ObjectExpr* objectExpr)
         Don't convert 'self'-parameter again!
         But 'base'-member can be converted again, for base member access like 'object.Base::member'.
         */
-        const auto varFlags = varDecl->declStmntRef->flags;
-        if (!varFlags(VarDeclStmnt::isSelfParameter))
+        const auto varFlags = varDecl->declStmtRef->flags;
+        if (!varFlags(VarDeclStmt::isSelfParameter))
         {
             if (varDecl->IsStatic())
                 ConvertObjectExprStaticVar(objectExpr);
@@ -1674,40 +1674,40 @@ void GLSLConverter::InsertBaseMemberPrefixes(ExprPtr& prefixExpr, const StructDe
 
 /* ----- Unrolling ----- */
 
-void GLSLConverter::UnrollStmnts(std::vector<StmntPtr>& stmnts)
+void GLSLConverter::UnrollStmts(std::vector<StmtPtr>& stmts)
 {
-    for (auto it = stmnts.begin(); it != stmnts.end();)
+    for (auto it = stmts.begin(); it != stmts.end();)
     {
-        std::vector<StmntPtr> unrolledStmnts;
+        std::vector<StmtPtr> unrolledStmts;
 
         auto ast = it->get();
-        if (auto varDeclStmnt = ast->As<VarDeclStmnt>())
+        if (auto varDeclStmt = ast->As<VarDeclStmt>())
         {
             if (options_.unrollArrayInitializers)
-                UnrollStmntsVarDecl(unrolledStmnts, varDeclStmnt);
+                UnrollStmtsVarDecl(unrolledStmts, varDeclStmt);
         }
 
         ++it;
 
-        if (!unrolledStmnts.empty())
+        if (!unrolledStmts.empty())
         {
-            it = stmnts.insert(it, unrolledStmnts.begin(), unrolledStmnts.end());
-            it += unrolledStmnts.size();
+            it = stmts.insert(it, unrolledStmts.begin(), unrolledStmts.end());
+            it += unrolledStmts.size();
         }
     }
 }
 
-void GLSLConverter::UnrollStmntsVarDecl(std::vector<StmntPtr>& unrolledStmnts, VarDeclStmnt* ast)
+void GLSLConverter::UnrollStmtsVarDecl(std::vector<StmtPtr>& unrolledStmts, VarDeclStmt* ast)
 {
     /* Unroll all array initializers */
     for (const auto& varDecl : ast->varDecls)
     {
         if (varDecl->initializer)
-            UnrollStmntsVarDeclInitializer(unrolledStmnts, varDecl.get());
+            UnrollStmtsVarDeclInitializer(unrolledStmts, varDecl.get());
     }
 }
 
-void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unrolledStmnts, VarDecl* varDecl)
+void GLSLConverter::UnrollStmtsVarDeclInitializer(std::vector<StmtPtr>& unrolledStmts, VarDecl* varDecl)
 {
     const auto& typeDen = varDecl->GetTypeDenoter()->GetAliased();
     if (auto arrayTypeDen = typeDen.As<ArrayTypeDenoter>())
@@ -1726,10 +1726,10 @@ void GLSLConverter::UnrollStmntsVarDeclInitializer(std::vector<StmntPtr>& unroll
                 auto subExpr = initExpr->FetchSubExpr(arrayIndices);
 
                 /* Make new statement for current array element assignment */
-                auto assignStmnt = ASTFactory::MakeArrayAssignStmnt(varDecl, arrayIndices, subExpr);
+                auto assignStmt = ASTFactory::MakeArrayAssignStmt(varDecl, arrayIndices, subExpr);
 
                 /* Append new statement to list */
-                unrolledStmnts.push_back(assignStmnt);
+                unrolledStmts.push_back(assignStmt);
             }
             while (initExpr->NextArrayIndices(arrayIndices));
 

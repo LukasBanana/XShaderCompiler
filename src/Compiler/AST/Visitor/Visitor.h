@@ -25,7 +25,7 @@ namespace Xsc
 
 DECL_PTR( AST               );
 DECL_PTR( TypedAST          );
-DECL_PTR( Stmnt             );
+DECL_PTR( Stmt              );
 DECL_PTR( Expr              );
 DECL_PTR( Decl              );
 
@@ -47,23 +47,23 @@ DECL_PTR( AliasDecl         );
 DECL_PTR( FunctionDecl      );
 DECL_PTR( UniformBufferDecl );
 
-DECL_PTR( BufferDeclStmnt   );
-DECL_PTR( SamplerDeclStmnt  );
-DECL_PTR( VarDeclStmnt      );
-DECL_PTR( AliasDeclStmnt    );
-DECL_PTR( BasicDeclStmnt    );
+DECL_PTR( BufferDeclStmt    );
+DECL_PTR( SamplerDeclStmt   );
+DECL_PTR( VarDeclStmt       );
+DECL_PTR( AliasDeclStmt     );
+DECL_PTR( BasicDeclStmt     );
 
-DECL_PTR( NullStmnt         );
-DECL_PTR( CodeBlockStmnt    );
-DECL_PTR( ForLoopStmnt      );
-DECL_PTR( WhileLoopStmnt    );
-DECL_PTR( DoWhileLoopStmnt  );
-DECL_PTR( IfStmnt           );
-DECL_PTR( SwitchStmnt       );
-DECL_PTR( ExprStmnt         );
-DECL_PTR( ReturnStmnt       );
-DECL_PTR( CtrlTransferStmnt );
-DECL_PTR( LayoutStmnt       );
+DECL_PTR( NullStmt          );
+DECL_PTR( CodeBlockStmt     );
+DECL_PTR( ForLoopStmt       );
+DECL_PTR( WhileLoopStmt     );
+DECL_PTR( DoWhileLoopStmt   );
+DECL_PTR( IfStmt            );
+DECL_PTR( SwitchStmt        );
+DECL_PTR( ExprStmt          );
+DECL_PTR( ReturnStmt        );
+DECL_PTR( CtrlTransferStmt  );
+DECL_PTR( LayoutStmt        );
 
 DECL_PTR( NullExpr          );
 DECL_PTR( SequenceExpr      );
@@ -119,23 +119,23 @@ class Visitor
         VISITOR_VISIT_PROC( FunctionDecl      );
         VISITOR_VISIT_PROC( UniformBufferDecl );
 
-        VISITOR_VISIT_PROC( BufferDeclStmnt   );
-        VISITOR_VISIT_PROC( SamplerDeclStmnt  );
-        VISITOR_VISIT_PROC( VarDeclStmnt      );
-        VISITOR_VISIT_PROC( AliasDeclStmnt    );
-        VISITOR_VISIT_PROC( BasicDeclStmnt    );
+        VISITOR_VISIT_PROC( BufferDeclStmt    );
+        VISITOR_VISIT_PROC( SamplerDeclStmt   );
+        VISITOR_VISIT_PROC( VarDeclStmt       );
+        VISITOR_VISIT_PROC( AliasDeclStmt     );
+        VISITOR_VISIT_PROC( BasicDeclStmt     );
 
-        VISITOR_VISIT_PROC( NullStmnt         );
-        VISITOR_VISIT_PROC( CodeBlockStmnt    );
-        VISITOR_VISIT_PROC( ForLoopStmnt      );
-        VISITOR_VISIT_PROC( WhileLoopStmnt    );
-        VISITOR_VISIT_PROC( DoWhileLoopStmnt  );
-        VISITOR_VISIT_PROC( IfStmnt           );
-        VISITOR_VISIT_PROC( SwitchStmnt       );
-        VISITOR_VISIT_PROC( ExprStmnt         );
-        VISITOR_VISIT_PROC( ReturnStmnt       );
-        VISITOR_VISIT_PROC( CtrlTransferStmnt );
-        VISITOR_VISIT_PROC( LayoutStmnt       );
+        VISITOR_VISIT_PROC( NullStmt          );
+        VISITOR_VISIT_PROC( CodeBlockStmt     );
+        VISITOR_VISIT_PROC( ForLoopStmt       );
+        VISITOR_VISIT_PROC( WhileLoopStmt     );
+        VISITOR_VISIT_PROC( DoWhileLoopStmt   );
+        VISITOR_VISIT_PROC( IfStmt            );
+        VISITOR_VISIT_PROC( SwitchStmt        );
+        VISITOR_VISIT_PROC( ExprStmt          );
+        VISITOR_VISIT_PROC( ReturnStmt        );
+        VISITOR_VISIT_PROC( CtrlTransferStmt  );
+        VISITOR_VISIT_PROC( LayoutStmt        );
 
         VISITOR_VISIT_PROC( NullExpr          );
         VISITOR_VISIT_PROC( SequenceExpr      );

@@ -60,7 +60,7 @@ class ReflectionAnalyzer : private Visitor
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( BufferDeclStmt    );
 
         DECL_VISIT_PROC( VarDecl           );
 
@@ -80,7 +80,7 @@ class ReflectionAnalyzer : private Visitor
         // Returns the index of the record that is associated with the specified structure declaration object, or -1 on failure.
         int FindRecordIndex(const StructDecl* structDecl) const;
 
-        /* === Members === */
+    private:
 
         ReportHandler                               reportHandler_;
 

@@ -58,7 +58,7 @@ class CodeWriter : public IndentHandler
         // Ends the current line and inserts the new-line character to the output stream.
         void EndLine();
 
-        // Writes the 
+        // Writes the specified text to the output.
         void Write(const std::string& text);
 
         // Shortcut for: BeginLine(), Write(text), EndLine().
@@ -79,14 +79,12 @@ class CodeWriter : public IndentHandler
             return openLine_;
         }
 
-        /* === Members === */
+    public:
 
         // Write new line for each scope.
         bool newLineOpenScope = false;
 
     private:
-
-        /* === Structures === */
 
         struct SeparatedLine
         {
@@ -122,7 +120,7 @@ class CodeWriter : public IndentHandler
             bool useBraces;
         };
 
-        /* === Functions === */
+    private:
 
         Options CurrentOptions() const;
 
@@ -134,7 +132,7 @@ class CodeWriter : public IndentHandler
             return (*stream_);
         }
 
-        /* === Members === */
+    private:
 
         std::ostream*               stream_                 = nullptr;
 

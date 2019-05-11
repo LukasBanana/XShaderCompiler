@@ -36,7 +36,7 @@ class ControlPathAnalyzer : private Visitor
         void PushReturnPath(bool returnPath);
         bool PopReturnPath();
 
-        void VisitStmntList(const std::vector<StmntPtr>& stmnts);
+        void VisitStmtList(const std::vector<StmtPtr>& stmts);
 
         /* ----- Visitor implementation ----- */
 
@@ -45,24 +45,24 @@ class ControlPathAnalyzer : private Visitor
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
 
-        DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( SamplerDeclStmnt  );
-        DECL_VISIT_PROC( VarDeclStmnt      );
-        DECL_VISIT_PROC( AliasDeclStmnt    );
-        DECL_VISIT_PROC( BasicDeclStmnt    );
+        DECL_VISIT_PROC( BufferDeclStmt    );
+        DECL_VISIT_PROC( SamplerDeclStmt   );
+        DECL_VISIT_PROC( VarDeclStmt       );
+        DECL_VISIT_PROC( AliasDeclStmt     );
+        DECL_VISIT_PROC( BasicDeclStmt     );
 
-        DECL_VISIT_PROC( NullStmnt         );
-        DECL_VISIT_PROC( CodeBlockStmnt    );
-        DECL_VISIT_PROC( ForLoopStmnt      );
-        DECL_VISIT_PROC( WhileLoopStmnt    );
-        DECL_VISIT_PROC( DoWhileLoopStmnt  );
-        DECL_VISIT_PROC( IfStmnt           );
-        DECL_VISIT_PROC( SwitchStmnt       );
-        DECL_VISIT_PROC( ExprStmnt         );
-        DECL_VISIT_PROC( ReturnStmnt       );
-        DECL_VISIT_PROC( CtrlTransferStmnt );
+        DECL_VISIT_PROC( NullStmt          );
+        DECL_VISIT_PROC( CodeBlockStmt     );
+        DECL_VISIT_PROC( ForLoopStmt       );
+        DECL_VISIT_PROC( WhileLoopStmt     );
+        DECL_VISIT_PROC( DoWhileLoopStmt   );
+        DECL_VISIT_PROC( IfStmt            );
+        DECL_VISIT_PROC( SwitchStmt        );
+        DECL_VISIT_PROC( ExprStmt          );
+        DECL_VISIT_PROC( ReturnStmt        );
+        DECL_VISIT_PROC( CtrlTransferStmt   );
 
-        /* === Members === */
+    private:
 
         std::stack<bool> returnPathStack_;
 

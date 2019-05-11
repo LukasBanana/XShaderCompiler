@@ -20,12 +20,12 @@ namespace Xsc
 
 IMPLEMENT_VISIT_PROC(Program)
 {
-    Visit(ast->globalStmnts);
+    Visit(ast->globalStmts);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    Visit(ast->stmnts);
+    Visit(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(Attribute)
@@ -36,7 +36,7 @@ IMPLEMENT_VISIT_PROC(Attribute)
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
-    Visit(ast->stmnts);
+    Visit(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(SamplerValue)
@@ -92,7 +92,7 @@ IMPLEMENT_VISIT_PROC(SamplerDecl)
 
 IMPLEMENT_VISIT_PROC(StructDecl)
 {
-    Visit(ast->localStmnts);
+    Visit(ast->localStmts);
 }
 
 IMPLEMENT_VISIT_PROC(AliasDecl)
@@ -111,38 +111,38 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 IMPLEMENT_VISIT_PROC(UniformBufferDecl)
 {
     Visit(ast->slotRegisters);
-    Visit(ast->localStmnts);
+    Visit(ast->localStmts);
 }
 
 /* --- Declaration statements --- */
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     Visit(ast->attribs);
     Visit(ast->bufferDecls);
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
     Visit(ast->attribs);
     Visit(ast->samplerDecls);
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
     Visit(ast->attribs);
     Visit(ast->typeSpecifier);
     Visit(ast->varDecls);
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     Visit(ast->attribs);
     Visit(ast->structDecl);
     Visit(ast->aliasDecls);
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
     Visit(ast->attribs);
     Visit(ast->declObject);
@@ -150,73 +150,73 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(NullStmnt)
+IMPLEMENT_VISIT_PROC(NullStmt)
 {
     Visit(ast->attribs);
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
     Visit(ast->attribs);
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
     Visit(ast->attribs);
-    Visit(ast->initStmnt);
+    Visit(ast->initStmt);
     Visit(ast->condition);
     Visit(ast->iteration);
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     Visit(ast->attribs);
     Visit(ast->condition);
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     Visit(ast->attribs);
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
     Visit(ast->condition);
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
     Visit(ast->attribs);
     Visit(ast->condition);
-    Visit(ast->bodyStmnt);
-    Visit(ast->elseStmnt);
+    Visit(ast->bodyStmt);
+    Visit(ast->elseStmt);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     Visit(ast->attribs);
     Visit(ast->selector);
     Visit(ast->cases);
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     Visit(ast->attribs);
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     Visit(ast->attribs);
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
 {
     Visit(ast->attribs);
 }
 
-IMPLEMENT_VISIT_PROC(LayoutStmnt)
+IMPLEMENT_VISIT_PROC(LayoutStmt)
 {
     Visit(ast->attribs);
 }

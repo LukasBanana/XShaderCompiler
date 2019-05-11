@@ -25,13 +25,13 @@ void Optimizer::Optimize(Program& program)
  * ======= Private: =======
  */
 
-void Optimizer::OptimizeStmntList(std::vector<StmntPtr>& stmnts)
+void Optimizer::OptimizeStmtList(std::vector<StmtPtr>& stmts)
 {
     /* Remove null statements */
-    for (auto it = stmnts.begin(); it != stmnts.end();)
+    for (auto it = stmts.begin(); it != stmts.end();)
     {
-        if (CanRemoveStmnt(**it))
-            it = stmnts.erase(it);
+        if (CanRemoveStmt(**it))
+            it = stmts.erase(it);
         else
             ++it;
     }
@@ -52,17 +52,17 @@ void Optimizer::OptimizeExpr(ExprPtr& expr)
     }
 }
 
-bool Optimizer::CanRemoveStmnt(const Stmnt& ast) const
+bool Optimizer::CanRemoveStmt(const Stmt& ast) const
 {
     /* Remove if node is null-statement */
-    if (ast.Type() == AST::Types::NullStmnt)
+    if (ast.Type() == AST::Types::NullStmt)
         return true;
 
     /* Remove if node is empty code block statement */
-    if (ast.Type() == AST::Types::CodeBlockStmnt)
+    if (ast.Type() == AST::Types::CodeBlockStmt)
     {
-        auto& codeBlockStmnt = static_cast<const CodeBlockStmnt&>(ast);
-        if (codeBlockStmnt.codeBlock->stmnts.empty())
+        auto& codeBlockStmt = static_cast<const CodeBlockStmt&>(ast);
+        if (codeBlockStmt.codeBlock->stmts.empty())
             return true;
     }
 
@@ -77,13 +77,13 @@ bool Optimizer::CanRemoveStmnt(const Stmnt& ast) const
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    OptimizeStmntList(ast->stmnts);
+    OptimizeStmtList(ast->stmts);
     VISIT_DEFAULT(CodeBlock);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
-    OptimizeStmntList(ast->stmnts);
+    OptimizeStmtList(ast->stmts);
     VISIT_DEFAULT(SwitchCase);
 }
 
@@ -97,45 +97,45 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     OptimizeExpr(ast->initializer);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
-    Visit(ast->initStmnt);
+    Visit(ast->initStmt);
     OptimizeExpr(ast->condition);
     OptimizeExpr(ast->iteration);
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     OptimizeExpr(ast->condition);
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     OptimizeExpr(ast->condition);
-    Visit(ast->bodyStmnt);
+    Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
     OptimizeExpr(ast->condition);
-    Visit(ast->bodyStmnt);
-    Visit(ast->elseStmnt);
+    Visit(ast->bodyStmt);
+    Visit(ast->elseStmt);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     OptimizeExpr(ast->selector);
     Visit(ast->cases);
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     OptimizeExpr(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     OptimizeExpr(ast->expr);
 }

@@ -48,8 +48,6 @@ class ExprEvaluator : private Visitor
 
     private:
 
-        /* === Functions === */
-
         void Push(const Variant& v);
         Variant Pop();
 
@@ -76,7 +74,7 @@ class ExprEvaluator : private Visitor
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );
 
-        /* === Members === */
+    private:
 
         std::stack<Variant>     variantStack_;
 

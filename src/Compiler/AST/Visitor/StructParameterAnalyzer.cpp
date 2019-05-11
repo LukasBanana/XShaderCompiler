@@ -48,23 +48,23 @@ bool StructParameterAnalyzer::NotVisited(const AST* ast)
     return false;
 }
 
-void StructParameterAnalyzer::VisitStmntList(const std::vector<StmntPtr>& stmnts)
+void StructParameterAnalyzer::VisitStmtList(const std::vector<StmtPtr>& stmts)
 {
-    for (auto& stmnt : stmnts)
+    for (auto& stmt : stmts)
     {
-        if (!stmnt->flags(AST::isDeadCode))
-            Visit(stmnt);
+        if (!stmt->flags(AST::isDeadCode))
+            Visit(stmt);
     }
 }
 
-bool StructParameterAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmnt* var) const
+bool StructParameterAnalyzer::IsVariableAnEntryPointParameter(VarDeclStmt* var) const
 {
     /* Is the variable a parameter of the entry point? */
     const auto& entryPointParams = entryPoint_->parameters;
 
     auto entryPointIt = std::find_if(
         entryPointParams.begin(), entryPointParams.end(),
-        [var](const VarDeclStmntPtr& param)
+        [var](const VarDeclStmtPtr& param)
         {
             return (param.get() == var);
         }
@@ -88,13 +88,13 @@ bool StructParameterAnalyzer::IsActiveFunctionDeclEntryPoint() const
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    VisitStmntList(ast->stmnts);
+    VisitStmtList(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(SwitchCase)
 {
     Visit(ast->expr);
-    VisitStmntList(ast->stmnts);
+    VisitStmtList(ast->stmts);
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifier)
@@ -134,16 +134,16 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             /* Is a variable declaration NOT used as entry point return value? */
             if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || shaderTarget_ == ShaderTarget::GeometryShader)
             {
-                auto declStmnt = ast->declStmntRef;
+                auto declStmt = ast->declStmtRef;
 
                 /* Has this variable declaration statement a struct type? */
-                if (auto structDecl = declStmnt->typeSpecifier->GetStructDeclRef())
+                if (auto structDecl = declStmt->typeSpecifier->GetStructDeclRef())
                 {
                     /* Is the structure used for more than one instance? */
                     if (!IsActiveFunctionDeclEntryPoint() || !IsVarEntryPointIO(ast) || structDecl->HasMultipleShaderOutputInstances())
                     {
                         /* Is this variable NOT a parameter of the entry point? */
-                        if (!IsVariableAnEntryPointParameter(declStmnt))
+                        if (!IsVariableAnEntryPointParameter(declStmt))
                         {
                             /* Mark structure to be used as non-entry-point-parameter */
                             structDecl->AddFlagsRecursiveParents(StructDecl::isNonEntryPointParam);
@@ -153,7 +153,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
             }
         }
 
-        Visit(ast->declStmntRef);
+        Visit(ast->declStmtRef);
         Visit(ast->bufferDeclRef);
 
         VISIT_DEFAULT(VarDecl);
@@ -179,7 +179,7 @@ IMPLEMENT_VISIT_PROC(StructDecl)
 IMPLEMENT_VISIT_PROC(BufferDecl)
 {
     if (NotVisited(ast))
-        Visit(ast->declStmntRef);
+        Visit(ast->declStmtRef);
 }
 
 /* --- Declaration statements --- */
@@ -217,7 +217,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
         VISIT_DEFAULT(UniformBufferDecl);
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     if (NotVisited(ast))
     {
@@ -230,7 +230,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
             }
         }
 
-        VISIT_DEFAULT(BufferDeclStmnt);
+        VISIT_DEFAULT(BufferDeclStmt);
     }
 }
 

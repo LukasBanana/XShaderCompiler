@@ -61,12 +61,12 @@ class FuncNameConverter : public VisitorTracker
         /* ----- Visitor implementation ----- */
 
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
-        DECL_VISIT_PROC( SamplerDeclStmnt  );
+        DECL_VISIT_PROC( BufferDeclStmt    );
+        DECL_VISIT_PROC( SamplerDeclStmt   );
 
         DECL_VISIT_PROC( FunctionDecl      );
 
-        /* === Members === */
+    private:
 
         NameMangling                    nameMangling_;
         OnFuncSigantureCompare          onFuncSignatureCompare_;

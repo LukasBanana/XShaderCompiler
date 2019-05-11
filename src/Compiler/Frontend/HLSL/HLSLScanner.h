@@ -28,7 +28,7 @@ class HLSLScanner : public SLScanner
 
         TokenPtr ScanIdentifierOrKeyword(std::string&& spell) override;
 
-        /* === Members === */
+    private:
 
         bool enableCgKeywords_ = false;
 

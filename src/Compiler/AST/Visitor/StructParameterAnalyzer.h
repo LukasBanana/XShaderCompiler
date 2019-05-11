@@ -39,10 +39,10 @@ class StructParameterAnalyzer : private VisitorTracker
         // Returns true if the specified AST has not yet been visited.
         bool NotVisited(const AST* ast);
 
-        void VisitStmntList(const std::vector<StmntPtr>& stmnts);
+        void VisitStmtList(const std::vector<StmtPtr>& stmts);
 
         // Returns true if the specified variable is a paramter of the entry point.
-        bool IsVariableAnEntryPointParameter(VarDeclStmnt* var) const;
+        bool IsVariableAnEntryPointParameter(VarDeclStmt* var) const;
 
         // Returns true if the active function declaration is the main entry point.
         bool IsActiveFunctionDeclEntryPoint() const;
@@ -59,7 +59,7 @@ class StructParameterAnalyzer : private VisitorTracker
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( BufferDeclStmnt   );
+        DECL_VISIT_PROC( BufferDeclStmt    );
 
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( ObjectExpr        );

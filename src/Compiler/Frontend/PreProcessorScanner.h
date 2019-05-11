@@ -28,8 +28,6 @@ class PreProcessorScanner : public Scanner
 
     private:
 
-        /* === Functions === */
-
         TokenPtr ScanToken() override;
 
         TokenPtr ScanDirectiveOrDirectiveConcat();

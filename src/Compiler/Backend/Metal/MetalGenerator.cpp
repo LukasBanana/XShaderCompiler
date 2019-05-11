@@ -33,7 +33,7 @@ namespace Xsc
  * Internal structures
  */
 
-struct IfStmntArgs
+struct IfStmtArgs
 {
     bool inHasElseParentNode;
 };
@@ -133,14 +133,14 @@ IMPLEMENT_VISIT_PROC(Program)
     WriteProgramHeader();
 
     /* Write global program statements */
-    WriteStmntList(ast->globalStmnts, true);
+    WriteStmtList(ast->globalStmts, true);
 }
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
     WriteScopeOpen();
     {
-        WriteStmntList(ast->stmnts);
+        WriteStmtList(ast->stmts);
     }
     WriteScopeClose();
 }
@@ -164,7 +164,7 @@ IMPLEMENT_VISIT_PROC(SwitchCase)
     /* Write statement list */
     IncIndent();
     {
-        Visit(ast->stmnts);
+        Visit(ast->stmts);
     }
     DecIndent();
 }
@@ -202,7 +202,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     {
         if (ast->semantic.IsSystemValue())
             WriteSemantic(ast->semantic, ast);
-        WriteInterpModifiers(ast->declStmntRef->typeSpecifier->interpModifiers, ast);
+        WriteInterpModifiers(ast->declStmtRef->typeSpecifier->interpModifiers, ast);
     }
     WriteAttribEnd();
 
@@ -267,7 +267,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     {
         PushUniformBufferDecl(ast);
         {
-            WriteStmntList(ast->varMembers);
+            WriteStmtList(ast->varMembers);
         }
         PopUniformBufferDecl();
     }
@@ -277,7 +277,7 @@ IMPLEMENT_VISIT_PROC(UniformBufferDecl)
     Blank();
 }
 
-IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
+IMPLEMENT_VISIT_PROC(BufferDeclStmt)
 {
     if (!InsideGlobalScope())
     {
@@ -285,7 +285,7 @@ IMPLEMENT_VISIT_PROC(BufferDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
+IMPLEMENT_VISIT_PROC(SamplerDeclStmt)
 {
     if (!InsideGlobalScope())
     {
@@ -293,9 +293,9 @@ IMPLEMENT_VISIT_PROC(SamplerDeclStmnt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(VarDeclStmnt)
+IMPLEMENT_VISIT_PROC(VarDeclStmt)
 {
-    PushVarDeclStmnt(ast);
+    PushVarDeclStmt(ast);
     {
         BeginLn();
 
@@ -333,13 +333,13 @@ IMPLEMENT_VISIT_PROC(VarDeclStmnt)
         Write(";");
         EndLn();
     }
-    PopVarDeclStmnt();
+    PopVarDeclStmt();
 
     if (InsideGlobalScope())
         Blank();
 }
 
-IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
+IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 {
     /* Ignore builtin typedefs (e.g. "WORD" or "FLOAT") that are not referenced */
     if (ast->flags(AST::isBuiltin) && !ast->flags(AST::isReachable))
@@ -350,11 +350,11 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
 
     if (ast->structDecl)
     {
-        PushAliasDeclStmnt(ast);
+        PushAliasDeclStmt(ast);
         {
             Visit(ast->structDecl);
         }
-        PopAliasDeclStmnt();
+        PopAliasDeclStmt();
 
         if (newLineOpenScope_)
         {
@@ -395,7 +395,7 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmnt)
         Blank();
 }
 
-IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
+IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 {
     if (auto structDecl = ast->declObject->As<StructDecl>())
     {
@@ -414,17 +414,17 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmnt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(NullStmnt)
+IMPLEMENT_VISIT_PROC(NullStmt)
 {
     WriteLn(";");
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmnt)
+IMPLEMENT_VISIT_PROC(CodeBlockStmt)
 {
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
     /* Write loop header */
     BeginLn();
@@ -433,8 +433,8 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     PushOptions({ false, false });
     {
-        Visit(ast->initStmnt);
-        Write(" "); // initStmnt already has the ';'!
+        Visit(ast->initStmt);
+        Write(" "); // initStmt already has the ';'!
         Visit(ast->condition);
         Write("; ");
         Visit(ast->iteration);
@@ -443,10 +443,10 @@ IMPLEMENT_VISIT_PROC(ForLoopStmnt)
 
     Write(")");
 
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     /* Write loop condExpr */
     BeginLn();
@@ -455,15 +455,15 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
     Visit(ast->condition);
     Write(")");
 
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     BeginLn();
 
     Write("do");
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 
     /* Write loop condExpr */
     WriteScopeContinue();
@@ -475,9 +475,9 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
-    bool hasElseParentNode = (args != nullptr ? reinterpret_cast<IfStmntArgs*>(args)->inHasElseParentNode : false);
+    bool hasElseParentNode = (args != nullptr ? reinterpret_cast<IfStmtArgs*>(args)->inHasElseParentNode : false);
 
     /* Write if condExpr */
     if (hasElseParentNode)
@@ -490,26 +490,26 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     Write(")");
 
     /* Write if body */
-    WriteScopedStmnt(ast->bodyStmnt.get());
+    WriteScopedStmt(ast->bodyStmt.get());
 
-    if (auto elseBody = ast->elseStmnt.get())
+    if (auto elseBody = ast->elseStmt.get())
     {
         /* Write else if statement */
         WriteScopeContinue();
         Write("else");
 
-        if (elseBody->Type() == AST::Types::IfStmnt)
+        if (elseBody->Type() == AST::Types::IfStmt)
         {
-            IfStmntArgs ifStmntArgs;
-            ifStmntArgs.inHasElseParentNode = true;
-            Visit(elseBody, &ifStmntArgs);
+            IfStmtArgs ifStmtArgs;
+            ifStmtArgs.inHasElseParentNode = true;
+            Visit(elseBody, &ifStmtArgs);
         }
         else
             Visit(elseBody);
     }
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     /* Write selector */
     BeginLn();
@@ -526,7 +526,7 @@ IMPLEMENT_VISIT_PROC(SwitchStmnt)
     WriteScopeClose();
 }
 
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
     BeginLn();
     {
@@ -536,7 +536,7 @@ IMPLEMENT_VISIT_PROC(ExprStmnt)
     EndLn();
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
 {
     if (ast->expr)
     {
@@ -548,11 +548,11 @@ IMPLEMENT_VISIT_PROC(ReturnStmnt)
         }
         EndLn();
     }
-    else if (!ast->flags(ReturnStmnt::isEndOfFunction))
+    else if (!ast->flags(ReturnStmt::isEndOfFunction))
         WriteLn("return;");
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
 {
     WriteLn(CtrlTransformToString(ast->transfer) + ";");
 }
@@ -1166,13 +1166,13 @@ bool MetalGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicol
     WriteScopeOpen(false, endWithSemicolon);
     BeginSep();
     {
-        WriteStmntList(structDecl->localStmnts);
+        WriteStmtList(structDecl->localStmts);
     }
     EndSep();
     WriteScopeClose();
 
     /* Only append blank line if struct is not part of a variable declaration */
-    if (!InsideVarDeclStmnt() && !InsideAliasDeclStmnt())
+    if (!InsideVarDeclStmt() && !InsideAliasDeclStmt())
         Blank();
 
     return true;
@@ -1180,7 +1180,7 @@ bool MetalGenerator::WriteStructDecl(StructDecl* structDecl, bool endWithSemicol
 
 /* ----- Misc ----- */
 
-void MetalGenerator::WriteStmntComment(Stmnt* ast, bool insertBlank)
+void MetalGenerator::WriteStmtComment(Stmt* ast, bool insertBlank)
 {
     if (ast && !ast->comment.empty())
     {
@@ -1203,16 +1203,16 @@ T* GetRawPtr(const std::shared_ptr<T>& ptr)
 }
 
 template <typename T>
-void MetalGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalScope)
+void MetalGenerator::WriteStmtList(const std::vector<T>& stmts, bool isGlobalScope)
 {
     if (preserveComments_)
     {
         /* Write statements with optional commentaries */
-        for (std::size_t i = 0; i < stmnts.size(); ++i)
+        for (std::size_t i = 0; i < stmts.size(); ++i)
         {
-            auto ast = GetRawPtr(stmnts[i]);
+            auto ast = GetRawPtr(stmts[i]);
 
-            WriteStmntComment(ast, (!isGlobalScope && (i > 0)));
+            WriteStmtComment(ast, (!isGlobalScope && (i > 0)));
 
             Visit(ast);
         }
@@ -1220,11 +1220,11 @@ void MetalGenerator::WriteStmntList(const std::vector<T>& stmnts, bool isGlobalS
     else
     {
         /* Write statements only */
-        Visit(stmnts);
+        Visit(stmts);
     }
 }
 
-void MetalGenerator::WriteParameter(VarDeclStmnt* ast)
+void MetalGenerator::WriteParameter(VarDeclStmt* ast)
 {
     /* Write type modifiers */
     WriteTypeModifiersFrom(ast->typeSpecifier);
@@ -1279,11 +1279,11 @@ void MetalGenerator::WriteParameter(VarDeclStmnt* ast)
         Error(R_InvalidParamVarCount, ast);
 }
 
-void MetalGenerator::WriteScopedStmnt(Stmnt* ast)
+void MetalGenerator::WriteScopedStmt(Stmt* ast)
 {
     if (ast)
     {
-        if (ast->Type() != AST::Types::CodeBlockStmnt)
+        if (ast->Type() != AST::Types::CodeBlockStmt)
         {
             WriteScopeOpen(false, false, alwaysBracedScopes_);
             {

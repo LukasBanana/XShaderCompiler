@@ -32,33 +32,31 @@ class SLParser : public Parser
 
     protected:
 
-        /* === Functions === */
-
         // Accepts the semicolon token (Accept(Tokens::Semicolon)).
         void Semi();
 
         /* ----- Parsing ----- */
 
         virtual CodeBlockPtr            ParseCodeBlock() = 0;
-        virtual VarDeclStmntPtr         ParseParameter() = 0;
-        virtual StmntPtr                ParseLocalStmnt() = 0;
-        virtual StmntPtr                ParseForLoopInitializer() = 0;
+        virtual VarDeclStmtPtr          ParseParameter() = 0;
+        virtual StmtPtr                 ParseLocalStmt() = 0;
+        virtual StmtPtr                 ParseForLoopInitializer() = 0;
         virtual SwitchCasePtr           ParseSwitchCase() = 0;
-        virtual VarDeclPtr              ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn = nullptr) = 0;
+        virtual VarDeclPtr              ParseVarDecl(VarDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr) = 0;
 
         ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
 
-        NullStmntPtr                    ParseNullStmnt();
-        CodeBlockStmntPtr               ParseCodeBlockStmnt();
-        ForLoopStmntPtr                 ParseForLoopStmnt();
-        WhileLoopStmntPtr               ParseWhileLoopStmnt();
-        DoWhileLoopStmntPtr             ParseDoWhileLoopStmnt();
-        IfStmntPtr                      ParseIfStmnt();
-        StmntPtr                        ParseElseStmnt();
-        SwitchStmntPtr                  ParseSwitchStmnt();
-        CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
-        ReturnStmntPtr                  ParseReturnStmnt();
-        ExprStmntPtr                    ParseExprStmnt(const ExprPtr& expr = nullptr);
+        NullStmtPtr                     ParseNullStmt();
+        CodeBlockStmtPtr                ParseCodeBlockStmt();
+        ForLoopStmtPtr                  ParseForLoopStmt();
+        WhileLoopStmtPtr                ParseWhileLoopStmt();
+        DoWhileLoopStmtPtr              ParseDoWhileLoopStmt();
+        IfStmtPtr                       ParseIfStmt();
+        StmtPtr                         ParseElseStmt();
+        SwitchStmtPtr                   ParseSwitchStmt();
+        CtrlTransferStmtPtr             ParseCtrlTransferStmt();
+        ReturnStmtPtr                   ParseReturnStmt();
+        ExprStmtPtr                     ParseExprStmt(const ExprPtr& expr = nullptr);
 
         ExprPtr                         ParseExpr();                // expr
         ExprPtr                         ParseExprWithSequenceOpt(); // expr (, expr)*
@@ -69,9 +67,9 @@ class SLParser : public Parser
         ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
         InitializerExprPtr              ParseInitializerExpr();
 
-        std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmnt* declStmntRef, TokenPtr firstIdentTkn = nullptr);
-        std::vector<VarDeclStmntPtr>    ParseParameterList();
-        std::vector<StmntPtr>           ParseLocalStmntList();
+        std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmt* declStmtRef, TokenPtr firstIdentTkn = nullptr);
+        std::vector<VarDeclStmtPtr>     ParseParameterList();
+        std::vector<StmtPtr>            ParseLocalStmtList();
         std::vector<ExprPtr>            ParseExprList(const Tokens listTerminatorToken, bool allowLastComma = false);
         std::vector<ArrayDimensionPtr>  ParseArrayDimensionList(bool allowDynamicDimension = false);
         std::vector<ExprPtr>            ParseArrayIndexList();
@@ -88,7 +86,7 @@ class SLParser : public Parser
         int                             ParseAndEvaluateConstExprInt();
         int                             ParseAndEvaluateVectorDimension();
 
-        void                            ParseStmntWithCommentOpt(std::vector<StmntPtr>& stmnts, const std::function<StmntPtr()>& parseFunction);
+        void                            ParseStmtWithCommentOpt(std::vector<StmtPtr>& stmts, const std::function<StmtPtr()>& parseFunction);
 
 };
 

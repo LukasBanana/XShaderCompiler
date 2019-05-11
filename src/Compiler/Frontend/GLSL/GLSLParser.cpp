@@ -226,7 +226,7 @@ ProgramPtr GLSLParser::ParseProgram(const SourceCodePtr& source)
             break;
 
         /* Parse next global declaration */
-        ParseStmntWithCommentOpt(ast->globalStmnts, std::bind(&GLSLParser::ParseGlobalStmnt, this));
+        ParseStmtWithCommentOpt(ast->globalStmts, std::bind(&GLSLParser::ParseGlobalStmt, this));
     }
 
     CloseScope();
@@ -242,7 +242,7 @@ CodeBlockPtr GLSLParser::ParseCodeBlock()
     Accept(Tokens::LCurly);
     OpenScope();
     {
-        ast->stmnts = ParseLocalStmntList();
+        ast->stmts = ParseLocalStmtList();
     }
     CloseScope();
     Accept(Tokens::RCurly);
@@ -250,9 +250,9 @@ CodeBlockPtr GLSLParser::ParseCodeBlock()
     return ast;
 }
 
-VarDeclStmntPtr GLSLParser::ParseParameter()
+VarDeclStmtPtr GLSLParser::ParseParameter()
 {
-    auto ast = Make<VarDeclStmnt>();
+    auto ast = Make<VarDeclStmt>();
 
     /* Parse parameter as single variable declaration */
     ast->typeSpecifier = ParseTypeSpecifier();
@@ -260,19 +260,19 @@ VarDeclStmntPtr GLSLParser::ParseParameter()
     ast->varDecls.push_back(ParseVarDecl(ast.get()));
 
     /* Mark with 'parameter' flag */
-    ast->flags << VarDeclStmnt::isParameter;
+    ast->flags << VarDeclStmt::isParameter;
 
     return UpdateSourceArea(ast);
 }
 
-StmntPtr GLSLParser::ParseLocalStmnt()
+StmtPtr GLSLParser::ParseLocalStmt()
 {
-    return ParseStmnt();
+    return ParseStmt();
 }
 
-StmntPtr GLSLParser::ParseForLoopInitializer()
+StmtPtr GLSLParser::ParseForLoopInitializer()
 {
-    return ParseStmnt();
+    return ParseStmt();
 }
 
 SwitchCasePtr GLSLParser::ParseSwitchCase()
@@ -291,17 +291,17 @@ SwitchCasePtr GLSLParser::ParseSwitchCase()
 
     /* Parse switch case statement list */
     while (!Is(Tokens::Case) && !Is(Tokens::Default) && !Is(Tokens::RCurly))
-        ParseStmntWithCommentOpt(ast->stmnts, std::bind(&GLSLParser::ParseStmnt, this));
+        ParseStmtWithCommentOpt(ast->stmts, std::bind(&GLSLParser::ParseStmt, this));
 
     return ast;
 }
 
-VarDeclPtr GLSLParser::ParseVarDecl(VarDeclStmnt* declStmntRef, const TokenPtr& identTkn)
+VarDeclPtr GLSLParser::ParseVarDecl(VarDeclStmt* declStmtRef, const TokenPtr& identTkn)
 {
     auto ast = Make<VarDecl>();
 
     /* Store reference to parent node */
-    ast->declStmntRef = declStmntRef;
+    ast->declStmtRef = declStmtRef;
 
     /* Parse variable declaration */
     ast->ident = ParseIdent(identTkn, &ast->area);
@@ -360,12 +360,12 @@ TypeSpecifierPtr GLSLParser::ParseTypeSpecifier(bool parseVoidType, const TokenP
 
 #if 0
 
-BufferDeclPtr GLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn)
+BufferDeclPtr GLSLParser::ParseBufferDecl(BufferDeclStmt* declStmtRef, const TokenPtr& identTkn)
 {
     auto ast = Make<BufferDecl>();
 
     /* Store reference to parent node */
-    ast->declStmntRef = declStmntRef;
+    ast->declStmtRef = declStmtRef;
 
     /* Parse identifier, optional array dimension list, and optional slot registers */
     ast->ident          = ParseIdent(identTkn);
@@ -374,12 +374,12 @@ BufferDeclPtr GLSLParser::ParseBufferDecl(BufferDeclStmnt* declStmntRef, const T
     return ast;
 }
 
-SamplerDeclPtr GLSLParser::ParseSamplerDecl(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn)
+SamplerDeclPtr GLSLParser::ParseSamplerDecl(SamplerDeclStmt* declStmtRef, const TokenPtr& identTkn)
 {
     auto ast = Make<SamplerDecl>();
 
     /* Store reference to parent node */
-    ast->declStmntRef = declStmntRef;
+    ast->declStmtRef = declStmtRef;
 
     /* Parse identifier, optional array dimension list, and optional slot registers */
     ast->ident          = ParseIdent(identTkn);
@@ -420,23 +420,23 @@ StructDeclPtr GLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse member variable declarations */
-        ast->localStmnts = ParseGlobalStmntList();
+        ast->localStmts = ParseGlobalStmtList();
 
-        for (auto& stmnt : ast->localStmnts)
+        for (auto& stmt : ast->localStmts)
         {
-            if (stmnt->Type() == AST::Types::VarDeclStmnt)
+            if (stmt->Type() == AST::Types::VarDeclStmt)
             {
                 /* Store copy in member variable list */
-                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmt>(stmt));
             }
             else
-                Error(R_IllegalDeclStmntInsideDeclOf(ast->ToString()), stmnt->area, false);
+                Error(R_IllegalDeclStmtInsideDeclOf(ast->ToString()), stmt->area, false);
         }
 
         /* Decorate all member variables with a reference to this structure declaration */
-        for (auto& varDeclStmnt : ast->varMembers)
+        for (auto& varDeclStmt : ast->varMembers)
         {
-            for (auto& varDecl : varDeclStmnt->varDecls)
+            for (auto& varDecl : varDeclStmt->varDecls)
                 varDecl->structDeclRef = ast.get();
         }
     }
@@ -445,12 +445,12 @@ StructDeclPtr GLSLParser::ParseStructDecl(bool parseStructTkn, const TokenPtr& i
     return ast;
 }
 
-FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmnt* declStmntRef, const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
+FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmt* declStmtRef, const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
     auto ast = Make<FunctionDecl>();
 
     /* Store reference to declaration statement parent node */
-    ast->declStmntRef = declStmntRef;
+    ast->declStmtRef = declStmtRef;
 
     if (returnType)
     {
@@ -510,21 +510,21 @@ UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl(const TokenPtr& identTkn
     GetReportHandler().PushContextDesc(ast->ToString());
     {
         /* Parse buffer body */
-        ast->localStmnts = ParseGlobalStmntList();
+        ast->localStmts = ParseGlobalStmtList();
 
         /* Copy variable declarations into separated list */
-        for (auto& stmnt : ast->localStmnts)
+        for (auto& stmt : ast->localStmts)
         {
-            if (stmnt->Type() == AST::Types::VarDeclStmnt)
-                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmnt>(stmnt));
+            if (stmt->Type() == AST::Types::VarDeclStmt)
+                ast->varMembers.push_back(std::static_pointer_cast<VarDeclStmt>(stmt));
             else
-                Error(R_OnlyFieldsAllowedInUniformBlock, stmnt->area, false);
+                Error(R_OnlyFieldsAllowedInUniformBlock, stmt->area, false);
         }
 
         /* Decorate all member variables with a reference to this buffer declaration */
-        for (auto& varDeclStmnt : ast->varMembers)
+        for (auto& varDeclStmt : ast->varMembers)
         {
-            for (auto& varDecl : varDeclStmnt->varDecls)
+            for (auto& varDecl : varDeclStmt->varDecls)
                 varDecl->bufferDeclRef = ast.get();
         }
 
@@ -537,52 +537,52 @@ UniformBufferDeclPtr GLSLParser::ParseUniformBufferDecl(const TokenPtr& identTkn
 
 /* --- Declaration statements --- */
 
-StmntPtr GLSLParser::ParseGlobalStmnt()
+StmtPtr GLSLParser::ParseGlobalStmt()
 {
     if (Is(Tokens::LayoutQualifier))
     {
         /* Parse attributes and statement */
         auto attribs = ParseAttributeList();
-        auto ast = ParseGlobalStmntPrimary(!attribs.empty());
+        auto ast = ParseGlobalStmtPrimary(!attribs.empty());
         ast->attribs = std::move(attribs);
         return ast;
     }
     else
     {
         /* Parse statement only */
-        return ParseGlobalStmntPrimary();
+        return ParseGlobalStmtPrimary();
     }
 }
 
-StmntPtr GLSLParser::ParseGlobalStmntPrimary(bool hasAttribs)
+StmtPtr GLSLParser::ParseGlobalStmtPrimary(bool hasAttribs)
 {
     switch (TknType())
     {
         #if 0
         case Tokens::Sampler:
         case Tokens::SamplerState:
-            return ParseGlobalStmntWithSamplerTypeDenoter();
+            return ParseGlobalStmtWithSamplerTypeDenoter();
         case Tokens::Buffer:
-            return ParseGlobalStmntWithBufferTypeDenoter();
+            return ParseGlobalStmtWithBufferTypeDenoter();
         #endif
         case Tokens::UniformBuffer:
-            return ParseUniformDeclStmnt();
+            return ParseUniformDeclStmt();
         case Tokens::Struct:
-            return ParseStmntWithStructDecl();
+            return ParseStmtWithStructDecl();
         #if 0
         case Tokens::Void:
         case Tokens::Inline:
-            return ParseFunctionDeclStmnt();
+            return ParseFunctionDeclStmt();
         #endif
         default:
             if ( hasAttribs && ( Is(Tokens::InputModifier, "in") || Is(Tokens::InputModifier, "out") ))
-                return ParseGlobalStmntWithLayoutQualifier();
+                return ParseGlobalStmtWithLayoutQualifier();
             else
-                return ParseGlobalStmntWithTypeSpecifier();
+                return ParseGlobalStmtWithTypeSpecifier();
     }
 }
 
-StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn)
+StmtPtr GLSLParser::ParseGlobalStmtWithTypeSpecifier(const TokenPtr& inputTkn)
 {
     /* Parse type specifier */
     auto typeSpecifier = ParseTypeSpecifier(false, inputTkn);
@@ -591,10 +591,10 @@ StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn)
     if (typeSpecifier->structDecl && Is(Tokens::Semicolon))
     {
         /* Convert type specifier into struct declaration statement */
-        auto ast = Make<BasicDeclStmnt>();
+        auto ast = Make<BasicDeclStmt>();
 
         auto structDecl = typeSpecifier->structDecl;
-        structDecl->declStmntRef = ast.get();
+        structDecl->declStmtRef = ast.get();
 
         ast->declObject = structDecl;
 
@@ -610,12 +610,12 @@ StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn)
     if (Is(Tokens::LBracket))
     {
         /* Parse function declaration statement */
-        return ParseFunctionDeclStmnt(typeSpecifier, identTkn);
+        return ParseFunctionDeclStmt(typeSpecifier, identTkn);
     }
     else
     {
         /* Parse variable declaration statement */
-        auto ast = Make<VarDeclStmnt>();
+        auto ast = Make<VarDeclStmt>();
 
         ast->typeSpecifier  = typeSpecifier;
         ast->varDecls       = ParseVarDeclList(ast.get(), identTkn);
@@ -626,7 +626,7 @@ StmntPtr GLSLParser::ParseGlobalStmntWithTypeSpecifier(const TokenPtr& inputTkn)
     }
 }
 
-StmntPtr GLSLParser::ParseGlobalStmntWithLayoutQualifier()
+StmtPtr GLSLParser::ParseGlobalStmtWithLayoutQualifier()
 {
     auto inputTkn = Accept(Tokens::InputModifier);
 
@@ -635,7 +635,7 @@ StmntPtr GLSLParser::ParseGlobalStmntWithLayoutQualifier()
         AcceptIt();
 
         /* Parse in/out token */
-        auto ast = Make<LayoutStmnt>();
+        auto ast = Make<LayoutStmt>();
 
         if (inputTkn->Spell() == "in")
             ast->isInput = true;
@@ -645,12 +645,12 @@ StmntPtr GLSLParser::ParseGlobalStmntWithLayoutQualifier()
         return ast;
     }
 
-    return ParseGlobalStmntWithTypeSpecifier(inputTkn);
+    return ParseGlobalStmtWithTypeSpecifier(inputTkn);
 }
 
 #if 0
 
-StmntPtr GLSLParser::ParseGlobalStmntWithSamplerTypeDenoter()
+StmtPtr GLSLParser::ParseGlobalStmtWithSamplerTypeDenoter()
 {
     /* Parse sampler type denoter and identifier */
     auto typeDenoter = ParseSamplerTypeDenoter();
@@ -659,16 +659,16 @@ StmntPtr GLSLParser::ParseGlobalStmntWithSamplerTypeDenoter()
     if (Is(Tokens::LBracket))
     {
         /* Make variable type from type denoter, then parse function declaration */
-        return ParseFunctionDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDenoter), identTkn);
+        return ParseFunctionDeclStmt(ASTFactory::MakeTypeSpecifier(typeDenoter), identTkn);
     }
     else
     {
         /* Parse sampler declaration statement with sampler type denoter */
-        return ParseSamplerDeclStmnt(typeDenoter, identTkn);
+        return ParseSamplerDeclStmt(typeDenoter, identTkn);
     }
 }
 
-StmntPtr GLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
+StmtPtr GLSLParser::ParseGlobalStmtWithBufferTypeDenoter()
 {
     /* Parse buffer type denoter and identifier */
     auto typeDenoter = ParseBufferTypeDenoter();
@@ -677,20 +677,20 @@ StmntPtr GLSLParser::ParseGlobalStmntWithBufferTypeDenoter()
     if (Is(Tokens::LBracket))
     {
         /* Make variable type from type denoter, then parse function declaration */
-        return ParseFunctionDeclStmnt(ASTFactory::MakeTypeSpecifier(typeDenoter), identTkn);
+        return ParseFunctionDeclStmt(ASTFactory::MakeTypeSpecifier(typeDenoter), identTkn);
     }
     else
     {
         /* Parse buffer declaration statement with sampler type denoter */
-        return ParseBufferDeclStmnt(typeDenoter, identTkn);
+        return ParseBufferDeclStmt(typeDenoter, identTkn);
     }
 }
 
 #endif
 
-BasicDeclStmntPtr GLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
+BasicDeclStmtPtr GLSLParser::ParseFunctionDeclStmt(const TypeSpecifierPtr& returnType, const TokenPtr& identTkn)
 {
-    auto ast = Make<BasicDeclStmnt>();
+    auto ast = Make<BasicDeclStmt>();
 
     /* Parse functoin declaration object */
     ast->declObject = ParseFunctionDecl(ast.get(), returnType, identTkn);
@@ -698,7 +698,7 @@ BasicDeclStmntPtr GLSLParser::ParseFunctionDeclStmnt(const TypeSpecifierPtr& ret
     return ast;
 }
 
-StmntPtr GLSLParser::ParseUniformDeclStmnt()
+StmtPtr GLSLParser::ParseUniformDeclStmt()
 {
     Accept(Tokens::UniformBuffer);
 
@@ -710,38 +710,38 @@ StmntPtr GLSLParser::ParseUniformDeclStmnt()
         if (IsRegisteredTypeName(identTkn->Spell()))
         {
             /* Parse variable declaration */
-            return ParseVarDeclStmnt(true, identTkn);
+            return ParseVarDeclStmt(true, identTkn);
         }
         else
         {
             /* Parse uniform buffer declaration */
-            return ParseUniformBufferDeclStmnt(identTkn);
+            return ParseUniformBufferDeclStmt(identTkn);
         }
     }
     else
     {
         /* Parse variable declaration */
-        return ParseVarDeclStmnt(true);
+        return ParseVarDeclStmt(true);
     }
 }
 
-BasicDeclStmntPtr GLSLParser::ParseUniformBufferDeclStmnt(const TokenPtr& identTkn)
+BasicDeclStmtPtr GLSLParser::ParseUniformBufferDeclStmt(const TokenPtr& identTkn)
 {
-    auto ast = Make<BasicDeclStmnt>();
+    auto ast = Make<BasicDeclStmt>();
 
     auto uniformBufferDecl = ParseUniformBufferDecl(identTkn);
     ast->declObject = uniformBufferDecl;
 
-    uniformBufferDecl->declStmntRef = ast.get();
+    uniformBufferDecl->declStmtRef = ast.get();
 
     return ast;
 }
 
 #if 0
 
-BufferDeclStmntPtr GLSLParser::ParseBufferDeclStmnt(const BufferTypeDenoterPtr& typeDenoter, const TokenPtr& identTkn)
+BufferDeclStmtPtr GLSLParser::ParseBufferDeclStmt(const BufferTypeDenoterPtr& typeDenoter, const TokenPtr& identTkn)
 {
-    auto ast = Make<BufferDeclStmnt>();
+    auto ast = Make<BufferDeclStmt>();
 
     ast->typeDenoter = (typeDenoter ? typeDenoter : ParseBufferTypeDenoter());
     ast->bufferDecls = ParseBufferDeclList(ast.get(), identTkn);
@@ -756,9 +756,9 @@ BufferDeclStmntPtr GLSLParser::ParseBufferDeclStmnt(const BufferTypeDenoterPtr& 
     return ast;
 }
 
-SamplerDeclStmntPtr GLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPtr& typeDenoter, const TokenPtr& identTkn)
+SamplerDeclStmtPtr GLSLParser::ParseSamplerDeclStmt(const SamplerTypeDenoterPtr& typeDenoter, const TokenPtr& identTkn)
 {
-    auto ast = Make<SamplerDeclStmnt>();
+    auto ast = Make<SamplerDeclStmt>();
 
     ast->typeDenoter = (typeDenoter ? typeDenoter : ParseSamplerTypeDenoter());
     ast->samplerDecls = ParseSamplerDeclList(ast.get(), identTkn);
@@ -775,9 +775,9 @@ SamplerDeclStmntPtr GLSLParser::ParseSamplerDeclStmnt(const SamplerTypeDenoterPt
 
 #endif
 
-VarDeclStmntPtr GLSLParser::ParseVarDeclStmnt(bool isUniform, const TokenPtr& identTkn)
+VarDeclStmtPtr GLSLParser::ParseVarDeclStmt(bool isUniform, const TokenPtr& identTkn)
 {
-    auto ast = Make<VarDeclStmnt>();
+    auto ast = Make<VarDeclStmt>();
 
     /* Parse type specifier and all variable declarations */
     ast->typeSpecifier  = ParseTypeSpecifier();
@@ -790,77 +790,77 @@ VarDeclStmntPtr GLSLParser::ParseVarDeclStmnt(bool isUniform, const TokenPtr& id
 
 /* --- Statements --- */
 
-StmntPtr GLSLParser::ParseStmnt()
+StmtPtr GLSLParser::ParseStmt()
 {
     /* Determine which kind of statement the next one is */
     switch (TknType())
     {
         case Tokens::Semicolon:
-            return ParseNullStmnt();
+            return ParseNullStmt();
         case Tokens::LCurly:
-            return ParseCodeBlockStmnt();
+            return ParseCodeBlockStmt();
         case Tokens::Return:
-            return ParseReturnStmnt();
+            return ParseReturnStmt();
         #if 0
         case Tokens::Ident:
-            return ParseStmntWithIdent();
+            return ParseStmtWithIdent();
         #endif
         case Tokens::For:
-            return ParseForLoopStmnt();
+            return ParseForLoopStmt();
         case Tokens::While:
-            return ParseWhileLoopStmnt();
+            return ParseWhileLoopStmt();
         case Tokens::Do:
-            return ParseDoWhileLoopStmnt();
+            return ParseDoWhileLoopStmt();
         case Tokens::If:
-            return ParseIfStmnt();
+            return ParseIfStmt();
         case Tokens::Switch:
-            return ParseSwitchStmnt();
+            return ParseSwitchStmt();
         case Tokens::CtrlTransfer:
-            return ParseCtrlTransferStmnt();
+            return ParseCtrlTransferStmt();
         case Tokens::Struct:
-            return ParseStmntWithStructDecl();
+            return ParseStmtWithStructDecl();
         #if 0
         case Tokens::Sampler:
         case Tokens::SamplerState:
-            return ParseSamplerDeclStmnt();
+            return ParseSamplerDeclStmt();
         #endif
         case Tokens::StorageClass:
         case Tokens::InterpModifier:
         case Tokens::TypeModifier:
-            return ParseVarDeclStmnt();
+            return ParseVarDeclStmt();
         default:
             break;
     }
 
     if (IsDataType())
-        return ParseVarDeclStmnt();
+        return ParseVarDeclStmt();
 
     /* Parse statement of arbitrary expression */
-    return ParseExprStmnt();
+    return ParseExprStmt();
 }
 
-StmntPtr GLSLParser::ParseStmntWithStructDecl()
+StmtPtr GLSLParser::ParseStmtWithStructDecl()
 {
     /* Parse structure declaration statement */
-    auto ast = Make<BasicDeclStmnt>();
+    auto ast = Make<BasicDeclStmt>();
 
     auto structDecl = ParseStructDecl();
-    structDecl->declStmntRef = ast.get();
+    structDecl->declStmtRef = ast.get();
 
     ast->declObject = structDecl;
 
     if (!Is(Tokens::Semicolon))
     {
         /* Parse variable declaration with previous structure type */
-        auto varDeclStmnt = Make<VarDeclStmnt>();
+        auto varDeclStmt = Make<VarDeclStmt>();
 
-        varDeclStmnt->typeSpecifier = ASTFactory::MakeTypeSpecifier(structDecl);
+        varDeclStmt->typeSpecifier = ASTFactory::MakeTypeSpecifier(structDecl);
 
         /* Parse variable declarations */
-        varDeclStmnt->varDecls = ParseVarDeclList(varDeclStmnt.get());
+        varDeclStmt->varDecls = ParseVarDeclList(varDeclStmt.get());
         Semi();
 
-        return UpdateSourceArea(varDeclStmnt);
+        return UpdateSourceArea(varDeclStmt);
     }
     else
         Semi();
@@ -874,7 +874,7 @@ StmntPtr GLSLParser::ParseStmntWithStructDecl()
 
 // ~~~~~~~~~~~~ MIGHT BE INCOMPLETE ~~~~~~~~~~~~~~~
 
-StmntPtr GLSLParser::ParseStmntWithIdent()
+StmtPtr GLSLParser::ParseStmtWithIdent()
 {
     /* Parse the identifier as object expression (can be converted later) */
     auto objectExpr = ParseObjectExpr();
@@ -885,22 +885,22 @@ StmntPtr GLSLParser::ParseStmntWithIdent()
     {
         /* Parse expression statement (function call, variable access, etc.) */
         PushPreParsedAST(expr);
-        return ParseExprStmnt();
+        return ParseExprStmt();
     }
     else if (Is(Tokens::Semicolon))
     {
         /* Return immediatly with expression statement */
-        return ParseExprStmnt(expr);
+        return ParseExprStmt(expr);
     }
     else if (Is(Tokens::Comma))
     {
         /* Parse sequence expression */
-        return ParseExprStmnt(ParseSequenceExpr(expr));
+        return ParseExprStmt(ParseSequenceExpr(expr));
     }
     else if (expr == objectExpr)
     {
         /* Convert variable identifier to alias type denoter */
-        auto ast = Make<VarDeclStmnt>();
+        auto ast = Make<VarDeclStmt>();
 
         ast->typeSpecifier              = Make<TypeSpecifier>();
         ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(std::make_shared<StructTypeDenoter>(objectExpr->ident));
@@ -913,7 +913,7 @@ StmntPtr GLSLParser::ParseStmntWithIdent()
         return UpdateSourceArea(ast, objectExpr.get());
     }
     else
-        return ParseExprStmnt(expr);
+        return ParseExprStmt(expr);
 
     #if 0//DEAD CODE
     ErrorUnexpected(R_ExpectedVarOrAssignOrFuncCall, nullptr, true);
@@ -1215,9 +1215,9 @@ CallExprPtr GLSLParser::ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenote
 
 /* --- Lists --- */
 
-std::vector<StmntPtr> GLSLParser::ParseGlobalStmntList()
+std::vector<StmtPtr> GLSLParser::ParseGlobalStmtList()
 {
-    std::vector<StmntPtr> stmnts;
+    std::vector<StmtPtr> stmts;
 
     Accept(Tokens::LCurly);
 
@@ -1225,12 +1225,12 @@ std::vector<StmntPtr> GLSLParser::ParseGlobalStmntList()
     while (!Is(Tokens::RCurly))
     {
         /* Parse next global declaration */
-        ParseStmntWithCommentOpt(stmnts, std::bind(&GLSLParser::ParseGlobalStmnt, this));
+        ParseStmtWithCommentOpt(stmts, std::bind(&GLSLParser::ParseGlobalStmt, this));
     }
 
     AcceptIt();
 
-    return stmnts;
+    return stmts;
 }
 
 // 'layout' '(' QUALIFIER ( ',' QUALIFIER )* ')'
@@ -1259,31 +1259,31 @@ std::vector<AttributePtr> GLSLParser::ParseAttributeList()
 
 #if 0
 
-std::vector<BufferDeclPtr> GLSLParser::ParseBufferDeclList(BufferDeclStmnt* declStmntRef, const TokenPtr& identTkn)
+std::vector<BufferDeclPtr> GLSLParser::ParseBufferDeclList(BufferDeclStmt* declStmtRef, const TokenPtr& identTkn)
 {
     std::vector<BufferDeclPtr> bufferDecls;
 
-    bufferDecls.push_back(ParseBufferDecl(declStmntRef, identTkn));
+    bufferDecls.push_back(ParseBufferDecl(declStmtRef, identTkn));
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        bufferDecls.push_back(ParseBufferDecl(declStmntRef));
+        bufferDecls.push_back(ParseBufferDecl(declStmtRef));
     }
 
     return bufferDecls;
 }
 
-std::vector<SamplerDeclPtr> GLSLParser::ParseSamplerDeclList(SamplerDeclStmnt* declStmntRef, const TokenPtr& identTkn)
+std::vector<SamplerDeclPtr> GLSLParser::ParseSamplerDeclList(SamplerDeclStmt* declStmtRef, const TokenPtr& identTkn)
 {
     std::vector<SamplerDeclPtr> samplerDecls;
 
-    samplerDecls.push_back(ParseSamplerDecl(declStmntRef, identTkn));
+    samplerDecls.push_back(ParseSamplerDecl(declStmtRef, identTkn));
 
     while (Is(Tokens::Comma))
     {
         AcceptIt();
-        samplerDecls.push_back(ParseSamplerDecl(declStmntRef));
+        samplerDecls.push_back(ParseSamplerDecl(declStmtRef));
     }
 
     return samplerDecls;

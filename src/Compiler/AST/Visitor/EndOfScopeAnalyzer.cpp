@@ -30,49 +30,49 @@ void EndOfScopeAnalyzer::MarkEndOfScopesFromFunction(FunctionDecl& funcDecl)
 
 IMPLEMENT_VISIT_PROC(CodeBlock)
 {
-    if (!ast->stmnts.empty())
-        Visit(ast->stmnts.back());
+    if (!ast->stmts.empty())
+        Visit(ast->stmts.back());
 }
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(ForLoopStmnt)
+IMPLEMENT_VISIT_PROC(ForLoopStmt)
 {
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(WhileLoopStmt)
 {
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
+IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
 {
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(IfStmnt)
+IMPLEMENT_VISIT_PROC(IfStmt)
 {
-    Visit(ast->bodyStmnt);
-    Visit(ast->elseStmnt);
+    Visit(ast->bodyStmt);
+    Visit(ast->elseStmt);
 }
 
-IMPLEMENT_VISIT_PROC(SwitchStmnt)
-{
-    // do nothing
-}
-
-IMPLEMENT_VISIT_PROC(ExprStmnt)
+IMPLEMENT_VISIT_PROC(SwitchStmt)
 {
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(ReturnStmnt)
+IMPLEMENT_VISIT_PROC(ExprStmt)
 {
-    ast->flags << ReturnStmnt::isEndOfFunction;
+    // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmnt)
+IMPLEMENT_VISIT_PROC(ReturnStmt)
+{
+    ast->flags << ReturnStmt::isEndOfFunction;
+}
+
+IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
 {
     // do nothing
 }

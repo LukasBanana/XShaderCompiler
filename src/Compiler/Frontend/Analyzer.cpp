@@ -109,10 +109,10 @@ void Analyzer::Warning(const std::string& msg, const AST* ast)
     SubmitReport(false, msg, ast);
 }
 
-void Analyzer::WarningOnNullStmnt(const StmntPtr& ast, const std::string& stmntTypeName)
+void Analyzer::WarningOnNullStmt(const StmtPtr& ast, const std::string& stmtTypeName)
 {
-    if (WarnEnabled(Warnings::EmptyStatementBody) && ast && ast->Type() == AST::Types::NullStmnt)
-        Warning(R_StatementWithEmptyBody(stmntTypeName), ast.get());
+    if (WarnEnabled(Warnings::EmptyStatementBody) && ast && ast->Type() == AST::Types::NullStmt)
+        Warning(R_StatementWithEmptyBody(stmtTypeName), ast.get());
 }
 
 bool Analyzer::WarnEnabled(unsigned int flags) const
@@ -614,10 +614,10 @@ Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
     /* Fetch variable from expression */
     if (auto varDecl = expr.FetchVarDecl())
     {
-        if (auto varDeclStmnt = varDecl->declStmntRef)
+        if (auto varDeclStmt = varDecl->declStmtRef)
         {
             /* Is this a non-parameter local variable with an initializer? (don't use 'HasStaticConstInitializer' here!) */
-            if (!varDeclStmnt->flags(VarDeclStmnt::isParameter) && varDeclStmnt->IsConstOrUniform() && varDecl->initializer)
+            if (!varDeclStmt->flags(VarDeclStmt::isParameter) && varDeclStmt->IsConstOrUniform() && varDecl->initializer)
             {
                 /* Evaluate initializer of constant variable */
                 return EvaluateConstExpr(*varDecl->initializer);
