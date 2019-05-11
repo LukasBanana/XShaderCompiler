@@ -385,16 +385,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    PushPrintable(ast, WriteLabel("ElseStmnt"));
-    {
-        VISIT_MEMBER(attribs);
-        VISIT_MEMBER(bodyStmnt);
-    }
-    PopPrintable();
-}
-
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     PushPrintable(ast, WriteLabel("SwitchStmnt"));

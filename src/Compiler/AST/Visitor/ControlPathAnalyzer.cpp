@@ -158,11 +158,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     PushReturnPath(thenPath && elsePath);
 }
 
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    Visit(ast->bodyStmnt);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     bool hasDefaultCase = false;

@@ -157,15 +157,11 @@ IfStmntPtr SLParser::ParseIfStmnt()
     return ast;
 }
 
-ElseStmntPtr SLParser::ParseElseStmnt()
+StmntPtr SLParser::ParseElseStmnt()
 {
     /* Parse else statment */
-    auto ast = Make<ElseStmnt>();
-
     Accept(Tokens::Else);
-    ast->bodyStmnt = ParseLocalStmnt();
-
-    return ast;
+    return ParseLocalStmnt();
 }
 
 SwitchStmntPtr SLParser::ParseSwitchStmnt()

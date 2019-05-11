@@ -192,12 +192,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     Visit(ast->elseStmnt);
 }
 
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    Visit(ast->attribs);
-    Visit(ast->bodyStmnt);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     Visit(ast->attribs);

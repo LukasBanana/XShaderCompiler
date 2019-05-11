@@ -124,11 +124,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     Visit(ast->elseStmnt);
 }
 
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    Visit(ast->bodyStmnt);
-}
-
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
 {
     OptimizeExpr(ast->selector);

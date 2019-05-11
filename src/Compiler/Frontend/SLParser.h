@@ -54,7 +54,7 @@ class SLParser : public Parser
         WhileLoopStmntPtr               ParseWhileLoopStmnt();
         DoWhileLoopStmntPtr             ParseDoWhileLoopStmnt();
         IfStmntPtr                      ParseIfStmnt();
-        ElseStmntPtr                    ParseElseStmnt();
+        StmntPtr                        ParseElseStmnt();
         SwitchStmntPtr                  ParseSwitchStmnt();
         CtrlTransferStmntPtr            ParseCtrlTransferStmnt();
         ReturnStmntPtr                  ParseReturnStmnt();

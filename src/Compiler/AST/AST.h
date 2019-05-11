@@ -137,7 +137,6 @@ struct AST
         WhileLoopStmnt,
         DoWhileLoopStmnt,
         IfStmnt,
-        ElseStmnt,
         SwitchStmnt,
         ExprStmnt,
         ReturnStmnt,
@@ -226,6 +225,7 @@ bool IsDeclStmntAST(const AST::Types t);
 
 /* ----- Common AST classes ----- */
 
+//TODO: rename to Stmt
 // Statement AST base class.
 struct Stmnt : public AST
 {
@@ -1007,6 +1007,7 @@ struct NullStmnt : public Stmnt
     AST_INTERFACE(NullStmnt);
 };
 
+//TODO: rename to ScopeStmnt
 // Code block statement.
 struct CodeBlockStmnt : public Stmnt
 {
@@ -1049,17 +1050,9 @@ struct IfStmnt : public Stmnt
 {
     AST_INTERFACE(IfStmnt);
 
-    ExprPtr         condition;  // Condition expression.
-    StmntPtr        bodyStmnt;  // 'then'-branch body statement.
-    ElseStmntPtr    elseStmnt;  // 'else'-branch statement. May be null.
-};
-
-// 'else' statement.
-struct ElseStmnt : public Stmnt
-{
-    AST_INTERFACE(ElseStmnt);
-
-    StmntPtr bodyStmnt; // 'else'-branch body statement.
+    ExprPtr     condition;  // Condition expression.
+    StmntPtr    bodyStmnt;  // 'then'-branch body statement.
+    StmntPtr    elseStmnt;  // 'else'-branch statement. May be null.
 };
 
 // 'switch' statement.

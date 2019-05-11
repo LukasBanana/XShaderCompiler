@@ -812,7 +812,9 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     bool hasElseParentNode = (args != nullptr ? reinterpret_cast<IfStmntArgs*>(args)->inHasElseParentNode : false);
 
     /* Write if condExpr */
-    if (!hasElseParentNode)
+    if (hasElseParentNode)
+        Write(" ");
+    else
         BeginLn();
 
     Write("if (");
@@ -822,32 +824,20 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     /* Write if body */
     WriteScopedStmnt(ast->bodyStmnt.get());
 
-    Visit(ast->elseStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    if (ast->bodyStmnt->Type() == AST::Types::IfStmnt)
+    if (auto elseBody = ast->elseStmnt.get())
     {
         /* Write else if statement */
         WriteScopeContinue();
-        Write("else ");
+        Write("else");
 
-        if (ast->bodyStmnt->Type() == AST::Types::IfStmnt)
+        if (elseBody->Type() == AST::Types::IfStmnt)
         {
             IfStmntArgs ifStmntArgs;
             ifStmntArgs.inHasElseParentNode = true;
-            Visit(ast->bodyStmnt, &ifStmntArgs);
+            Visit(elseBody, &ifStmntArgs);
         }
         else
-            Visit(ast->bodyStmnt);
-    }
-    else
-    {
-        /* Write else statement */
-        WriteScopeContinue();
-        Write("else");
-        WriteScopedStmnt(ast->bodyStmnt.get());
+            Visit(elseBody);
     }
 }
 

@@ -502,6 +502,7 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
+    ConvertEntryPointReturnStmntToCodeBlock(ast->elseStmnt);
 
     OpenScope();
     {
@@ -513,18 +514,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
 
     /* Ensure boolean scalar type for condition */
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
-}
-
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
-    ConvertEntryPointReturnStmntToCodeBlock(ast->bodyStmnt);
-
-    OpenScope();
-    {
-        VisitScopedStmnt(ast->bodyStmnt);
-    }
-    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
@@ -1461,7 +1450,7 @@ void GLSLConverter::ConvertEntryPointReturnStmntToCodeBlock(StmntPtr& stmnt)
     /* Is this statement within the entry point? */
     if (InsideEntryPoint())
     {
-        if (stmnt->Type() == AST::Types::ReturnStmnt)
+        if (stmnt && stmnt->Type() == AST::Types::ReturnStmnt)
         {
             /* Convert statement into a code block statement */
             stmnt = ASTFactory::MakeCodeBlockStmnt(stmnt);

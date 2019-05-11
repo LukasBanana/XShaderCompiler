@@ -536,6 +536,7 @@ IMPLEMENT_VISIT_PROC(DoWhileLoopStmnt)
 IMPLEMENT_VISIT_PROC(IfStmnt)
 {
     WarningOnNullStmnt(ast->bodyStmnt, "if");
+    WarningOnNullStmnt(ast->elseStmnt, "else");
 
     Visit(ast->attribs);
 
@@ -547,17 +548,6 @@ IMPLEMENT_VISIT_PROC(IfStmnt)
     CloseScope();
 
     Visit(ast->elseStmnt);
-}
-
-IMPLEMENT_VISIT_PROC(ElseStmnt)
-{
-    WarningOnNullStmnt(ast->bodyStmnt, "else");
-
-    OpenScope();
-    {
-        Visit(ast->bodyStmnt);
-    }
-    CloseScope();
 }
 
 IMPLEMENT_VISIT_PROC(SwitchStmnt)
