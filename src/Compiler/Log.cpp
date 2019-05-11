@@ -83,22 +83,31 @@ static void PrintReport(const IndentReport& r, bool verbose)
     if (verbose && !r.report.Context().empty())
         PrintMultiLineString(r.report.Context(), r.indent);
 
-    /* Print report message */
-    auto type = r.report.Type();
-    const auto& msg = r.report.Message();
+    /* Print source location */
+    if (!r.report.Source().empty())
+        std::cout << r.report.Source() << ": ";
 
-    if (type == ReportTypes::Error)
+    /* Print name or report type */
+    if (!r.report.TypeName().empty())
     {
-        ConsoleManip::ScopedColor highlight(Colors::Red | Colors::Intens);
-        PrintMultiLineString(msg, r.indent);
+        auto type = r.report.Type();
+        if (type == ReportTypes::Error)
+        {
+            ConsoleManip::ScopedColor highlight(Colors::Red | Colors::Intens);
+            std::cout << r.report.TypeName() << ": ";
+        }
+        else if (type == ReportTypes::Warning)
+        {
+            ConsoleManip::ScopedColor highlight(Colors::Yellow);
+            std::cout << r.report.TypeName() << ": ";
+        }
+        else
+            std::cout << r.report.TypeName() << ": ";
     }
-    else if (type == ReportTypes::Warning)
-    {
-        ConsoleManip::ScopedColor highlight(Colors::Yellow);
-        PrintMultiLineString(msg, r.indent);
-    }
-    else
-        PrintMultiLineString(msg, r.indent);
+
+    /* Print report message */
+    const auto& msg = r.report.Message();
+    PrintMultiLineString(msg, r.indent);
 
     if (!verbose)
         return;
@@ -154,18 +163,10 @@ static void PrintReport(const IndentReport& r, bool verbose)
         std::cout << r.indent << hint << std::endl;
 }
 
-static void PrintAndClearReports(IndentReportList& reports, bool verbose, const std::string& headline = "")
+static void PrintAndClearReports(IndentReportList& reports, bool verbose)
 {
     if (!reports.empty())
     {
-        /* Print headline */
-        if (!headline.empty())
-        {
-            auto s = std::to_string(reports.size()) + " " + headline;
-            std::cout << s << std::endl;
-            std::cout << std::string(s.size(), '-') << std::endl;
-        }
-
         /* Print and clear reports */
         for (const auto& r : reports)
             PrintReport(r, verbose);
@@ -215,8 +216,8 @@ void StdLog::SubmitReport(const Report& report)
 void StdLog::PrintAll(bool verbose)
 {
     PrintAndClearReports(data_->infos_, verbose);
-    PrintAndClearReports(data_->warnings_, verbose, (data_->warnings_.size() == 1 ? "WARNING" : "WARNINGS"));
-    PrintAndClearReports(data_->errors_, verbose, (data_->errors_.size() == 1 ? "ERROR": "ERRORS"));
+    PrintAndClearReports(data_->warnings_, verbose);
+    PrintAndClearReports(data_->errors_, verbose);
 }
 
 

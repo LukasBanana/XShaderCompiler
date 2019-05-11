@@ -42,17 +42,30 @@ void ReportView::AddReport(const Report& r, const std::string& indent)
     /* Append context information */
     WriteLn(indent, r.Context());
 
-    /* Append actual message */
-    if (r.Type() == ReportTypes::Error)
+    /* Append source location */
+    Write(indent);
+
+    if (!r.Source().empty())
     {
-        WriteLn(indent, r.Message(), wxColour(255, 30, 30));
-        if (r.HasLine())
-            AddReportedError(r.Message());
+        Write(r.Source() + ": ");
+        if (r.Type() == ReportTypes::Error && r.HasLine())
+            AddReportedError(r.Source(), r.Message());
     }
-    else if (r.Type() == ReportTypes::Warning)
-        WriteLn(indent, r.Message(), wxColour(255, 255, 0));
-    else
-        WriteLn(indent, r.Message());
+
+    /* Append name of report type */
+    if (!r.TypeName().empty())
+    {
+        if (r.Type() == ReportTypes::Error)
+            Write(r.TypeName() + ": ", wxColour(255, 30, 30));
+        else if (r.Type() == ReportTypes::Warning)
+            Write(r.TypeName() + ": ", wxColour(255, 255, 0));
+        else
+            Write(r.TypeName() + ": ");
+    }
+
+    /* Append actual message */
+    Write(r.Message());
+    Write("\n");
 
     /* Append line marker with multi-color */
     if (r.HasLine())
@@ -115,32 +128,18 @@ void ReportView::WriteLn(const std::string& indent, const std::string& s, const 
         Write(indent + s + '\n', color);
 }
 
-void ReportView::AddReportedError(const std::string& message)
+void ReportView::AddReportedError(const std::string& sloc, const std::string& msg)
 {
-    auto posLBracket = message.find('(');
-    if (posLBracket != std::string::npos)
+    auto posColon0 = sloc.find_last_of(':');
+    if (posColon0 != std::string::npos)
     {
-        auto posRBracket = message.find(')', posLBracket);
-        if (posRBracket != std::string::npos)
+        auto posColon1 = sloc.find_last_of(':', posColon0 - 1);
+        if (posColon1 != std::string::npos)
         {
-            auto posColon0 = message.find(':', posLBracket);
-            if (posColon0 != std::string::npos && posLBracket < posColon0 && posColon0 < posRBracket)
-            {
-                ++posColon0;
-                auto posColon1 = message.find(':', posColon0);
-                if (posColon1 != std::string::npos && posColon1 < posRBracket)
-                {
-                    auto lineNoStr = message.substr(posColon0, posColon1 - posColon0);
-                    auto lineNo = std::stoi(lineNoStr);
+            auto lineNoStr = sloc.substr(posColon1 + 1, posColon0 - posColon1 - 1);
+            auto lineNo = std::stoi(lineNoStr);
 
-                    auto posColon2 = message.find(':', posRBracket);
-                    if (posColon2 != std::string::npos && posRBracket < posColon2)
-                    {
-                        posColon2 += 2;
-                        reportedErrors_.push_back({ lineNo, message.substr(posColon2) });
-                    }
-                }
-            }
+            reportedErrors_.push_back({ lineNo, msg });
         }
     }
 }

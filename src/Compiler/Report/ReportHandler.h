@@ -73,6 +73,8 @@ class ReportHandler
 
         Report MakeReport(
             const ReportTypes               type,
+            const std::string&              typeName,
+            const std::string&              source,
             const std::string&              msg,
             SourceCode*                     sourceCode,
             const SourceArea&               area,

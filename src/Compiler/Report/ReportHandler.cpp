@@ -71,26 +71,16 @@ void ReportHandler::SubmitReport(
     }
     #endif // /TODO
 
-    /* Initialize output message */
-    auto outputMsg = typeName;
-
-    /* Add source position */
-    if (area.Pos().IsValid())
-    {
-        outputMsg += " (";
-        outputMsg += area.Pos().ToString();
-        outputMsg += ") ";
-    }
-    else
-        outputMsg += " ";
-
-    outputMsg += ": ";
-
-    /* Add actual report message */
-    outputMsg += msg;
-
     /* Make report object */
-    auto report = MakeReport(type, outputMsg, sourceCode, area, secondaryAreas);
+    auto report = MakeReport(
+        type,
+        typeName,
+        (area.Pos().IsValid() ? area.Pos().ToString() : ""),
+        msg,
+        sourceCode,
+        area,
+        secondaryAreas
+    );
 
     /* Move hint queue into report */
     report.TakeHints(std::move(g_hintQueue));
@@ -124,6 +114,8 @@ void ReportHandler::HintForNextReport(const std::string& hint)
 
 Report ReportHandler::MakeReport(
     const ReportTypes               type,
+    const std::string&              typeName,
+    const std::string&              source,
     const std::string&              msg,
     SourceCode*                     sourceCode,
     const SourceArea&               area,
@@ -161,12 +153,12 @@ Report ReportHandler::MakeReport(
 
         /* Return report */
         if (!line.empty())
-            return Report { type, msg, line, marker, contextDesc };
+            return Report{ type, typeName, source, msg, line, marker, contextDesc };
         else
-            return Report { type, msg, contextDesc };
+            return Report{ type, typeName, source, msg, contextDesc };
     }
     else
-        return Report { type, msg, contextDesc };
+        return Report{ type, typeName, source, msg, contextDesc };
 }
 
 

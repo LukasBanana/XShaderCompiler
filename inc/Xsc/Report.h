@@ -35,19 +35,48 @@ class Report : public std::exception
         Report(const Report&) = default;
         Report& operator = (const Report&) = default;
 
-        inline Report(const ReportTypes type, const std::string& message, const std::string& context = "") :
+        inline Report(
+            const ReportTypes   type,
+            const std::string&  message,
+            const std::string&  context = "")
+        :
             type_    { type    },
             context_ { context },
             message_ { message }
         {
         }
 
-        inline Report(const ReportTypes type, const std::string& message, const std::string& line, const std::string& marker, const std::string& context = "") :
-            type_    { type    },
-            context_ { context },
-            message_ { message },
-            line_    { line    },
-            marker_  { marker  }
+        inline Report(
+            const ReportTypes   type,
+            const std::string&  typeName,
+            const std::string&  source,
+            const std::string&  message,
+            const std::string&  context = "")
+        :
+            type_     { type     },
+            typeName_ { typeName },
+            context_  { context  },
+            source_   { source   },
+            message_  { message  }
+        {
+        }
+
+        inline Report(
+            const ReportTypes   type,
+            const std::string&  typeName,
+            const std::string&  source,
+            const std::string&  message,
+            const std::string&  line,
+            const std::string&  marker,
+            const std::string&  context = "")
+        :
+            type_     { type     },
+            typeName_ { typeName },
+            context_  { context  },
+            source_   { source   },
+            message_  { message  },
+            line_     { line     },
+            marker_   { marker   }
         {
             /* Remove new-line characters from end of source line */
             while ( !line_.empty() && ( line_.back() == '\n' || line_.back() == '\r' ) )
@@ -76,6 +105,18 @@ class Report : public std::exception
         inline const std::string& Context() const
         {
             return context_;
+        }
+
+        //! Returns the source location.
+        inline const std::string& Source() const
+        {
+            return source_;
+        }
+
+        //! Returns the name of the report type.
+        inline const std::string& TypeName() const
+        {
+            return typeName_;
         }
 
         //! Returns the message string.
@@ -115,7 +156,9 @@ class Report : public std::exception
     private:
 
         ReportTypes                 type_       = ReportTypes::Info;
+        std::string                 typeName_;
         std::string                 context_;
+        std::string                 source_;
         std::string                 message_;
         std::string                 line_;
         std::string                 marker_;

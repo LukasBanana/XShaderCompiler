@@ -63,6 +63,8 @@ class Shell
 
         bool Compile(const std::string& filename);
 
+    private:
+
         ShellState              state_;
         std::stack<ShellState>  stateStack_;
 
