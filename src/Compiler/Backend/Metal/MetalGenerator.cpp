@@ -514,7 +514,7 @@ IMPLEMENT_VISIT_PROC(IfStmt)
             Visit(elseBody, &ifStmtArgs);
         }
         else
-            Visit(elseBody);
+            WriteScopedStmt(elseBody);
     }
 }
 
