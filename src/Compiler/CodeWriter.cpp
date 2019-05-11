@@ -265,7 +265,7 @@ void CodeWriter::Separator()
 
 CodeWriter::Options CodeWriter::CurrentOptions() const
 {
-    return (!optionsStack_.empty() ? optionsStack_.top() : Options());
+    return (!optionsStack_.empty() ? optionsStack_.top() : Options{});
 }
 
 void CodeWriter::FlushSeparatedLines(SeparatedLineQueue& lineQueue)
@@ -289,7 +289,7 @@ void CodeWriter::FlushSeparatedLines(SeparatedLineQueue& lineQueue)
             if (i + 1 < line.parts.size())
             {
                 /* Write tabbed spaces (limit this to avoid bad_alloc exception on failure) */
-                static const std::size_t tabLimit = 50;
+                static const std::size_t tabLimit = 128;
                 auto len = (offsets[i + 1] - offsets[i] - s.size());
                 if (len > 0 && len <= tabLimit)
                     Out() << std::string(len, ' ');
@@ -332,7 +332,7 @@ void CodeWriter::SeparatedLine::Offsets(std::vector<std::size_t>& offsets) const
         if (i + 1 < parts.size())
         {
             /* Set next offset by max{ previous_pos + part_size, next_offset } */
-            pos = std::max(pos + parts[i].size(), offsets[i + 1]);
+            pos = std::max(pos + parts[i].size(), offsets[i + 1] + shift);
         }
     }
 
