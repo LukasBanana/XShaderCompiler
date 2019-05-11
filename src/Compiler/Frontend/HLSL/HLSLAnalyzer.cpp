@@ -645,22 +645,6 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
         Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    if (IsLValueOp(ast->op))
-    {
-        PushLValueExpr(ast);
-        {
-            Visit(ast->expr);
-        }
-        PopLValueExpr();
-
-        AnalyzeLValueExpr(ast->expr.get(), ast);
-    }
-    else
-        Visit(ast->expr);
-}
-
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     AnalyzeCallExpr(ast);

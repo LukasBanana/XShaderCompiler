@@ -137,12 +137,6 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     ConvertExprType(ast);
 }
 
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    VISIT_DEFAULT(PostUnaryExpr);
-    ConvertExprType(ast);
-}
-
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     VISIT_DEFAULT(CallExpr);

@@ -152,7 +152,6 @@ struct AST
         TernaryExpr,
         BinaryExpr,
         UnaryExpr,
-        PostUnaryExpr, // TODO: replace by UnaryExpr
         CallExpr,
         BracketExpr, // TODO: replace by flags entry
         IdentExpr,
@@ -1209,22 +1208,11 @@ struct UnaryExpr : public Expr
 
     const IdentExpr* FetchLValueExpr() const override;
 
+    // Return true if this is a post unary expression (e.g. x++ instead of ++x); see also Xsc::IsPostUnaryOp.
+    bool IsPostUnary() const;
+
     UnaryOp op      = UnaryOp::Undefined;   // Unary operator. Must not be undefined.
     ExprPtr expr;                           // Right-hand-side expression.
-};
-
-// Post unary expression (e.g. x++, x--)
-struct PostUnaryExpr : public Expr
-{
-    AST_INTERFACE(PostUnaryExpr);
-
-    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
-
-    const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
-
-    //TODO: rename to "subExpr"
-    ExprPtr expr;                           // Left-hand-side expression.
-    UnaryOp op      = UnaryOp::Undefined;   // Unary operator. Must not be undefined.
 };
 
 // Function call expression (e.g. "foo()" or "foo().bar()" or "foo()[0].bar()").

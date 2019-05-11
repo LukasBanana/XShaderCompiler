@@ -69,26 +69,25 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( AliasDecl         );
         DECL_VISIT_PROC( FunctionDecl      );
 
-        DECL_VISIT_PROC( BufferDeclStmt   );
+        DECL_VISIT_PROC( BufferDeclStmt    );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( VarDeclStmt      );
-        DECL_VISIT_PROC( BasicDeclStmt    );
+        DECL_VISIT_PROC( VarDeclStmt       );
+        DECL_VISIT_PROC( BasicDeclStmt     );
 
-        DECL_VISIT_PROC( ScopeStmt    );
-        DECL_VISIT_PROC( ForStmt      );
-        DECL_VISIT_PROC( WhileStmt    );
-        DECL_VISIT_PROC( DoWhileStmt  );
-        DECL_VISIT_PROC( IfStmt           );
-        DECL_VISIT_PROC( SwitchStmt       );
-        DECL_VISIT_PROC( ExprStmt         );
-        DECL_VISIT_PROC( ReturnStmt       );
+        DECL_VISIT_PROC( ScopeStmt         );
+        DECL_VISIT_PROC( ForStmt           );
+        DECL_VISIT_PROC( WhileStmt         );
+        DECL_VISIT_PROC( DoWhileStmt       );
+        DECL_VISIT_PROC( IfStmt            );
+        DECL_VISIT_PROC( SwitchStmt        );
+        DECL_VISIT_PROC( ExprStmt          );
+        DECL_VISIT_PROC( ReturnStmt        );
 
         DECL_VISIT_PROC( UnaryExpr         );
-        DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( AssignExpr        );
-        DECL_VISIT_PROC( IdentExpr        );
-        DECL_VISIT_PROC( SubscriptExpr         );
+        DECL_VISIT_PROC( IdentExpr         );
+        DECL_VISIT_PROC( SubscriptExpr     );
 
         /* ----- Declarations ----- */
 

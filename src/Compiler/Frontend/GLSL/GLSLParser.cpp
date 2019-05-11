@@ -1057,22 +1057,22 @@ UnaryExprPtr GLSLParser::ParseUnaryExpr()
     /* Parse unary expression (e.g. "++x", "!x", "+x", "-x") */
     auto ast = Make<UnaryExpr>();
 
-    ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+    ast->op     = StringToUnaryOp(AcceptIt()->Spell(), false);
     ast->expr   = ParsePrimaryExpr();
 
     return UpdateSourceArea(ast);
 }
 
-PostUnaryExprPtr GLSLParser::ParsePostUnaryExpr(const ExprPtr& expr)
+UnaryExprPtr GLSLParser::ParsePostUnaryExpr(const ExprPtr& expr)
 {
     if (!Is(Tokens::UnaryOp))
         ErrorUnexpected(R_ExpectedUnaryOp);
 
     /* Parse post-unary expression (e.g. "x++", "x--") */
-    auto ast = Make<PostUnaryExpr>();
+    auto ast = Make<UnaryExpr>();
 
     ast->expr   = expr;
-    ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+    ast->op     = StringToUnaryOp(AcceptIt()->Spell(), true);
 
     UpdateSourceArea(ast, expr.get());
     UpdateSourceAreaOffset(ast);

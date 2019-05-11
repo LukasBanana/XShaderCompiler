@@ -136,7 +136,7 @@ class HLSLParser : public SLParser
         ExprPtr                         ParseTypeSpecifierOrCallExpr();
         TypeSpecifierExprPtr            ParseTypeSpecifierExpr();
         UnaryExprPtr                    ParseUnaryExpr();
-        PostUnaryExprPtr                ParsePostUnaryExpr(const ExprPtr& expr);
+        UnaryExprPtr                    ParsePostUnaryExpr(const ExprPtr& expr);
         ExprPtr                         ParseExprWithBracketPrefix();
         IdentExprPtr                    ParseIdentExpr(const ExprPtr& expr = nullptr);
         AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);

@@ -128,7 +128,7 @@ class GLSLParser : public SLParser
         ExprPtr                         ParseTypeSpecifierOrCallExpr();
         TypeSpecifierExprPtr            ParseTypeSpecifierExpr();
         UnaryExprPtr                    ParseUnaryExpr();
-        PostUnaryExprPtr                ParsePostUnaryExpr(const ExprPtr& expr);
+        UnaryExprPtr                    ParsePostUnaryExpr(const ExprPtr& expr);
         BracketExprPtr                  ParseBracketExpr();
         IdentExprPtr                    ParseIdentExpr(const ExprPtr& prefixExpr = nullptr);
         AssignExprPtr                   ParseAssignExpr(const ExprPtr& lvalueExpr);

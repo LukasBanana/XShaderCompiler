@@ -61,7 +61,7 @@ class VisitorTracker : public Visitor
         void PushLValueExpr(Expr* expr);
         void PopLValueExpr();
 
-        // Returns the active (inner most) l-value expression or null (can be AssignExpr, UnaryExpr, or PostUnaryExpr).
+        // Returns the active (inner most) l-value expression or null (can be AssignExpr or UnaryExpr).
         Expr* ActiveLValueExpr() const;
 
         /* ----- Structure declaration tracker ----- */

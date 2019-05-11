@@ -62,6 +62,9 @@ class MetalGenerator : public Generator
         // Error for intrinsics, that can not be mapped to Metal keywords.
         void ErrorIntrinsic(const std::string& intrinsicName, const AST* ast = nullptr);
 
+        // Determines the shader target type for the specified function if it is an entry point.
+        ShaderTarget DetermineEntryPointType(FunctionDecl& funcDecl);
+
         /* --- Visitor implementation --- */
 
         DECL_VISIT_PROC( Program           );
@@ -99,7 +102,6 @@ class MetalGenerator : public Generator
         DECL_VISIT_PROC( TernaryExpr       );
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );
-        DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( BracketExpr       );
         DECL_VISIT_PROC( IdentExpr         );
@@ -189,6 +191,7 @@ class MetalGenerator : public Generator
 
     private:
 
+        ShaderTarget        shaderTarget_           = ShaderTarget::Undefined;
         OutputShaderVersion versionOut_             = OutputShaderVersion::Metal;
 
         bool                preserveComments_       = false;

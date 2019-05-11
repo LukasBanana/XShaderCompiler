@@ -497,18 +497,16 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
     PushPrintable(ast, WriteLabel("UnaryExpr", ast));
     {
-        Printable(ast, "op", UnaryOpToString(ast->op));
-        VISIT_MEMBER(expr);
-    }
-    PopPrintable();
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    PushPrintable(ast, WriteLabel("PostUnaryExpr", ast));
-    {
-        VISIT_MEMBER(expr);
-        Printable(ast, "op", UnaryOpToString(ast->op));
+        if (ast->IsPostUnary())
+        {
+            VISIT_MEMBER(expr);
+            Printable(ast, "op", UnaryOpToString(ast->op, true));
+        }
+        else
+        {
+            Printable(ast, "op", UnaryOpToString(ast->op, false));
+            VISIT_MEMBER(expr);
+        }
     }
     PopPrintable();
 }

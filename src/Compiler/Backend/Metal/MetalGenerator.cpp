@@ -57,6 +57,7 @@ void MetalGenerator::GenerateCodePrimary(
     Program& program, const ShaderInput& inputDesc, const ShaderOutput& outputDesc)
 {
     /* Store parameters */
+    shaderTarget_       = inputDesc.shaderTarget;
     versionOut_         = outputDesc.shaderVersion;
     preserveComments_   = outputDesc.options.preserveComments;
     writeHeaderComment_ = outputDesc.options.writeGeneratorHeader;
@@ -120,6 +121,14 @@ std::unique_ptr<std::string> MetalGenerator::SemanticToKeyword(const IndexedSema
 void MetalGenerator::ErrorIntrinsic(const std::string& intrinsicName, const AST* ast)
 {
     Error(R_FailedToMapToMetalKeyword(R_Intrinsic(intrinsicName)), ast);
+}
+
+ShaderTarget MetalGenerator::DetermineEntryPointType(FunctionDecl& funcDecl)
+{
+    if (&funcDecl == GetProgram()->entryPointRef)
+        return shaderTarget_;
+    else
+        return funcDecl.DetermineEntryPointType();
 }
 
 /* ------- Visit functions ------- */
@@ -597,14 +606,16 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    Write(UnaryOpToString(ast->op));
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    Visit(ast->expr);
-    Write(UnaryOpToString(ast->op));
+    if (ast->IsPostUnary())
+    {
+        Visit(ast->expr);
+        Write(UnaryOpToString(ast->op, true));
+    }
+    else
+    {
+        Write(UnaryOpToString(ast->op, false));
+        Visit(ast->expr);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)
@@ -998,7 +1009,7 @@ void MetalGenerator::WriteFunction(FunctionDecl* ast)
     /* Write function header */
     BeginLn();
 
-    auto entryPointTarget = ast->DetermineEntryPointType();
+    auto entryPointTarget = DetermineEntryPointType(*ast);
     if (entryPointTarget != ShaderTarget::Undefined)
     {
         /* Write entry point target type and store in function declaration */
@@ -1120,7 +1131,7 @@ void MetalGenerator::WriteCallExprIntrinsicMul(CallExpr* funcCall)
         e.g. "mul(wMatrix, pos + float4(0, 1, 0, 0))" -> "wMatrix * (pos + float4(0, 1, 0, 0))" needs extra brackets
         */
         auto type = expr->Type();
-        if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr || type == AST::Types::PostUnaryExpr)
+        if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr)
         {
             Write("(");
             Visit(expr);

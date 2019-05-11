@@ -1094,7 +1094,7 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
             /* Parse unary expression */
             auto ast = Make<UnaryExpr>();
             {
-                ast->op     = StringToUnaryOp(AcceptIt()->Spell());
+                ast->op     = StringToUnaryOp(AcceptIt()->Spell(), false);
                 ast->expr   = ParseValueExpr();
             }
             return ast;

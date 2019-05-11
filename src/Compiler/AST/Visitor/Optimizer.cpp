@@ -168,12 +168,6 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     OptimizeExpr(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    VISIT_DEFAULT(PostUnaryExpr);
-    OptimizeExpr(ast->expr);
-}
-
 IMPLEMENT_VISIT_PROC(BracketExpr)
 {
     VISIT_DEFAULT(BracketExpr);

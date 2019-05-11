@@ -231,6 +231,11 @@ Variant ExprEvaluator::EvaluateUnaryOp(const UnaryExpr* ast, Variant rhs)
 
         case UnaryOp::Dec:
             return (--rhs);
+
+        case UnaryOp::PostInc:
+        case UnaryOp::PostDec:
+            /* Only return original value (post inc/dec will return the value BEFORE the operation) */
+            return rhs;
     }
     return {};
 }
@@ -415,30 +420,6 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     }
 
     Push({});
-}
-
-// EXPR OP
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    Visit(ast->expr);
-
-    if (auto lhs = Pop())
-    {
-        switch (ast->op)
-        {
-            case UnaryOp::Inc:
-            case UnaryOp::Dec:
-                /* Only return original value (post inc/dec will return the value BEFORE the operation) */
-                Push(lhs);
-                break;
-            default:
-                if (throwOnFailure_)
-                    IllegalExpr(R_UnaryOp(UnaryOpToString(ast->op)), ast);
-                else
-                    Abort();
-                break;
-        }
-    }
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)

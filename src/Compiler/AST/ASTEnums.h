@@ -109,15 +109,21 @@ enum class UnaryOp
     Negate,     // Negate (e.g. -x)
     Inc,        // Increment (e.g. ++x)
     Dec,        // Decrement (e.g. --x)
+
+    PostInc,    // Post increment (e.g. x++)
+    PostDec,    // Post decrement (e.g. x--)
 };
 
-std::string UnaryOpToString(const UnaryOp o);
-UnaryOp StringToUnaryOp(const std::string& s);
+std::string UnaryOpToString(const UnaryOp o, bool postUnaryExpr);
+UnaryOp StringToUnaryOp(const std::string& s, bool postUnaryExpr);
 
 bool IsLogicalOp(const UnaryOp o);
 bool IsBitwiseOp(const UnaryOp o);
 
-// Returns true if the specified unary operator is only for l-values (e.g. ++x or --x).
+// Returns true if the specified unary operator is a post increment or decremenet operator (i.e. UnaryOp::PostInc or UnaryOp::PostDec).
+bool IsPostUnaryOp(const UnaryOp o);
+
+// Returns true if the specified unary operator is only for l-values (i.e. ++x, --x, x++, and x--).
 bool IsLValueOp(const UnaryOp o);
 
 

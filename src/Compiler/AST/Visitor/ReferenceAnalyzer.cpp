@@ -240,13 +240,6 @@ IMPLEMENT_VISIT_PROC(UnaryExpr)
     VISIT_DEFAULT(UnaryExpr);
 }
 
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    if (IsLValueOp(ast->op))
-        MarkLValueExpr(ast->expr.get());
-    VISIT_DEFAULT(PostUnaryExpr);
-}
-
 IMPLEMENT_VISIT_PROC(CallExpr)
 {
     /* Don't use forward declaration for call stack */

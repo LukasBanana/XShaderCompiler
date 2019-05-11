@@ -2069,29 +2069,9 @@ const IdentExpr* UnaryExpr::FetchLValueExpr() const
         return nullptr;
 }
 
-
-/* ----- PostUnaryExpr ----- */
-
-TypeDenoterPtr PostUnaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
+bool UnaryExpr::IsPostUnary() const
 {
-    return expr->GetTypeDenoter();
-}
-
-const Expr* PostUnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
-{
-    if (predicate)
-    {
-        /* Call predicate for this expression */
-        CALL_EXPR_FIND_PREDICATE(predicate);
-
-        /* Search in sub expression */
-        if ((flags & SearchRValue) != 0)
-        {
-            if (auto e = expr->Find(predicate, flags))
-                return e;
-        }
-    }
-    return nullptr;
+    return IsPostUnaryOp(op);
 }
 
 

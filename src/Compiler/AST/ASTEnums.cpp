@@ -184,14 +184,26 @@ static const std::map<UnaryOp, std::string> g_mapUnaryOp
     { UnaryOp::Dec,         "--" },
 };
 
-std::string UnaryOpToString(const UnaryOp o)
+static const std::map<UnaryOp, std::string> g_mapPostUnaryOp
 {
-    return TypeToString(g_mapUnaryOp, o, "UnaryOp");
+    { UnaryOp::PostInc, "++" },
+    { UnaryOp::PostDec, "--" },
+};
+
+std::string UnaryOpToString(const UnaryOp o, bool postUnaryExpr)
+{
+    if (postUnaryExpr)
+        return TypeToString(g_mapPostUnaryOp, o, "UnaryOp");
+    else
+        return TypeToString(g_mapUnaryOp, o, "UnaryOp");
 }
 
-UnaryOp StringToUnaryOp(const std::string& s)
+UnaryOp StringToUnaryOp(const std::string& s, bool postUnaryExpr)
 {
-    return StringToType(g_mapUnaryOp, s, "UnaryOp");
+    if (postUnaryExpr)
+        return StringToType(g_mapPostUnaryOp, s, "UnaryOp");
+    else
+        return StringToType(g_mapUnaryOp, s, "UnaryOp");
 }
 
 bool IsLogicalOp(const UnaryOp o)
@@ -204,9 +216,14 @@ bool IsBitwiseOp(const UnaryOp o)
     return (o == UnaryOp::Not);
 }
 
+bool IsPostUnaryOp(const UnaryOp o)
+{
+    return (o == UnaryOp::PostInc || o == UnaryOp::PostDec);
+}
+
 bool IsLValueOp(const UnaryOp o)
 {
-    return (o == UnaryOp::Inc || o == UnaryOp::Dec);
+    return (o >= UnaryOp::Inc && o <= UnaryOp::PostDec);
 }
 
 

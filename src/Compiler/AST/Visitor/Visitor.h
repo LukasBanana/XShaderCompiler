@@ -72,7 +72,6 @@ DECL_PTR( TypeSpecifierExpr );
 DECL_PTR( TernaryExpr       );
 DECL_PTR( BinaryExpr        );
 DECL_PTR( UnaryExpr         );
-DECL_PTR( PostUnaryExpr     );
 DECL_PTR( CallExpr          );
 DECL_PTR( BracketExpr       );
 DECL_PTR( IdentExpr         );
@@ -127,9 +126,9 @@ class Visitor
 
         VISITOR_VISIT_PROC( NullStmt          );
         VISITOR_VISIT_PROC( ScopeStmt         );
-        VISITOR_VISIT_PROC( ForStmt       );
-        VISITOR_VISIT_PROC( WhileStmt     );
-        VISITOR_VISIT_PROC( DoWhileStmt   );
+        VISITOR_VISIT_PROC( ForStmt           );
+        VISITOR_VISIT_PROC( WhileStmt         );
+        VISITOR_VISIT_PROC( DoWhileStmt       );
         VISITOR_VISIT_PROC( IfStmt            );
         VISITOR_VISIT_PROC( SwitchStmt        );
         VISITOR_VISIT_PROC( ExprStmt          );
@@ -144,12 +143,11 @@ class Visitor
         VISITOR_VISIT_PROC( TernaryExpr       );
         VISITOR_VISIT_PROC( BinaryExpr        );
         VISITOR_VISIT_PROC( UnaryExpr         );
-        VISITOR_VISIT_PROC( PostUnaryExpr     );
         VISITOR_VISIT_PROC( CallExpr          );
         VISITOR_VISIT_PROC( BracketExpr       );
         VISITOR_VISIT_PROC( AssignExpr        );
-        VISITOR_VISIT_PROC( IdentExpr        );
-        VISITOR_VISIT_PROC( SubscriptExpr         );
+        VISITOR_VISIT_PROC( IdentExpr         );
+        VISITOR_VISIT_PROC( SubscriptExpr     );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( InitializerExpr   );
 

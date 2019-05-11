@@ -57,7 +57,6 @@ class TypeConverter : public Visitor
         DECL_VISIT_PROC( TernaryExpr     );
         DECL_VISIT_PROC( BinaryExpr      );
         DECL_VISIT_PROC( UnaryExpr       );
-        DECL_VISIT_PROC( PostUnaryExpr   );
         DECL_VISIT_PROC( CallExpr        );
         DECL_VISIT_PROC( BracketExpr     );
         DECL_VISIT_PROC( CastExpr        );

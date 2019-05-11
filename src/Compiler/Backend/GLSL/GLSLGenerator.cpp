@@ -941,14 +941,16 @@ IMPLEMENT_VISIT_PROC(BinaryExpr)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    Write(UnaryOpToString(ast->op));
-    Visit(ast->expr);
-}
-
-IMPLEMENT_VISIT_PROC(PostUnaryExpr)
-{
-    Visit(ast->expr);
-    Write(UnaryOpToString(ast->op));
+    if (ast->IsPostUnary())
+    {
+        Visit(ast->expr);
+        Write(UnaryOpToString(ast->op, true));
+    }
+    else
+    {
+        Write(UnaryOpToString(ast->op, false));
+        Visit(ast->expr);
+    }
 }
 
 IMPLEMENT_VISIT_PROC(CallExpr)
@@ -2593,7 +2595,7 @@ void GLSLGenerator::WriteCallExprIntrinsicMul(CallExpr* funcCall)
         e.g. "mul(wMatrix, pos + float4(0, 1, 0, 0))" -> "wMatrix * (pos + float4(0, 1, 0, 0))" needs extra brackets
         */
         auto type = expr->Type();
-        if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr || type == AST::Types::PostUnaryExpr)
+        if (type == AST::Types::TernaryExpr || type == AST::Types::BinaryExpr || type == AST::Types::UnaryExpr)
         {
             Write("(");
             Visit(expr);
