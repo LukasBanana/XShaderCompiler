@@ -197,7 +197,7 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
     Returns a sub type denoter for the specified expression.
     If the input expression is null, the return value is a 'shared_from_this' object.
     Otherwise, the type denoter is derived by the expression,
-    e.g. with an 'ArrayExpr' this type denoter is expected to be an 'ArrayTypeDenoter' and its base type is returned.
+    e.g. with an 'SubscriptExpr' this type denoter is expected to be an 'ArrayTypeDenoter' and its base type is returned.
     */
     virtual TypeDenoterPtr GetSub(const Expr* expr = nullptr);
 

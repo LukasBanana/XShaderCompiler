@@ -45,9 +45,9 @@ class TypeConverter : public Visitor
 
         DECL_VISIT_PROC( VarDecl         );
 
-        DECL_VISIT_PROC( ForLoopStmt     );
-        DECL_VISIT_PROC( WhileLoopStmt   );
-        DECL_VISIT_PROC( DoWhileLoopStmt );
+        DECL_VISIT_PROC( ForStmt         );
+        DECL_VISIT_PROC( WhileStmt       );
+        DECL_VISIT_PROC( DoWhileStmt     );
         DECL_VISIT_PROC( IfStmt          );
         DECL_VISIT_PROC( SwitchStmt      );
         DECL_VISIT_PROC( ExprStmt        );
@@ -61,9 +61,9 @@ class TypeConverter : public Visitor
         DECL_VISIT_PROC( CallExpr        );
         DECL_VISIT_PROC( BracketExpr     );
         DECL_VISIT_PROC( CastExpr        );
-        DECL_VISIT_PROC( ObjectExpr      );
+        DECL_VISIT_PROC( IdentExpr       );
         DECL_VISIT_PROC( AssignExpr      );
-        DECL_VISIT_PROC( ArrayExpr       );
+        DECL_VISIT_PROC( SubscriptExpr   );
         DECL_VISIT_PROC( InitializerExpr );
 
     private:

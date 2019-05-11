@@ -66,23 +66,23 @@ void ReferenceAnalyzer::MarkLValueExpr(const Expr* expr)
 {
     if (expr)
     {
-        if (auto objectExpr = expr->As<ObjectExpr>())
-            MarkLValueExprObject(objectExpr);
+        if (auto identExpr = expr->As<IdentExpr>())
+            MarkLValueExprObject(identExpr);
         else if (auto bracketExpr = expr->As<BracketExpr>())
             MarkLValueExpr(bracketExpr->expr.get());
-        else if (auto arrayExpr = expr->As<ArrayExpr>())
-            MarkLValueExpr(arrayExpr->prefixExpr.get());
+        else if (auto subscriptExpr = expr->As<SubscriptExpr>())
+            MarkLValueExpr(subscriptExpr->prefixExpr.get());
     }
 }
 
-void ReferenceAnalyzer::MarkLValueExprObject(const ObjectExpr* objectExpr)
+void ReferenceAnalyzer::MarkLValueExprObject(const IdentExpr* identExpr)
 {
-    if (objectExpr)
+    if (identExpr)
     {
         /* Mark prefix expression as l-value */
-        MarkLValueExpr(objectExpr->prefixExpr.get());
+        MarkLValueExpr(identExpr->prefixExpr.get());
 
-        if (auto symbol = objectExpr->symbolRef)
+        if (auto symbol = identExpr->symbolRef)
         {
             /* Mark symbol that it is written to */
             symbol->flags << Decl::isWrittenTo;
@@ -322,7 +322,7 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     VISIT_DEFAULT(CallExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     /* Check if this symbol is the fragment coordinate (SV_Position/ gl_FragCoord) */
     if (auto varDecl = ast->FetchVarDecl())
@@ -348,7 +348,7 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     /* Visit symbol reference and sub nodes */
     Visit(ast->symbolRef);
 
-    VISIT_DEFAULT(ObjectExpr);
+    VISIT_DEFAULT(IdentExpr);
 }
 
 IMPLEMENT_VISIT_PROC(AssignExpr)

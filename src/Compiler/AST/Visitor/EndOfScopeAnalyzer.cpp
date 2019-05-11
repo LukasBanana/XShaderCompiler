@@ -36,17 +36,17 @@ IMPLEMENT_VISIT_PROC(CodeBlock)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     // do nothing
 }
@@ -72,7 +72,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
     ast->flags << ReturnStmt::isEndOfFunction;
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
+IMPLEMENT_VISIT_PROC(JumpStmt)
 {
     // do nothing
 }

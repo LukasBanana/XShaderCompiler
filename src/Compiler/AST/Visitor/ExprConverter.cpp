@@ -217,31 +217,31 @@ IMPLEMENT_VISIT_PROC(FunctionDecl)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     ConvertExpr(ast->iteration, AllPreVisit);
     {
-        VISIT_DEFAULT(ForLoopStmt);
+        VISIT_DEFAULT(ForStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
     ConvertExpr(ast->iteration, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     {
-        VISIT_DEFAULT(WhileLoopStmt);
+        VISIT_DEFAULT(WhileStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     ConvertExpr(ast->condition, AllPreVisit);
     {
-        VISIT_DEFAULT(DoWhileLoopStmt);
+        VISIT_DEFAULT(DoWhileStmt);
     }
     ConvertExpr(ast->condition, AllPostVisit);
 }
@@ -420,11 +420,11 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     ConvertExpr(ast->expr, AllPostVisit);
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     ConvertExpr(ast->prefixExpr, AllPreVisit);
     {
-        VISIT_DEFAULT(ObjectExpr);
+        VISIT_DEFAULT(IdentExpr);
     }
     ConvertExpr(ast->prefixExpr, AllPostVisit);
 }
@@ -442,12 +442,12 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     ConvertExprTargetType(ast->rvalueExpr, ast->lvalueExpr->GetTypeDenoter()->GetAliased());
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
     for (auto& expr : ast->arrayIndices)
         ConvertExpr(expr, AllPreVisit);
 
-    VISIT_DEFAULT(ArrayExpr);
+    VISIT_DEFAULT(SubscriptExpr);
 
     for (auto& expr : ast->arrayIndices)
     {
@@ -535,51 +535,51 @@ void ExprConverter::ConvertExprList(std::vector<ExprPtr>& exprList, const Flags&
 
 void ExprConverter::ConvertExprVectorSubscript(ExprPtr& expr)
 {
-    if (auto objectExpr = expr->As<ObjectExpr>())
-        ConvertExprVectorSubscriptObject(expr, objectExpr);
+    if (auto identExpr = expr->As<IdentExpr>())
+        ConvertExprVectorSubscriptObject(expr, identExpr);
 }
 
-void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr)
+void ExprConverter::ConvertExprVectorSubscriptObject(ExprPtr& expr, IdentExpr* identExpr)
 {
-    if (!objectExpr->symbolRef && objectExpr->prefixExpr)
+    if (!identExpr->symbolRef && identExpr->prefixExpr)
     {
         /* Get type denoter of prefix expression */
-        const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+        const auto& prefixTypeDen = identExpr->prefixExpr->GetTypeDenoter()->GetAliased();
         if (prefixTypeDen.IsScalar())
         {
             /* Convert vector subscript to cast expression */
-            auto vectorTypeDen = objectExpr->GetTypeDenoterFromSubscript();
+            auto vectorTypeDen = identExpr->GetTypeDenoterFromSubscript();
 
             /* Convert to cast expression */
-            expr = ASTFactory::MakeCastExpr(vectorTypeDen, objectExpr->prefixExpr);
+            expr = ASTFactory::MakeCastExpr(vectorTypeDen, identExpr->prefixExpr);
         }
     }
 }
 
 void ExprConverter::ConvertExprMatrixSubscript(ExprPtr& expr)
 {
-    if (auto objectExpr = expr->As<ObjectExpr>())
-        ConvertExprMatrixSubscriptObject(expr, objectExpr);
+    if (auto identExpr = expr->As<IdentExpr>())
+        ConvertExprMatrixSubscriptObject(expr, identExpr);
 }
 
-void ExprConverter::ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr)
+void ExprConverter::ConvertExprMatrixSubscriptObject(ExprPtr& expr, IdentExpr* identExpr)
 {
-    if (!objectExpr->symbolRef && objectExpr->prefixExpr)
+    if (!identExpr->symbolRef && identExpr->prefixExpr)
     {
         /* Get type denoter of prefix expression */
-        const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+        const auto& prefixTypeDen = identExpr->prefixExpr->GetTypeDenoter()->GetAliased();
         if (prefixTypeDen.IsMatrix())
         {
             auto prefixBaseTypeDen = prefixTypeDen.As<BaseTypeDenoter>();
 
             /* Get matrix subscript usage */
-            const MatrixSubscriptUsage subscriptUsage(prefixBaseTypeDen->dataType, objectExpr->ident);
+            const MatrixSubscriptUsage subscriptUsage(prefixBaseTypeDen->dataType, identExpr->ident);
 
             if (IsScalarType(subscriptUsage.dataTypeOut) && !subscriptUsage.indices.empty())
             {
                 /* Convert matrix subscript into array access */
                 const auto subscriptIndex = subscriptUsage.indices.front();
-                expr = ASTFactory::MakeArrayExpr(objectExpr->prefixExpr, { subscriptIndex.first, subscriptIndex.second });
+                expr = ASTFactory::MakeSubscriptExpr(identExpr->prefixExpr, { subscriptIndex.first, subscriptIndex.second });
             }
             else
             {
@@ -588,7 +588,7 @@ void ExprConverter::ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* 
                 expr = ASTFactory::MakeWrapperCallExpr(
                     wrapperIdent,
                     std::make_shared<BaseTypeDenoter>(subscriptUsage.dataTypeOut),
-                    { objectExpr->prefixExpr }
+                    { identExpr->prefixExpr }
                 );
             }
         }
@@ -666,15 +666,15 @@ void ExprConverter::ConvertExprImageAccess(ExprPtr& expr)
         /* Is this an array access to an image buffer or texture? */
         if (auto assignExpr = expr->As<AssignExpr>())
             ConvertExprImageAccessAssign(expr, assignExpr);
-        else if (auto arrayExpr = expr->As<ArrayExpr>())
-            ConvertExprImageAccessArray(expr, arrayExpr);
+        else if (auto subscriptExpr = expr->As<SubscriptExpr>())
+            ConvertExprImageAccessArray(expr, subscriptExpr);
     }
 }
 
 void ExprConverter::ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr)
 {
-    if (auto arrayExpr = assignExpr->lvalueExpr->As<ArrayExpr>())
-        ConvertExprImageAccessArray(expr, arrayExpr, assignExpr);
+    if (auto subscriptExpr = assignExpr->lvalueExpr->As<SubscriptExpr>())
+        ConvertExprImageAccessArray(expr, subscriptExpr, assignExpr);
 }
 
 /*
@@ -684,10 +684,10 @@ e.g. "rwTex[getIndex()] += 2;" --> "imageStore(rwTex, getIndex(), imageLoad(rwTe
             ^~~~~~~~~~                                ^~~~~~~~~~                   ^~~~~~~~~~
 results in two function calls! Thus the index expression must be moved into a separated statement.
 */
-void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr)
+void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, SubscriptExpr* subscriptExpr, AssignExpr* assignExpr)
 {
     /* Fetch buffer type denoter from l-value prefix expression */
-    auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
+    auto prefixTypeDen = subscriptExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
     /* Get dimension of array type denoter (not of array expression) */
     std::size_t numDims = 0;
@@ -703,16 +703,16 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
         {
             /* Is the buffer declaration a read/write texture? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (IsRWImageBufferType(bufferType) && numDims < arrayExpr->NumIndices())
+            if (IsRWImageBufferType(bufferType) && numDims < subscriptExpr->NumIndices())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
-                //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
+                //TODO: not sure if the buffer type must be derived with 'GetSub(subscriptExpr)' again here???
                 #if 0
-                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(subscriptExpr);
                 #endif
                 if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                 {
-                    arrayExpr->prefixExpr->flags << Expr::wasConverted;
+                    subscriptExpr->prefixExpr->flags << Expr::wasConverted;
 
                     /* Create a type denoter for the return value */
                     auto callTypeDen = MakeBufferAccessCallTypeDenoter(genericBaseTypeDen->dataType);
@@ -723,15 +723,15 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                     {
                         std::vector<ExprPtr> arrayIndices;
                         for (std::size_t i = 0; i < numDims; ++i)
-                            arrayIndices.push_back(arrayExpr->arrayIndices[i]);
+                            arrayIndices.push_back(subscriptExpr->arrayIndices[i]);
 
-                        arg0Expr = ASTFactory::MakeArrayExpr(arrayExpr->prefixExpr, std::move(arrayIndices));
+                        arg0Expr = ASTFactory::MakeSubscriptExpr(subscriptExpr->prefixExpr, std::move(arrayIndices));
                     }
                     else
-                        arg0Expr = arrayExpr->prefixExpr;
+                        arg0Expr = subscriptExpr->prefixExpr;
 
                     /* Get second argument expression */
-                    auto arg1Expr = arrayExpr->arrayIndices[numDims];
+                    auto arg1Expr = subscriptExpr->arrayIndices[numDims];
 
                     /* Cast to valid dimension */
                     auto textureDim = GetTextureDimFromExpr(arg0Expr.get(), expr.get());
@@ -784,15 +784,15 @@ void ExprConverter::ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayE
                         );
                     }
 
-                    if (arrayExpr->NumIndices() > numDims + 1)
+                    if (subscriptExpr->NumIndices() > numDims + 1)
                     {
                         /* Keep additional array indices (e.g. when "tex[idx][0]" is equivalent to "tex[idx].x") */
-                        arrayExpr->prefixExpr = exprOut;
-                        arrayExpr->arrayIndices.erase(arrayExpr->arrayIndices.begin(), arrayExpr->arrayIndices.begin() + numDims + 1);
+                        subscriptExpr->prefixExpr = exprOut;
+                        subscriptExpr->arrayIndices.erase(subscriptExpr->arrayIndices.begin(), subscriptExpr->arrayIndices.begin() + numDims + 1);
                     }
                     else
                     {
-                        /* Replace output expression with new expression (only at the end, otherwise 'arrayExpr' is a dangling pointer) */
+                        /* Replace output expression with new expression (only at the end, otherwise 'subscriptExpr' is a dangling pointer) */
                         expr = exprOut;
                     }
                 }
@@ -806,15 +806,15 @@ void ExprConverter::ConvertExprSamplerBufferAccess(ExprPtr& expr)
     if (!expr->flags(Expr::wasConverted))
     {
         /* Is this an array access to a sampler buffer? */
-        if (auto arrayExpr = expr->As<ArrayExpr>())
-            ConvertExprSamplerBufferAccessArray(expr, arrayExpr);
+        if (auto subscriptExpr = expr->As<SubscriptExpr>())
+            ConvertExprSamplerBufferAccessArray(expr, subscriptExpr);
     }
 }
 
-void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr)
+void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, SubscriptExpr* subscriptExpr)
 {
     /* Fetch buffer type denoter from l-value prefix expression */
-    auto prefixTypeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
+    auto prefixTypeDen = subscriptExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
     std::size_t numDims = 0;
     if (auto arrayTypeDenoter = prefixTypeDen->As<ArrayTypeDenoter>())
@@ -829,22 +829,22 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
         {
             /* Is the buffer declaration a sampler buffer? */
             const auto bufferType = bufferDecl->GetBufferType();
-            if (bufferType == BufferType::Buffer && numDims < arrayExpr->NumIndices())
+            if (bufferType == BufferType::Buffer && numDims < subscriptExpr->NumIndices())
             {
                 /* Get buffer type denoter from array indices of array access plus identifier */
-                //TODO: not sure if the buffer type must be derived with 'GetSub(arrayExpr)' again here???
+                //TODO: not sure if the buffer type must be derived with 'GetSub(subscriptExpr)' again here???
                 #if 0
-                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(arrayExpr);
+                auto bufferTypeDen = bufferDecl->GetTypeDenoter()->GetSub(subscriptExpr);
                 #endif
                 if (auto genericBaseTypeDen = bufferTypeDen->genericTypeDenoter->As<BaseTypeDenoter>())
                 {
                     /* Create a type denoter for the return value */
                     auto callTypeDen = MakeBufferAccessCallTypeDenoter(genericBaseTypeDen->dataType);
 
-                    arrayExpr->prefixExpr->flags << Expr::wasConverted;
+                    subscriptExpr->prefixExpr->flags << Expr::wasConverted;
 
                     /* Get argument expression (last array index) */
-                    auto argExpr = arrayExpr->arrayIndices.back();
+                    auto argExpr = subscriptExpr->arrayIndices.back();
 
                     /* Convert expression to intrinsic call */
                     auto callExpr = ASTFactory::MakeIntrinsicCallExpr(
@@ -855,12 +855,12 @@ void ExprConverter::ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr
                     {
                         std::vector<ExprPtr> arrayIndices;
                         for (std::size_t i = 0; i < numDims; ++i)
-                            arrayIndices.push_back(arrayExpr->arrayIndices[i]);
+                            arrayIndices.push_back(subscriptExpr->arrayIndices[i]);
 
-                        callExpr->prefixExpr = ASTFactory::MakeArrayExpr(arrayExpr->prefixExpr, std::move(arrayIndices));
+                        callExpr->prefixExpr = ASTFactory::MakeSubscriptExpr(subscriptExpr->prefixExpr, std::move(arrayIndices));
                     }
                     else
-                        callExpr->prefixExpr = arrayExpr->prefixExpr;
+                        callExpr->prefixExpr = subscriptExpr->prefixExpr;
 
                     expr = callExpr;
                 }
@@ -975,17 +975,17 @@ void ExprConverter::ConvertExprFormatInitializer(ExprPtr& expr, InitializerExpr*
 
 void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
 {
-    if (!expr->flags(Expr::wasConverted) && expr->Type() == AST::Types::ArrayExpr)
+    if (!expr->flags(Expr::wasConverted) && expr->Type() == AST::Types::SubscriptExpr)
     {
-        if (auto arrayExpr = std::static_pointer_cast<ArrayExpr>(expr))
+        if (auto subscriptExpr = std::static_pointer_cast<SubscriptExpr>(expr))
         {
             /*
             Split array expression if needed, e.g. when 'tex[1][idx][0]' is equivalent to 'tex[1][idx].r',
             i.e. the Texture Operator[] is not the last array index.
             */
-            for (std::size_t i = 0; i + 1u < arrayExpr->NumIndices(); ++i)
+            for (std::size_t i = 0; i + 1u < subscriptExpr->NumIndices(); ++i)
             {
-                auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - i - 1);
+                auto typeDen = subscriptExpr->prefixExpr->GetTypeDenoter()->GetSubArray(subscriptExpr->NumIndices() - i - 1);
                 if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
                 {
                     if (!IsTextureBufferType(bufferTypeDen->bufferType))
@@ -996,16 +996,16 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
 
                     if (i > 0)
                     {
-                        arrayExpr = ASTFactory::MakeArrayExprSplit(arrayExpr, arrayExpr->NumIndices() - i);
-                        ConvertExprTextureBracketOp(arrayExpr->prefixExpr);
-                        expr = arrayExpr;
+                        subscriptExpr = ASTFactory::MakeSubscriptExprSplit(subscriptExpr, subscriptExpr->NumIndices() - i);
+                        ConvertExprTextureBracketOp(subscriptExpr->prefixExpr);
+                        expr = subscriptExpr;
                     }
                     break;
                 }
             }
 
             /* Has the prefix expression a Texture type denoter? */
-            auto typeDen = arrayExpr->prefixExpr->GetTypeDenoter()->GetSubArray(arrayExpr->NumIndices() - 1);
+            auto typeDen = subscriptExpr->prefixExpr->GetTypeDenoter()->GetSubArray(subscriptExpr->NumIndices() - 1);
             if (auto bufferTypeDen = typeDen->As<BufferTypeDenoter>())
             {
                 if (!IsTextureBufferType(bufferTypeDen->bufferType))
@@ -1019,16 +1019,16 @@ void ExprConverter::ConvertExprTextureBracketOp(ExprPtr& expr)
                 /* Make "Load" intrinsic call */
                 auto callExpr = ASTFactory::MakeIntrinsicCallExpr(
                     Intrinsic::Texture_Load_1, "Load", nullptr,
-                    { arrayExpr->arrayIndices.back() }
+                    { subscriptExpr->arrayIndices.back() }
                 );
 
                 /* Use former expression as prefix for intrinsic call */
                 ExprPtr prefixExpr;
 
-                arrayExpr->arrayIndices.pop_back();
+                subscriptExpr->arrayIndices.pop_back();
 
-                if (arrayExpr->arrayIndices.empty())
-                    callExpr->prefixExpr = arrayExpr->prefixExpr;
+                if (subscriptExpr->arrayIndices.empty())
+                    callExpr->prefixExpr = subscriptExpr->prefixExpr;
                 else
                     callExpr->prefixExpr = expr;
 
@@ -1073,7 +1073,7 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
                             /* Append vector subscript to intrinsic call (use "rgba" instead of "xyzw" for color based purposes) */
                             const std::string vectorSubscript = "rgb";
 
-                            expr = ASTFactory::MakeObjectExpr(
+                            expr = ASTFactory::MakeIdentExpr(
                                 expr,
                                 vectorSubscript.substr(0, static_cast<std::size_t>(vecTypeDim))
                             );
@@ -1088,15 +1088,15 @@ void ExprConverter::ConvertExprTextureIntrinsicVec4(ExprPtr& expr)
 void ExprConverter::ConvertExprCompatibleStruct(ExprPtr& expr)
 {
     /* Is this an object expression? */
-    if (auto objectExpr = expr->As<ObjectExpr>())
+    if (auto identExpr = expr->As<IdentExpr>())
     {
-        if (objectExpr->prefixExpr && objectExpr->symbolRef)
+        if (identExpr->prefixExpr && identExpr->symbolRef)
         {
             /* Does the object expression refer to a variable? */
-            if (auto varDecl = objectExpr->symbolRef->As<VarDecl>())
+            if (auto varDecl = identExpr->symbolRef->As<VarDecl>())
             {
                 /* Has the prefix expression a struct type denoter? */
-                const auto& prefixTypeDen = objectExpr->prefixExpr->GetTypeDenoter()->GetAliased();
+                const auto& prefixTypeDen = identExpr->prefixExpr->GetTypeDenoter()->GetAliased();
                 if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
                 {
                     if (auto structDecl = prefixStructTypeDen->structDeclRef)
@@ -1109,7 +1109,7 @@ void ExprConverter::ConvertExprCompatibleStruct(ExprPtr& expr)
                             if (auto compatVarDecl = compatStruct->IndexToMemberVar(idx))
                             {
                                 /* Replace identifier by respective member of the type-compatible struct */
-                                objectExpr->ReplaceSymbol(compatVarDecl);
+                                identExpr->ReplaceSymbol(compatVarDecl);
                             }
                         }
                     }

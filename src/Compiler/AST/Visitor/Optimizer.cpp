@@ -59,10 +59,10 @@ bool Optimizer::CanRemoveStmt(const Stmt& ast) const
         return true;
 
     /* Remove if node is empty code block statement */
-    if (ast.Type() == AST::Types::CodeBlockStmt)
+    if (ast.Type() == AST::Types::ScopeStmt)
     {
-        auto& codeBlockStmt = static_cast<const CodeBlockStmt&>(ast);
-        if (codeBlockStmt.codeBlock->stmts.empty())
+        auto& scopeStmt = static_cast<const ScopeStmt&>(ast);
+        if (scopeStmt.codeBlock->stmts.empty())
             return true;
     }
 
@@ -97,7 +97,7 @@ IMPLEMENT_VISIT_PROC(VarDecl)
     OptimizeExpr(ast->initializer);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     Visit(ast->initStmt);
     OptimizeExpr(ast->condition);
@@ -105,13 +105,13 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     OptimizeExpr(ast->condition);
     Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     OptimizeExpr(ast->condition);
     Visit(ast->bodyStmt);
@@ -185,9 +185,9 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     OptimizeExpr(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
-    VISIT_DEFAULT(ObjectExpr);
+    VISIT_DEFAULT(IdentExpr);
     OptimizeExpr(ast->prefixExpr);
 }
 
@@ -198,9 +198,9 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     OptimizeExpr(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
-    VISIT_DEFAULT(ArrayExpr);
+    VISIT_DEFAULT(SubscriptExpr);
     for (auto& subExpr : ast->arrayIndices)
         OptimizeExpr(subExpr);
 }

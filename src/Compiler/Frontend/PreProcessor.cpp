@@ -245,7 +245,7 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
             ExprEvaluator exprEvaluator { ExprEvaluator::EvaluateReducedBinaryExpr };
             value = exprEvaluator.Evaluate(
                 *conditionExpr,
-                [](ObjectExpr* expr) -> Variant
+                [](IdentExpr* expr) -> Variant
                 {
                     RuntimeErr(R_UndeclaredIdent(expr->ident), expr);
                     return {};
@@ -1084,7 +1084,7 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
             else
             {
                 /* Parse identifier without macro expansion (this already happend at this point) */
-                return ASTFactory::MakeObjectExpr(AcceptIt()->Spell());
+                return ASTFactory::MakeIdentExpr(AcceptIt()->Spell());
             }
         }
         break;

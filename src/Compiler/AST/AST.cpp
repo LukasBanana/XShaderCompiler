@@ -42,7 +42,7 @@ bool IsExprAST(const AST::Types t)
 
 bool IsStmtAST(const AST::Types t)
 {
-    return (t >= AST::Types::VarDeclStmt && t <= AST::Types::CtrlTransferStmt);
+    return (t >= AST::Types::VarDeclStmt && t <= AST::Types::JumpStmt);
 }
 
 bool IsDeclStmtAST(const AST::Types t)
@@ -92,18 +92,18 @@ VarDecl* Expr::FetchVarDecl() const
         return nullptr;
 }
 
-const ObjectExpr* Expr::FetchLValueExpr() const
+const IdentExpr* Expr::FetchLValueExpr() const
 {
     return nullptr;
 }
 
-ObjectExpr* Expr::FetchLValueExpr()
+IdentExpr* Expr::FetchLValueExpr()
 {
     /*
     Use const function and cast the constness away,
     which is allowed here, since this is a non-const member function
     */
-    return const_cast<ObjectExpr*>(const_cast<const Expr*>(this)->FetchLValueExpr());
+    return const_cast<IdentExpr*>(const_cast<const Expr*>(this)->FetchLValueExpr());
 }
 
 IndexedSemantic Expr::FetchSemantic() const
@@ -2061,7 +2061,7 @@ const Expr* UnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
-const ObjectExpr* UnaryExpr::FetchLValueExpr() const
+const IdentExpr* UnaryExpr::FetchLValueExpr() const
 {
     if (IsLValueOp(op))
         return expr->FetchLValueExpr();
@@ -2331,7 +2331,7 @@ const Expr* BracketExpr::Find(const FindPredicateConstFunctor& predicate, unsign
     return nullptr;
 }
 
-const ObjectExpr* BracketExpr::FetchLValueExpr() const
+const IdentExpr* BracketExpr::FetchLValueExpr() const
 {
     return expr->FetchLValueExpr();
 }
@@ -2371,15 +2371,15 @@ const Expr* AssignExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
     return nullptr;
 }
 
-const ObjectExpr* AssignExpr::FetchLValueExpr() const
+const IdentExpr* AssignExpr::FetchLValueExpr() const
 {
     return lvalueExpr->FetchLValueExpr();
 }
 
 
-/* ----- ObjectExpr ----- */
+/* ----- IdentExpr ----- */
 
-TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
+TypeDenoterPtr IdentExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     if (symbolRef)
     {
@@ -2398,7 +2398,7 @@ TypeDenoterPtr ObjectExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDe
     RuntimeErr(R_UnknownTypeOfObjectIdentSymbolRef(ident), this);
 }
 
-const Expr* ObjectExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
+const Expr* IdentExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
 {
     if (predicate)
     {
@@ -2415,7 +2415,7 @@ const Expr* ObjectExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
     return nullptr;
 }
 
-const ObjectExpr* ObjectExpr::FetchLValueExpr() const
+const IdentExpr* IdentExpr::FetchLValueExpr() const
 {
     if (symbolRef)
     {
@@ -2447,7 +2447,7 @@ const ObjectExpr* ObjectExpr::FetchLValueExpr() const
     return this;
 }
 
-IndexedSemantic ObjectExpr::FetchSemantic() const
+IndexedSemantic IdentExpr::FetchSemantic() const
 {
     if (symbolRef)
     {
@@ -2463,7 +2463,7 @@ IndexedSemantic ObjectExpr::FetchSemantic() const
     return Semantic::Undefined;
 }
 
-bool ObjectExpr::IsTrivialCopyable(unsigned int maxTreeDepth) const
+bool IdentExpr::IsTrivialCopyable(unsigned int maxTreeDepth) const
 {
     if (symbolRef)
     {
@@ -2483,7 +2483,7 @@ bool ObjectExpr::IsTrivialCopyable(unsigned int maxTreeDepth) const
     return false;
 }
 
-BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const
+BaseTypeDenoterPtr IdentExpr::GetTypeDenoterFromSubscript() const
 {
     if (prefixExpr)
     {
@@ -2505,13 +2505,13 @@ BaseTypeDenoterPtr ObjectExpr::GetTypeDenoterFromSubscript() const
     RuntimeErr(R_InvalidSubscriptBaseType, this);
 }
 
-std::string ObjectExpr::ToStringAsNamespace() const
+std::string IdentExpr::ToStringAsNamespace() const
 {
     std::string s;
 
     if (prefixExpr)
     {
-        if (auto subObjectExpr = prefixExpr->As<ObjectExpr>())
+        if (auto subObjectExpr = prefixExpr->As<IdentExpr>())
         {
             s += subObjectExpr->ToStringAsNamespace();
             s += "::";
@@ -2523,7 +2523,7 @@ std::string ObjectExpr::ToStringAsNamespace() const
     return s;
 }
 
-void ObjectExpr::ReplaceSymbol(Decl* symbol)
+void IdentExpr::ReplaceSymbol(Decl* symbol)
 {
     if (symbol)
     {
@@ -2532,15 +2532,15 @@ void ObjectExpr::ReplaceSymbol(Decl* symbol)
     }
 }
 
-VarDecl* ObjectExpr::FetchVarDecl() const
+VarDecl* IdentExpr::FetchVarDecl() const
 {
     return FetchSymbol<VarDecl>();
 }
 
 
-/* ----- ArrayExpr ----- */
+/* ----- SubscriptExpr ----- */
 
-TypeDenoterPtr ArrayExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
+TypeDenoterPtr SubscriptExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
 {
     try
     {
@@ -2552,7 +2552,7 @@ TypeDenoterPtr ArrayExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDen
     }
 }
 
-const Expr* ArrayExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
+const Expr* SubscriptExpr::Find(const FindPredicateConstFunctor& predicate, unsigned int flags) const
 {
     if (predicate)
     {
@@ -2566,12 +2566,12 @@ const Expr* ArrayExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
-const ObjectExpr* ArrayExpr::FetchLValueExpr() const
+const IdentExpr* SubscriptExpr::FetchLValueExpr() const
 {
     return prefixExpr->FetchLValueExpr();
 }
 
-std::size_t ArrayExpr::NumIndices() const
+std::size_t SubscriptExpr::NumIndices() const
 {
     return arrayIndices.size();
 }

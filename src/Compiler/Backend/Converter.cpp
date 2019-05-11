@@ -328,13 +328,13 @@ void Converter::StmtScopeHandler::EnsureStmtList()
 
         /* Make new code block statement to replace the single statement with */
         auto singleStmt    = *stmt_;
-        auto codeBlockStmt = ASTFactory::MakeCodeBlockStmt(singleStmt);
+        auto scopeStmt = ASTFactory::MakeScopeStmt(singleStmt);
 
         /* Set reference to statement list of the code block */
-        stmtList_ = &(codeBlockStmt->codeBlock->stmts);
+        stmtList_ = &(scopeStmt->codeBlock->stmts);
 
         /* Replace original single statement with code block statement */
-        *stmt_ = codeBlockStmt;
+        *stmt_ = scopeStmt;
     }
 }
 

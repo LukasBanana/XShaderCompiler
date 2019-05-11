@@ -65,22 +65,22 @@ IMPLEMENT_VISIT_PROC(VarDecl)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
-    VISIT_DEFAULT(ForLoopStmt);
+    VISIT_DEFAULT(ForStmt);
     ConvertExpr(ast->condition);
     ConvertExpr(ast->iteration);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
-    VISIT_DEFAULT(WhileLoopStmt);
+    VISIT_DEFAULT(WhileStmt);
     ConvertExpr(ast->condition);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
-    VISIT_DEFAULT(DoWhileLoopStmt);
+    VISIT_DEFAULT(DoWhileStmt);
     ConvertExpr(ast->condition);
 }
 
@@ -161,9 +161,9 @@ IMPLEMENT_VISIT_PROC(CastExpr)
     ConvertExprType(ast);
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
-    VISIT_DEFAULT(ObjectExpr);
+    VISIT_DEFAULT(IdentExpr);
 
     if (auto symbol = ast->symbolRef)
     {
@@ -181,9 +181,9 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     ConvertExprType(ast);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
-    VISIT_DEFAULT(ArrayExpr);
+    VISIT_DEFAULT(SubscriptExpr);
     ConvertExprType(ast);
 }
 

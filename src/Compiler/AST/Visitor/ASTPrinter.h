@@ -69,15 +69,15 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( BasicDeclStmt     );
 
         DECL_VISIT_PROC( NullStmt          );
-        DECL_VISIT_PROC( CodeBlockStmt     );
-        DECL_VISIT_PROC( ForLoopStmt       );
-        DECL_VISIT_PROC( WhileLoopStmt     );
-        DECL_VISIT_PROC( DoWhileLoopStmt   );
+        DECL_VISIT_PROC( ScopeStmt         );
+        DECL_VISIT_PROC( ForStmt           );
+        DECL_VISIT_PROC( WhileStmt         );
+        DECL_VISIT_PROC( DoWhileStmt       );
         DECL_VISIT_PROC( IfStmt            );
         DECL_VISIT_PROC( SwitchStmt        );
         DECL_VISIT_PROC( ExprStmt          );
         DECL_VISIT_PROC( ReturnStmt        );
-        DECL_VISIT_PROC( CtrlTransferStmt  );
+        DECL_VISIT_PROC( JumpStmt          );
         DECL_VISIT_PROC( LayoutStmt        );
 
         DECL_VISIT_PROC( NullExpr          );
@@ -90,9 +90,9 @@ class ASTPrinter : private Visitor
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( BracketExpr       );
-        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( IdentExpr         );
         DECL_VISIT_PROC( AssignExpr        );
-        DECL_VISIT_PROC( ArrayExpr         );
+        DECL_VISIT_PROC( SubscriptExpr     );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );
 

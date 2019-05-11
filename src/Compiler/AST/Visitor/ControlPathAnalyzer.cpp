@@ -127,22 +127,22 @@ IMPLEMENT_VISIT_PROC(NullStmt)
     PushReturnPath(false);
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     Visit(ast->bodyStmt);
 }
@@ -192,7 +192,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
     PushReturnPath(true);
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
+IMPLEMENT_VISIT_PROC(JumpStmt)
 {
     PushReturnPath(false);
 }

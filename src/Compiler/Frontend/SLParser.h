@@ -40,21 +40,21 @@ class SLParser : public Parser
         virtual CodeBlockPtr            ParseCodeBlock() = 0;
         virtual VarDeclStmtPtr          ParseParameter() = 0;
         virtual StmtPtr                 ParseLocalStmt() = 0;
-        virtual StmtPtr                 ParseForLoopInitializer() = 0;
+        virtual StmtPtr                 ParseForStmtInitializer() = 0;
         virtual SwitchCasePtr           ParseSwitchCase() = 0;
         virtual VarDeclPtr              ParseVarDecl(VarDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr) = 0;
 
         ArrayDimensionPtr               ParseArrayDimension(bool allowDynamicDimension = false);
 
         NullStmtPtr                     ParseNullStmt();
-        CodeBlockStmtPtr                ParseCodeBlockStmt();
-        ForLoopStmtPtr                  ParseForLoopStmt();
-        WhileLoopStmtPtr                ParseWhileLoopStmt();
-        DoWhileLoopStmtPtr              ParseDoWhileLoopStmt();
+        ScopeStmtPtr                    ParseScopeStmt();
+        ForStmtPtr                      ParseForStmt();
+        WhileStmtPtr                    ParseWhileStmt();
+        DoWhileStmtPtr                  ParseDoWhileStmt();
         IfStmtPtr                       ParseIfStmt();
         StmtPtr                         ParseElseStmt();
         SwitchStmtPtr                   ParseSwitchStmt();
-        CtrlTransferStmtPtr             ParseCtrlTransferStmt();
+        JumpStmtPtr                     ParseJumpStmt();
         ReturnStmtPtr                   ParseReturnStmt();
         ExprStmtPtr                     ParseExprStmt(const ExprPtr& expr = nullptr);
 
@@ -64,7 +64,7 @@ class SLParser : public Parser
         ExprPtr                         ParseInitializer();         // = expr
 
         SequenceExprPtr                 ParseSequenceExpr(const ExprPtr& firstExpr);
-        ArrayExprPtr                    ParseArrayExpr(const ExprPtr& expr);
+        SubscriptExprPtr                ParseSubscriptExpr(const ExprPtr& expr);
         InitializerExprPtr              ParseInitializerExpr();
 
         std::vector<VarDeclPtr>         ParseVarDeclList(VarDeclStmt* declStmtRef, TokenPtr firstIdentTkn = nullptr);

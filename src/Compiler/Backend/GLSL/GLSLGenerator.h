@@ -106,22 +106,22 @@ class GLSLGenerator : public Generator
 
         DECL_VISIT_PROC( FunctionDecl      );
         DECL_VISIT_PROC( UniformBufferDecl );
-        DECL_VISIT_PROC( BufferDeclStmt   );
-        DECL_VISIT_PROC( SamplerDeclStmt  );
-        DECL_VISIT_PROC( VarDeclStmt      );
-        DECL_VISIT_PROC( AliasDeclStmt    );
-        DECL_VISIT_PROC( BasicDeclStmt    );
+        DECL_VISIT_PROC( BufferDeclStmt    );
+        DECL_VISIT_PROC( SamplerDeclStmt   );
+        DECL_VISIT_PROC( VarDeclStmt       );
+        DECL_VISIT_PROC( AliasDeclStmt     );
+        DECL_VISIT_PROC( BasicDeclStmt     );
 
-        DECL_VISIT_PROC( NullStmt         );
-        DECL_VISIT_PROC( CodeBlockStmt    );
-        DECL_VISIT_PROC( ForLoopStmt      );
-        DECL_VISIT_PROC( WhileLoopStmt    );
-        DECL_VISIT_PROC( DoWhileLoopStmt  );
-        DECL_VISIT_PROC( IfStmt           );
-        DECL_VISIT_PROC( SwitchStmt       );
-        DECL_VISIT_PROC( ExprStmt         );
-        DECL_VISIT_PROC( ReturnStmt       );
-        DECL_VISIT_PROC( CtrlTransferStmt );
+        DECL_VISIT_PROC( NullStmt          );
+        DECL_VISIT_PROC( ScopeStmt         );
+        DECL_VISIT_PROC( ForStmt           );
+        DECL_VISIT_PROC( WhileStmt         );
+        DECL_VISIT_PROC( DoWhileStmt       );
+        DECL_VISIT_PROC( IfStmt            );
+        DECL_VISIT_PROC( SwitchStmt        );
+        DECL_VISIT_PROC( ExprStmt          );
+        DECL_VISIT_PROC( ReturnStmt        );
+        DECL_VISIT_PROC( JumpStmt          );
 
         DECL_VISIT_PROC( SequenceExpr      );
         DECL_VISIT_PROC( LiteralExpr       );
@@ -132,9 +132,9 @@ class GLSLGenerator : public Generator
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( BracketExpr       );
-        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( IdentExpr         );
         DECL_VISIT_PROC( AssignExpr        );
-        DECL_VISIT_PROC( ArrayExpr         );
+        DECL_VISIT_PROC( SubscriptExpr     );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );
 
@@ -225,13 +225,13 @@ class GLSLGenerator : public Generator
 
         /* ----- Object expression ----- */
 
-        void WriteObjectExpr(const ObjectExpr& objectExpr);
-        void WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writePrefix = true);
-        void WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol);
+        void WriteObjectExpr(const IdentExpr& identExpr);
+        void WriteObjectExprIdent(const IdentExpr& identExpr, bool writePrefix = true);
+        void WriteObjectExprIdentOrSystemValue(const IdentExpr& identExpr, Decl* symbol);
 
         /* ----- Array expression ----- */
 
-        void WriteArrayExpr(const ArrayExpr& arrayExpr);
+        void WriteArrayExpr(const SubscriptExpr& subscriptExpr);
 
         void WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices);
 

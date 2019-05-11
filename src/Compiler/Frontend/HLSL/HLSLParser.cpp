@@ -116,13 +116,13 @@ TypeSpecifierPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& exp
         return typeSpecifierExpr->typeSpecifier;
 
     /* Is this an object expression? */
-    if (auto objectExpr = expr->As<ObjectExpr>())
+    if (auto identExpr = expr->As<IdentExpr>())
     {
         /* Check if the identifier refers to a type name */
-        if (IsRegisteredTypeName(objectExpr->ident))
+        if (IsRegisteredTypeName(identExpr->ident))
         {
             /* Convert the variable access into a type specifier */
-            return ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(objectExpr->ident));
+            return ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(identExpr->ident));
         }
     }
 
@@ -344,7 +344,7 @@ StmtPtr HLSLParser::ParseLocalStmt()
     return ParseStmt(true);
 }
 
-StmtPtr HLSLParser::ParseForLoopInitializer()
+StmtPtr HLSLParser::ParseForStmtInitializer()
 {
     return ParseStmt(false);
 }
@@ -1068,23 +1068,23 @@ StmtPtr HLSLParser::ParseStmtPrimary()
         case Tokens::Semicolon:
             return ParseNullStmt();
         case Tokens::LCurly:
-            return ParseCodeBlockStmt();
+            return ParseScopeStmt();
         case Tokens::Return:
             return ParseReturnStmt();
         case Tokens::Ident:
             return ParseStmtWithIdent();
         case Tokens::For:
-            return ParseForLoopStmt();
+            return ParseForStmt();
         case Tokens::While:
-            return ParseWhileLoopStmt();
+            return ParseWhileStmt();
         case Tokens::Do:
-            return ParseDoWhileLoopStmt();
+            return ParseDoWhileStmt();
         case Tokens::If:
             return ParseIfStmt();
         case Tokens::Switch:
             return ParseSwitchStmt();
         case Tokens::CtrlTransfer:
-            return ParseCtrlTransferStmt();
+            return ParseJumpStmt();
         case Tokens::Struct:
         case Tokens::Class:
             return ParseStmtWithStructDecl();
@@ -1144,9 +1144,9 @@ StmtPtr HLSLParser::ParseStmtWithStructDecl()
 StmtPtr HLSLParser::ParseStmtWithIdent()
 {
     /* Parse the identifier as object expression (can be converted later) */
-    auto objectExpr = ParseObjectExpr();
+    auto identExpr = ParseIdentExpr();
 
-    auto expr = ParseExprWithSuffixOpt(objectExpr);
+    auto expr = ParseExprWithSuffixOpt(identExpr);
 
     if (Is(Tokens::LBracket) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
     {
@@ -1164,20 +1164,20 @@ StmtPtr HLSLParser::ParseStmtWithIdent()
         /* Parse sequence expression */
         return ParseExprStmt(ParseSequenceExpr(expr));
     }
-    else if (expr == objectExpr)
+    else if (expr == identExpr)
     {
         /* Convert variable identifier to alias type denoter */
         auto ast = Make<VarDeclStmt>();
 
         ast->typeSpecifier              = MakeTypeSpecifierWithPackAlignment();
-        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(ParseAliasTypeDenoter(objectExpr->ident));
+        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(ParseAliasTypeDenoter(identExpr->ident));
 
-        UpdateSourceArea(ast->typeSpecifier, objectExpr.get());
+        UpdateSourceArea(ast->typeSpecifier, identExpr.get());
 
         ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
-        return UpdateSourceArea(ast, objectExpr.get());
+        return UpdateSourceArea(ast, identExpr.get());
     }
     else
         return ParseExprStmt(expr);
@@ -1204,14 +1204,14 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     /* Check if a pre-parsed AST node is available */
     if (auto preParsedAST = PopPreParsedAST())
     {
-        if (preParsedAST->Type() == AST::Types::ObjectExpr)
+        if (preParsedAST->Type() == AST::Types::IdentExpr)
         {
             /* Parse call expression or return pre-parsed object expression */
-            auto objectExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
+            auto identExpr = std::static_pointer_cast<IdentExpr>(preParsedAST);
             if (Is(Tokens::LBracket))
-                return ParseCallExpr(objectExpr);
+                return ParseCallExpr(identExpr);
             else
-                return objectExpr;
+                return identExpr;
         }
         else if (preParsedAST->Type() == AST::Types::CallExpr)
         {
@@ -1236,7 +1236,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     if (Is(Tokens::LCurly))
         return ParseInitializerExpr();
     if (Is(Tokens::Ident))
-        return ParseObjectOrCallExpr();
+        return ParseIdentOrCallExpr();
 
     ErrorUnexpected(R_ExpectedPrimaryExpr, nullptr, true);
 
@@ -1249,9 +1249,9 @@ ExprPtr HLSLParser::ParseExprWithSuffixOpt(ExprPtr expr)
     while (true)
     {
         if (Is(Tokens::LParen))
-            expr = ParseArrayExpr(expr);
+            expr = ParseSubscriptExpr(expr);
         else if (Is(Tokens::Dot) || Is(Tokens::DColon))
-            expr = ParseObjectOrCallExpr(expr);
+            expr = ParseIdentOrCallExpr(expr);
         else if (Is(Tokens::AssignOp))
             expr = ParseAssignExpr(expr);
         else if (Is(Tokens::UnaryOp))
@@ -1399,15 +1399,15 @@ ExprPtr HLSLParser::ParseExprWithBracketPrefix()
     {
         if (auto nonBracketExpr = expr->FindFirstNotOf(AST::Types::BracketExpr))
         {
-            if (auto objectExpr = nonBracketExpr->As<ObjectExpr>())
+            if (auto identExpr = nonBracketExpr->As<IdentExpr>())
             {
                 /* Return call expression */
                 auto ast = Make<CallExpr>();
 
                 /* Take parameters from previously parsed expression */
-                ast->prefixExpr = objectExpr->prefixExpr;
-                ast->isStatic   = objectExpr->isStatic;
-                ast->ident      = objectExpr->ident;
+                ast->prefixExpr = identExpr->prefixExpr;
+                ast->isStatic   = identExpr->isStatic;
+                ast->ident      = identExpr->ident;
 
                 /* Parse argument list */
                 ast->arguments = ParseArgumentList();
@@ -1426,7 +1426,7 @@ ExprPtr HLSLParser::ParseExprWithBracketPrefix()
     return UpdateSourceArea(ast);
 }
 
-ObjectExprPtr HLSLParser::ParseObjectExpr(const ExprPtr& expr)
+IdentExprPtr HLSLParser::ParseIdentExpr(const ExprPtr& expr)
 {
     /* Parse prefix token if prefix expression is specified  */
     bool isStatic = false;
@@ -1445,7 +1445,7 @@ ObjectExprPtr HLSLParser::ParseObjectExpr(const ExprPtr& expr)
             ErrorUnexpected(R_ExpectedIdentPrefix);
     }
 
-    auto ast = Make<ObjectExpr>();
+    auto ast = Make<IdentExpr>();
 
     if (expr)
         ast->area = expr->area;
@@ -1479,26 +1479,26 @@ AssignExprPtr HLSLParser::ParseAssignExpr(const ExprPtr& expr)
     return UpdateSourceArea(ast);
 }
 
-ExprPtr HLSLParser::ParseObjectOrCallExpr(const ExprPtr& expr)
+ExprPtr HLSLParser::ParseIdentOrCallExpr(const ExprPtr& expr)
 {
     /* Parse variable identifier first (for variables and functions) */
-    auto objectExpr = ParseObjectExpr(expr);
+    auto identExpr = ParseIdentExpr(expr);
 
     if (Is(Tokens::LBracket))
-        return ParseCallExpr(objectExpr);
+        return ParseCallExpr(identExpr);
 
-    return objectExpr;
+    return identExpr;
 }
 
-CallExprPtr HLSLParser::ParseCallExpr(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
+CallExprPtr HLSLParser::ParseCallExpr(const IdentExprPtr& identExpr, const TypeDenoterPtr& typeDenoter)
 {
-    if (objectExpr)
+    if (identExpr)
     {
         /* Make new identifier token with source position from input */
-        auto identTkn = std::make_shared<Token>(objectExpr->area.Pos(), Tokens::Ident, objectExpr->ident);
+        auto identTkn = std::make_shared<Token>(identExpr->area.Pos(), Tokens::Ident, identExpr->ident);
 
         /* Parse call expression and take prefix expression from input */
-        return ParseCallExprWithPrefixOpt(objectExpr->prefixExpr, objectExpr->isStatic, identTkn);
+        return ParseCallExprWithPrefixOpt(identExpr->prefixExpr, identExpr->isStatic, identTkn);
     }
     else if (typeDenoter)
     {
@@ -1673,7 +1673,7 @@ std::vector<AliasDeclPtr> HLSLParser::ParseAliasDeclList(TypeDenoterPtr typeDeno
 
 /* --- Others --- */
 
-std::string HLSLParser::ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr, TokenPtr identTkn, SourceArea* area)
+std::string HLSLParser::ParseIdentWithNamespaceOpt(IdentExprPtr& namespaceExpr, TokenPtr identTkn, SourceArea* area)
 {
     /* Parse first identifier */
     SourceArea identArea;
@@ -1685,12 +1685,12 @@ std::string HLSLParser::ParseIdentWithNamespaceOpt(ObjectExprPtr& namespaceExpr,
         AcceptIt();
 
         /* Take first identifier as namespace prefix */
-        namespaceExpr           = Make<ObjectExpr>();
+        namespaceExpr           = Make<IdentExpr>();
         namespaceExpr->ident    = ident;
         namespaceExpr->area     = identArea;
 
         /* Parse next identifier */
-        ObjectExprPtr subObjectExpr;
+        IdentExprPtr subObjectExpr;
         ident = ParseIdentWithNamespaceOpt(subObjectExpr, nullptr, area);
         namespaceExpr->prefixExpr = subObjectExpr;
 

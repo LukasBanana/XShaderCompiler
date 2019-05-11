@@ -111,7 +111,7 @@ struct AST
         ArrayDimension,     // Array dimension (e.g. "[10]")
         TypeSpecifier,      // Type specifier with type denoter/modifiers/classes and optional structure (StructDecl)
 
-        /* ----- Declaration objects that can be referenced by an 'ObjectExpr' ----- */
+        /* ----- Declaration objects that can be referenced by an 'IdentExpr' ----- */
 
         VarDecl,            // Variable declaration
         BufferDecl,         // Buffer declaration (Texture- and Storage Buffers)
@@ -132,15 +132,15 @@ struct AST
         /* ----- Common statements ----- */
 
         NullStmt,
-        CodeBlockStmt,
-        ForLoopStmt,
-        WhileLoopStmt,
-        DoWhileLoopStmt,
+        ScopeStmt,
+        ForStmt,
+        WhileStmt,
+        DoWhileStmt, // TODO: replace by WhileStmt
         IfStmt,
         SwitchStmt,
         ExprStmt,
         ReturnStmt,
-        CtrlTransferStmt,   // Control transfer statement (Break, Continue, Discard)
+        JumpStmt,           // Jump (or control transfer statement): break, continue, discard
         LayoutStmt,         // GLSL only
 
         /* ----- Expressions ----- */
@@ -152,12 +152,12 @@ struct AST
         TernaryExpr,
         BinaryExpr,
         UnaryExpr,
-        PostUnaryExpr,
+        PostUnaryExpr, // TODO: replace by UnaryExpr
         CallExpr,
-        BracketExpr,
-        ObjectExpr,
+        BracketExpr, // TODO: replace by flags entry
+        IdentExpr,
         AssignExpr,
-        ArrayExpr,
+        SubscriptExpr,
         CastExpr,
         InitializerExpr,
     };
@@ -225,7 +225,6 @@ bool IsDeclStmtAST(const AST::Types t);
 
 /* ----- Common AST classes ----- */
 
-//TODO: rename to Stmt
 // Statement AST base class.
 struct Stmt : public AST
 {
@@ -274,8 +273,8 @@ struct Expr : public TypedAST
     Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
     */
-    virtual const ObjectExpr* FetchLValueExpr() const;
-    ObjectExpr* FetchLValueExpr();
+    virtual const IdentExpr* FetchLValueExpr() const;
+    IdentExpr* FetchLValueExpr();
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
@@ -593,7 +592,7 @@ struct VarDecl : public Decl
     // Accumulates the vector size for this variables (with a 16 byte boundary), and returns true on success.
     bool AccumAlignedVectorSize(unsigned int& size, unsigned int& padding, unsigned int* offset = nullptr);
 
-    ObjectExprPtr                   namespaceExpr;                  // Optional namespace expression. May be null.
+    IdentExprPtr                    namespaceExpr;                  // Optional namespace expression. May be null.
     std::vector<ArrayDimensionPtr>  arrayDims;                      // Array dimension list. May be empty.
     std::vector<RegisterPtr>        slotRegisters;                  // Slot register list. May be empty.
     IndexedSemantic                 semantic;                       // Variable semantic. May be invalid.
@@ -1007,20 +1006,18 @@ struct NullStmt : public Stmt
     AST_INTERFACE(NullStmt);
 };
 
-//TODO: rename to ScopeStmt
 // Code block statement.
-struct CodeBlockStmt : public Stmt
+struct ScopeStmt : public Stmt
 {
-    AST_INTERFACE(CodeBlockStmt);
+    AST_INTERFACE(ScopeStmt);
 
     CodeBlockPtr codeBlock; // Code block.
 };
 
-//TODO: rename to ForStmt
 // 'for'-loop statemnet.
-struct ForLoopStmt : public Stmt
+struct ForStmt : public Stmt
 {
-    AST_INTERFACE(ForLoopStmt);
+    AST_INTERFACE(ForStmt);
 
     StmtPtr initStmt;   // Initializer statement. Must not be null, but can be an instance of 'NullStmt'.
     ExprPtr condition;  // Condition expresion. May be null.
@@ -1028,11 +1025,10 @@ struct ForLoopStmt : public Stmt
     StmtPtr bodyStmt;   // Loop body statement.
 };
 
-//TODO: rename to WhileStmt
 // 'while'-loop statement.
-struct WhileLoopStmt : public Stmt
+struct WhileStmt : public Stmt
 {
-    AST_INTERFACE(WhileLoopStmt);
+    AST_INTERFACE(WhileStmt);
 
     ExprPtr condition;  // Condition expression.
     StmtPtr bodyStmt;   // Loop body statement.
@@ -1040,9 +1036,9 @@ struct WhileLoopStmt : public Stmt
 
 //TODO: replace by WhileStmt
 // 'do/while'-loop statement.
-struct DoWhileLoopStmt : public Stmt
+struct DoWhileStmt : public Stmt
 {
-    AST_INTERFACE(DoWhileLoopStmt);
+    AST_INTERFACE(DoWhileStmt);
 
     StmtPtr bodyStmt;   // Loop body statement.
     ExprPtr condition;  // Condition expression.
@@ -1088,11 +1084,10 @@ struct ReturnStmt : public Stmt
     ExprPtr expr; // Return statement expression. May be null.
 };
 
-//TODO: rename to JumpStmt
-// Control transfer statement.
-struct CtrlTransferStmt : public Stmt
+// Jump or control-transfer statement.
+struct JumpStmt : public Stmt
 {
-    AST_INTERFACE(CtrlTransferStmt);
+    AST_INTERFACE(JumpStmt);
 
     CtrlTransfer transfer = CtrlTransfer::Undefined; // Control transfer type (break, continue, discard). Must not be undefined.
 };
@@ -1212,7 +1207,7 @@ struct UnaryExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const ObjectExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLValueExpr() const override;
 
     UnaryOp op      = UnaryOp::Undefined;   // Unary operator. Must not be undefined.
     ExprPtr expr;                           // Right-hand-side expression.
@@ -1227,6 +1222,7 @@ struct PostUnaryExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
+    //TODO: rename to "subExpr"
     ExprPtr expr;                           // Left-hand-side expression.
     UnaryOp op      = UnaryOp::Undefined;   // Unary operator. Must not be undefined.
 };
@@ -1304,7 +1300,7 @@ struct BracketExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const ObjectExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLValueExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1320,17 +1316,17 @@ struct AssignExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const ObjectExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLValueExpr() const override;
 
     ExprPtr     lvalueExpr;                         // L-value expression.
     AssignOp    op          = AssignOp::Undefined;  // Assignment operator. Must not be undefined.
     ExprPtr     rvalueExpr;                         // R-value expression.
 };
 
-// Object access expression.
-struct ObjectExpr : public Expr
+// Object identification expression.
+struct IdentExpr : public Expr
 {
-    AST_INTERFACE(ObjectExpr);
+    AST_INTERFACE(IdentExpr);
 
     FLAG_ENUM
     {
@@ -1342,7 +1338,7 @@ struct ObjectExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const ObjectExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLValueExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1351,7 +1347,7 @@ struct ObjectExpr : public Expr
     // Returns a type denoter for the vector subscript of this object expression or throws an runtime error on failure.
     BaseTypeDenoterPtr GetTypeDenoterFromSubscript() const;
 
-    // Returns this object expression as a static namespace, i.e. only for prefix expression that are also from type ObjectExpr.
+    // Returns this object expression as a static namespace, i.e. only for prefix expression that are also from type IdentExpr.
     std::string ToStringAsNamespace() const;
 
     // Replaces the old symbol and identifier by the new symbol.
@@ -1379,16 +1375,17 @@ struct ObjectExpr : public Expr
     Decl*       symbolRef   = nullptr;  // Optional symbol reference to the object declaration. May be null (e.g. for vector subscripts).
 };
 
-// Array-access expression (e.g. "foo()[arrayAccess]").
-struct ArrayExpr : public Expr
+//TODO: replace array "arrayIndices" by single expression "indexExpr"
+// Subscription or array-access expression (e.g. "foo()[arrayAccess]").
+struct SubscriptExpr : public Expr
 {
-    AST_INTERFACE(ArrayExpr);
+    AST_INTERFACE(SubscriptExpr);
 
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const ObjectExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLValueExpr() const override;
 
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
     std::size_t NumIndices() const;

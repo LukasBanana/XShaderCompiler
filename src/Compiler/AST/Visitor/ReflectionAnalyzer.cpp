@@ -263,9 +263,9 @@ void ReflectionAnalyzer::ReflectSamplerValue(SamplerValue* ast, Reflection::Samp
         else if (name == "MaxLOD")
             desc.maxLOD = FromStringOrDefault<float>(value);
     }
-    else if (auto objectExpr = ast->value->As<ObjectExpr>())
+    else if (auto identExpr = ast->value->As<IdentExpr>())
     {
-        const auto& value = objectExpr->ident;
+        const auto& value = identExpr->ident;
 
         if (name == "Filter")
             ReflectSamplerValueFilter(value, desc.filter, ast);

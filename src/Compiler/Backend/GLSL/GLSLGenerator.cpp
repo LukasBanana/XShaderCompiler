@@ -748,12 +748,12 @@ IMPLEMENT_VISIT_PROC(NullStmt)
     WriteLn(";");
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     /* Write loop header */
     BeginLn();
@@ -778,7 +778,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     /* Write loop condExpr */
     BeginLn();
@@ -790,7 +790,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmt)
     WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     BeginLn();
 
@@ -896,7 +896,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
     }
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
+IMPLEMENT_VISIT_PROC(JumpStmt)
 {
     WriteLn(CtrlTransformToString(ast->transfer) + ";");
 }
@@ -985,7 +985,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     WriteObjectExpr(*ast);
 }
@@ -997,7 +997,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     Visit(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
     WriteArrayExpr(*ast);
 }
@@ -1966,7 +1966,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
 
     #if 0//???
     /* Fetch variable identifier if expression is set */
-    const ObjectExpr* lvalueExpr = nullptr;
+    const IdentExpr* lvalueExpr = nullptr;
     if (expr)
         lvalueExpr = expr->FetchLValueExpr();
     #endif
@@ -2124,24 +2124,24 @@ void GLSLGenerator::WriteVarDeclIdentOrSystemValue(VarDecl* varDecl, int arrayIn
 
 /* ----- Object expression ----- */
 
-void GLSLGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
+void GLSLGenerator::WriteObjectExpr(const IdentExpr& identExpr)
 {
-    if (objectExpr.flags(ObjectExpr::isImmutable))
-        WriteObjectExprIdent(objectExpr);
-    else if (auto symbol = objectExpr.symbolRef)
-        WriteObjectExprIdentOrSystemValue(objectExpr, symbol);
+    if (identExpr.flags(IdentExpr::isImmutable))
+        WriteObjectExprIdent(identExpr);
+    else if (auto symbol = identExpr.symbolRef)
+        WriteObjectExprIdentOrSystemValue(identExpr, symbol);
     else
-        WriteObjectExprIdent(objectExpr);
+        WriteObjectExprIdent(identExpr);
 }
 
-void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writePrefix)
+void GLSLGenerator::WriteObjectExprIdent(const IdentExpr& identExpr, bool writePrefix)
 {
     /* Write prefix expression */
-    if (objectExpr.prefixExpr && !objectExpr.isStatic && writePrefix)
+    if (identExpr.prefixExpr && !identExpr.isStatic && writePrefix)
     {
-        Visit(objectExpr.prefixExpr);
+        Visit(identExpr.prefixExpr);
 
-        if (auto literalExpr = objectExpr.prefixExpr->As<LiteralExpr>())
+        if (auto literalExpr = identExpr.prefixExpr->As<LiteralExpr>())
         {
             /* Append space between integer literal and '.' swizzle operator */
             if (literalExpr->IsSpaceRequiredForSubscript())
@@ -2152,23 +2152,23 @@ void GLSLGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writ
     }
 
     /* Write object identifier either from object expression or from symbol reference */
-    if (auto symbol = objectExpr.symbolRef)
+    if (auto symbol = identExpr.symbolRef)
     {
         /* Write original identifier, if the identifier was marked as immutable */
-        if (objectExpr.flags(ObjectExpr::isImmutable))
+        if (identExpr.flags(IdentExpr::isImmutable))
             Write(symbol->ident.Original());
         else
             Write(symbol->ident);
     }
     else
-        Write(objectExpr.ident);
+        Write(identExpr.ident);
 }
 
 /*
 Writes either the object identifier as it is (e.g. "vertexOutput.position.xyz"),
 or a system value if the identifier has a system value semantic (e.g. "gl_Position.xyz").
 */
-void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectExpr, Decl* symbol)
+void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const IdentExpr& identExpr, Decl* symbol)
 {
     /* Find system value semantic in object identifier */
     std::unique_ptr<std::string> semanticKeyword;
@@ -2187,10 +2187,10 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
         }
     }
 
-    if (varFlags(VarDecl::isShaderInput | VarDecl::isShaderOutput) && objectExpr.prefixExpr)
+    if (varFlags(VarDecl::isShaderInput | VarDecl::isShaderOutput) && identExpr.prefixExpr)
     {
         /* Write special "gl_in/out" array prefix, or write array indices as postfix for input/output semantics */
-        if (auto arrayExpr = objectExpr.prefixExpr->FindFirstNotOf(AST::Types::BracketExpr)->As<ArrayExpr>())
+        if (auto subscriptExpr = identExpr.prefixExpr->FindFirstNotOf(AST::Types::BracketExpr)->As<SubscriptExpr>())
         {
             if (semanticKeyword)
             {
@@ -2199,18 +2199,18 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
                     Write("gl_in");
                 else
                     Write("gl_out");
-                WriteArrayIndices(arrayExpr->arrayIndices);
+                WriteArrayIndices(subscriptExpr->arrayIndices);
                 Write("." + *semanticKeyword);
             }
             else
             {
                 /* Example: xsv_NORMAL0[0] */
-                WriteObjectExprIdent(objectExpr, false);
-                WriteArrayIndices(arrayExpr->arrayIndices);
+                WriteObjectExprIdent(identExpr, false);
+                WriteArrayIndices(subscriptExpr->arrayIndices);
             }
         }
         else
-            Error(R_MissingArrayPrefixForIOSemantic(objectExpr.ident), &objectExpr);
+            Error(R_MissingArrayPrefixForIOSemantic(identExpr.ident), &identExpr);
     }
     else if (semanticKeyword)
     {
@@ -2220,16 +2220,16 @@ void GLSLGenerator::WriteObjectExprIdentOrSystemValue(const ObjectExpr& objectEx
     else
     {
         /* Write object expression with standard identifier */
-        WriteObjectExprIdent(objectExpr);
+        WriteObjectExprIdent(identExpr);
     }
 }
 
 /* ----- Array expression ----- */
 
-void GLSLGenerator::WriteArrayExpr(const ArrayExpr& arrayExpr)
+void GLSLGenerator::WriteArrayExpr(const SubscriptExpr& subscriptExpr)
 {
-    Visit(arrayExpr.prefixExpr);
-    WriteArrayIndices(arrayExpr.arrayIndices);
+    Visit(subscriptExpr.prefixExpr);
+    WriteArrayIndices(subscriptExpr.arrayIndices);
 }
 
 void GLSLGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices)
@@ -3431,7 +3431,7 @@ void GLSLGenerator::WriteScopedStmt(Stmt* ast)
 {
     if (ast)
     {
-        if (ast->Type() != AST::Types::CodeBlockStmt)
+        if (ast->Type() != AST::Types::ScopeStmt)
         {
             WriteScopeOpen(false, false, alwaysBracedScopes_);
             {

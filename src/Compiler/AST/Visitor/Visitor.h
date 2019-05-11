@@ -54,15 +54,15 @@ DECL_PTR( AliasDeclStmt     );
 DECL_PTR( BasicDeclStmt     );
 
 DECL_PTR( NullStmt          );
-DECL_PTR( CodeBlockStmt     );
-DECL_PTR( ForLoopStmt       );
-DECL_PTR( WhileLoopStmt     );
-DECL_PTR( DoWhileLoopStmt   );
+DECL_PTR( ScopeStmt         );
+DECL_PTR( ForStmt           );
+DECL_PTR( WhileStmt         );
+DECL_PTR( DoWhileStmt       );
 DECL_PTR( IfStmt            );
 DECL_PTR( SwitchStmt        );
 DECL_PTR( ExprStmt          );
 DECL_PTR( ReturnStmt        );
-DECL_PTR( CtrlTransferStmt  );
+DECL_PTR( JumpStmt          );
 DECL_PTR( LayoutStmt        );
 
 DECL_PTR( NullExpr          );
@@ -75,9 +75,9 @@ DECL_PTR( UnaryExpr         );
 DECL_PTR( PostUnaryExpr     );
 DECL_PTR( CallExpr          );
 DECL_PTR( BracketExpr       );
-DECL_PTR( ObjectExpr        );
+DECL_PTR( IdentExpr         );
 DECL_PTR( AssignExpr        );
-DECL_PTR( ArrayExpr         );
+DECL_PTR( SubscriptExpr     );
 DECL_PTR( CastExpr          );
 DECL_PTR( InitializerExpr   );
 
@@ -126,15 +126,15 @@ class Visitor
         VISITOR_VISIT_PROC( BasicDeclStmt     );
 
         VISITOR_VISIT_PROC( NullStmt          );
-        VISITOR_VISIT_PROC( CodeBlockStmt     );
-        VISITOR_VISIT_PROC( ForLoopStmt       );
-        VISITOR_VISIT_PROC( WhileLoopStmt     );
-        VISITOR_VISIT_PROC( DoWhileLoopStmt   );
+        VISITOR_VISIT_PROC( ScopeStmt         );
+        VISITOR_VISIT_PROC( ForStmt       );
+        VISITOR_VISIT_PROC( WhileStmt     );
+        VISITOR_VISIT_PROC( DoWhileStmt   );
         VISITOR_VISIT_PROC( IfStmt            );
         VISITOR_VISIT_PROC( SwitchStmt        );
         VISITOR_VISIT_PROC( ExprStmt          );
         VISITOR_VISIT_PROC( ReturnStmt        );
-        VISITOR_VISIT_PROC( CtrlTransferStmt  );
+        VISITOR_VISIT_PROC( JumpStmt  );
         VISITOR_VISIT_PROC( LayoutStmt        );
 
         VISITOR_VISIT_PROC( NullExpr          );
@@ -148,8 +148,8 @@ class Visitor
         VISITOR_VISIT_PROC( CallExpr          );
         VISITOR_VISIT_PROC( BracketExpr       );
         VISITOR_VISIT_PROC( AssignExpr        );
-        VISITOR_VISIT_PROC( ObjectExpr        );
-        VISITOR_VISIT_PROC( ArrayExpr         );
+        VISITOR_VISIT_PROC( IdentExpr        );
+        VISITOR_VISIT_PROC( SubscriptExpr         );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( InitializerExpr   );
 

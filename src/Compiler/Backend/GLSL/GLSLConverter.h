@@ -64,17 +64,17 @@ class GLSLConverter : public Converter
         DECL_VISIT_PROC( VarDeclStmt       );
         DECL_VISIT_PROC( AliasDeclStmt     );
 
-        DECL_VISIT_PROC( CodeBlockStmt     );
-        DECL_VISIT_PROC( ForLoopStmt       );
-        DECL_VISIT_PROC( WhileLoopStmt     );
-        DECL_VISIT_PROC( DoWhileLoopStmt   );
+        DECL_VISIT_PROC( ScopeStmt         );
+        DECL_VISIT_PROC( ForStmt           );
+        DECL_VISIT_PROC( WhileStmt         );
+        DECL_VISIT_PROC( DoWhileStmt       );
         DECL_VISIT_PROC( IfStmt            );
         DECL_VISIT_PROC( SwitchStmt        );
         DECL_VISIT_PROC( ReturnStmt        );
 
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( CallExpr          );
-        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( IdentExpr         );
 
         /* ----- Scope functions ----- */
 
@@ -118,9 +118,9 @@ class GLSLConverter : public Converter
 
         /* ----- Entry point ----- */
 
-        void ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr);
-        void ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr);
-        void ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr);
+        void ConvertEntryPointStructPrefix(ExprPtr& expr, IdentExpr* identExpr);
+        void ConvertEntryPointStructPrefixObject(ExprPtr& expr, IdentExpr* prefixExpr, IdentExpr* identExpr);
+        void ConvertEntryPointStructPrefixArray(ExprPtr& expr, SubscriptExpr* prefixExpr, IdentExpr* identExpr);
 
         void ConvertEntryPointReturnStmt(ReturnStmt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const ExprPtr& typeConstructor);
         void ConvertEntryPointReturnStmtSequenceExpr(ReturnStmt& ast, StructDecl* structDecl, const TypeDenoterPtr& typeDen, const SequenceExpr& typeConstructor);
@@ -133,15 +133,15 @@ class GLSLConverter : public Converter
 
         /* ----- Object expressions ----- */
 
-        void ConvertObjectExpr(ObjectExpr* objectExpr);
-        void ConvertObjectExprStaticVar(ObjectExpr* objectExpr);
-        void ConvertObjectExprDefault(ObjectExpr* objectExpr);
+        void ConvertObjectExpr(IdentExpr* identExpr);
+        void ConvertObjectExprStaticVar(IdentExpr* identExpr);
+        void ConvertObjectExprDefault(IdentExpr* identExpr);
 
         void ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* callerStructDecl, bool useSelfParam);
-        void ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
-        void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
-        void ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr* objectExpr);
-        void ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectExpr, ObjectExpr* objectExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl);
+        void ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, IdentExpr* identExpr);
+        void ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, IdentExpr* identExpr);
+        void ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, IdentExpr* identExpr);
+        void ConvertObjectPrefixNamespaceStruct(IdentExpr* prefixObjectExpr, IdentExpr* identExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl);
 
         void InsertBaseMemberPrefixes(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* callerStructDecl);
 

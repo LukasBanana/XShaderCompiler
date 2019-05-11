@@ -44,7 +44,7 @@ class ReferenceAnalyzer : private VisitorTracker
         void VisitStmtList(const std::vector<StmtPtr>& stmts);
 
         void MarkLValueExpr(const Expr* expr);
-        void MarkLValueExprObject(const ObjectExpr* objectExpr);
+        void MarkLValueExprObject(const IdentExpr* identExpr);
 
         /* ----- Visitor implementation ----- */
 
@@ -68,7 +68,7 @@ class ReferenceAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( UnaryExpr         );
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( CallExpr          );
-        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( IdentExpr         );
         DECL_VISIT_PROC( AssignExpr        );
 
     private:

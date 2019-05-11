@@ -35,7 +35,7 @@ class ExprEvaluator : private Visitor
 
         ExprEvaluator(Flags flags = 0);
 
-        using OnObjectExprCallback = std::function<Variant(ObjectExpr* expr)>;
+        using OnObjectExprCallback = std::function<Variant(IdentExpr* expr)>;
 
         // Evaluates the specified expression and returns the result as variant, or throws a runtime error on failure.
         Variant Evaluate(Expr& expr, const OnObjectExprCallback& onObjectExprCallback = nullptr);
@@ -69,8 +69,8 @@ class ExprEvaluator : private Visitor
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( BracketExpr       );
         DECL_VISIT_PROC( AssignExpr        );
-        DECL_VISIT_PROC( ObjectExpr        );
-        DECL_VISIT_PROC( ArrayExpr         );
+        DECL_VISIT_PROC( IdentExpr         );
+        DECL_VISIT_PROC( SubscriptExpr     );
         DECL_VISIT_PROC( CastExpr          );
         DECL_VISIT_PROC( InitializerExpr   );
 

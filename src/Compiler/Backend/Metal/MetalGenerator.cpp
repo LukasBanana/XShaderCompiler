@@ -419,12 +419,12 @@ IMPLEMENT_VISIT_PROC(NullStmt)
     WriteLn(";");
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     /* Write loop header */
     BeginLn();
@@ -446,7 +446,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     /* Write loop condExpr */
     BeginLn();
@@ -458,7 +458,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmt)
     WriteScopedStmt(ast->bodyStmt.get());
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     BeginLn();
 
@@ -552,7 +552,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
         WriteLn("return;");
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
+IMPLEMENT_VISIT_PROC(JumpStmt)
 {
     WriteLn(CtrlTransformToString(ast->transfer) + ";");
 }
@@ -623,7 +623,7 @@ IMPLEMENT_VISIT_PROC(BracketExpr)
     Write(")");
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     WriteObjectExpr(*ast);
 }
@@ -635,7 +635,7 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     Visit(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
     WriteArrayExpr(*ast);
 }
@@ -735,19 +735,19 @@ void MetalGenerator::WriteProgramHeaderInclude()
 
 /* ----- Object expression ----- */
 
-void MetalGenerator::WriteObjectExpr(const ObjectExpr& objectExpr)
+void MetalGenerator::WriteObjectExpr(const IdentExpr& identExpr)
 {
-    WriteObjectExprIdent(objectExpr);
+    WriteObjectExprIdent(identExpr);
 }
 
-void MetalGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr, bool writePrefix)
+void MetalGenerator::WriteObjectExprIdent(const IdentExpr& identExpr, bool writePrefix)
 {
     /* Write prefix expression */
-    if (objectExpr.prefixExpr && !objectExpr.isStatic && writePrefix)
+    if (identExpr.prefixExpr && !identExpr.isStatic && writePrefix)
     {
-        Visit(objectExpr.prefixExpr);
+        Visit(identExpr.prefixExpr);
 
-        if (auto literalExpr = objectExpr.prefixExpr->As<LiteralExpr>())
+        if (auto literalExpr = identExpr.prefixExpr->As<LiteralExpr>())
         {
             /* Append space between integer literal and '.' swizzle operator */
             if (literalExpr->IsSpaceRequiredForSubscript())
@@ -758,24 +758,24 @@ void MetalGenerator::WriteObjectExprIdent(const ObjectExpr& objectExpr, bool wri
     }
 
     /* Write object identifier either from object expression or from symbol reference */
-    if (auto symbol = objectExpr.symbolRef)
+    if (auto symbol = identExpr.symbolRef)
     {
         /* Write original identifier, if the identifier was marked as immutable */
-        if (objectExpr.flags(ObjectExpr::isImmutable))
+        if (identExpr.flags(IdentExpr::isImmutable))
             Write(symbol->ident.Original());
         else
             Write(symbol->ident);
     }
     else
-        Write(objectExpr.ident);
+        Write(identExpr.ident);
 }
 
 /* ----- Array expression ----- */
 
-void MetalGenerator::WriteArrayExpr(const ArrayExpr& arrayExpr)
+void MetalGenerator::WriteArrayExpr(const SubscriptExpr& subscriptExpr)
 {
-    Visit(arrayExpr.prefixExpr);
-    WriteArrayIndices(arrayExpr.arrayIndices);
+    Visit(subscriptExpr.prefixExpr);
+    WriteArrayIndices(subscriptExpr.arrayIndices);
 }
 
 void MetalGenerator::WriteArrayIndices(const std::vector<ExprPtr>& arrayIndices)
@@ -1283,7 +1283,7 @@ void MetalGenerator::WriteScopedStmt(Stmt* ast)
 {
     if (ast)
     {
-        if (ast->Type() != AST::Types::CodeBlockStmt)
+        if (ast->Type() != AST::Types::ScopeStmt)
         {
             WriteScopeOpen(false, false, alwaysBracedScopes_);
             {

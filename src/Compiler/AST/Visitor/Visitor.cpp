@@ -155,13 +155,13 @@ IMPLEMENT_VISIT_PROC(NullStmt)
     Visit(ast->attribs);
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
     Visit(ast->attribs);
     Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     Visit(ast->attribs);
     Visit(ast->initStmt);
@@ -170,14 +170,14 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     Visit(ast->attribs);
     Visit(ast->condition);
     Visit(ast->bodyStmt);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     Visit(ast->attribs);
     Visit(ast->bodyStmt);
@@ -211,7 +211,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
     Visit(ast->expr);
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
+IMPLEMENT_VISIT_PROC(JumpStmt)
 {
     Visit(ast->attribs);
 }
@@ -283,12 +283,12 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     Visit(ast->rvalueExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     Visit(ast->prefixExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
     Visit(ast->prefixExpr);
     Visit(ast->arrayIndices);

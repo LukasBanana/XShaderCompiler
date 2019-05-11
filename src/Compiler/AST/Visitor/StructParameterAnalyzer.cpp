@@ -242,12 +242,12 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     VISIT_DEFAULT(CallExpr);
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     if (NotVisited(ast))
     {
         Visit(ast->symbolRef);
-        VISIT_DEFAULT(ObjectExpr);
+        VISIT_DEFAULT(IdentExpr);
     }
 }
 

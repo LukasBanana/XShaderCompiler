@@ -33,7 +33,7 @@ static const char* g_stdNameDummy       = "dummy";
  * Internal structures
  */
 
-struct CodeBlockStmtArgs
+struct ScopeStmtArgs
 {
     bool disableNewScope;
 };
@@ -423,9 +423,9 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
-    bool disableNewScope = (args != nullptr ? reinterpret_cast<CodeBlockStmtArgs*>(args)->disableNewScope : false);
+    bool disableNewScope = (args != nullptr ? reinterpret_cast<ScopeStmtArgs*>(args)->disableNewScope : false);
 
     if (!disableNewScope)
     {
@@ -439,7 +439,7 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmt)
         Visit(ast->codeBlock);
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
@@ -450,10 +450,10 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
         Visit(ast->condition);
         Visit(ast->iteration);
 
-        if (ast->bodyStmt->Type() == AST::Types::CodeBlockStmt)
+        if (ast->bodyStmt->Type() == AST::Types::ScopeStmt)
         {
             /* Do NOT open a new scope for the body code block in GLSL */
-            CodeBlockStmtArgs bodyStmtArgs;
+            ScopeStmtArgs bodyStmtArgs;
             bodyStmtArgs.disableNewScope = true;
             VisitScopedStmt(ast->bodyStmt, &bodyStmtArgs);
         }
@@ -466,7 +466,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
@@ -482,7 +482,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmt)
     ExprConverter::ConvertExprIfCastRequired(ast->condition, DataType::Bool);
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     /* Ensure a code block as body statement (if the body is a return statement within the entry point) */
     ConvertEntryPointReturnStmtToCodeBlock(ast->bodyStmt);
@@ -576,7 +576,7 @@ IMPLEMENT_VISIT_PROC(CastExpr)
                 auto tempVarIdent           = MakeTempVarIdent();
                 auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(ast->expr->GetTypeDenoter());
                 auto tempVarDeclStmt       = ASTFactory::MakeVarDeclStmt(tempVarTypeSpecifier, tempVarIdent, ast->expr);
-                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarDeclStmt->varDecls.front().get());
+                auto tempVarExpr            = ASTFactory::MakeIdentExpr(tempVarDeclStmt->varDecls.front().get());
 
                 ast->expr = ASTFactory::MakeConstructorListExpr(tempVarExpr, memberTypeDens);
 
@@ -597,10 +597,10 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 
 #endif
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     ConvertObjectExpr(ast);
-    VISIT_DEFAULT(ObjectExpr);
+    VISIT_DEFAULT(IdentExpr);
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -967,19 +967,19 @@ void GLSLConverter::ConvertIntrinsicCallTextureLOD(CallExpr* ast)
                 auto tempVarIdent           = MakeTempVarIdent();
                 auto tempVarTypeSpecifier   = ASTFactory::MakeTypeSpecifier(args[1]->GetTypeDenoter());
                 auto tempVarDeclStmt       = ASTFactory::MakeVarDeclStmt(tempVarTypeSpecifier, tempVarIdent, args[1]);
-                auto tempVarExpr            = ASTFactory::MakeObjectExpr(tempVarIdent, tempVarDeclStmt->varDecls.front().get());
+                auto tempVarExpr            = ASTFactory::MakeIdentExpr(tempVarIdent, tempVarDeclStmt->varDecls.front().get());
 
                 InsertStmtBefore(tempVarDeclStmt);
 
-                subExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmt->varDecls.front().get());
+                subExpr = ASTFactory::MakeIdentExpr(tempVarDeclStmt->varDecls.front().get());
             }
             else
                 subExpr = args[1];
 
             const std::string vectorSubscript = "xyzw";
 
-            auto arg1Expr   = ASTFactory::MakeObjectExpr(subExpr, vectorSubscript.substr(0, textureDim));
-            auto arg2Expr   = ASTFactory::MakeObjectExpr(subExpr, "w");
+            auto arg1Expr   = ASTFactory::MakeIdentExpr(subExpr, vectorSubscript.substr(0, textureDim));
+            auto arg2Expr   = ASTFactory::MakeIdentExpr(subExpr, "w");
 
             args[1] = arg1Expr;
             args.push_back(arg2Expr);
@@ -1082,9 +1082,9 @@ void GLSLConverter::ConvertIntrinsicCallTextureLoad(CallExpr* ast)
                     /* Make new argument expressions */
                     const std::string vectorSubscript = "xyzw";
 
-                    auto prefixExpr = ASTFactory::MakeObjectExpr(tempVarDeclStmt->varDecls.front().get());
-                    auto arg1Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(0, textureDim));
-                    auto arg2Expr   = ASTFactory::MakeObjectExpr(prefixExpr, vectorSubscript.substr(textureDim, 1));
+                    auto prefixExpr = ASTFactory::MakeIdentExpr(tempVarDeclStmt->varDecls.front().get());
+                    auto arg1Expr   = ASTFactory::MakeIdentExpr(prefixExpr, vectorSubscript.substr(0, textureDim));
+                    auto arg2Expr   = ASTFactory::MakeIdentExpr(prefixExpr, vectorSubscript.substr(textureDim, 1));
 
                     args[1] = arg1Expr;
                     args.insert(args.begin() + 2, arg2Expr);
@@ -1114,7 +1114,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
 
         /* Convert "atomic*" to "imageAtomic*" for buffer types */
         const auto& arg0Expr = args.front();
-        if (auto arg0ArrayExpr = arg0Expr->As<ArrayExpr>())
+        if (auto arg0ArrayExpr = arg0Expr->As<SubscriptExpr>())
         {
             auto prefixTypeDen = arg0ArrayExpr->prefixExpr->GetTypeDenoter()->GetSub();
 
@@ -1151,7 +1151,7 @@ void GLSLConverter::ConvertIntrinsicCallImageAtomic(CallExpr* ast)
                         for (std::size_t i = 0; i < numDims; ++i)
                             arrayIndices.push_back(arg0ArrayExpr->arrayIndices[i]);
 
-                        args.front() = ASTFactory::MakeArrayExpr(arg0ArrayExpr->prefixExpr, std::move(arrayIndices));
+                        args.front() = ASTFactory::MakeSubscriptExpr(arg0ArrayExpr->prefixExpr, std::move(arrayIndices));
                     }
                     else
                         args.front() = arg0ArrayExpr->prefixExpr;
@@ -1311,31 +1311,31 @@ void GLSLConverter::ConvertFunctionCall(CallExpr* ast)
 /*
 ~~~~~~~~~~~~~~~ TODO: refactor this ~~~~~~~~~~~~~~~
 */
-void GLSLConverter::ConvertEntryPointStructPrefix(ExprPtr& expr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertEntryPointStructPrefix(ExprPtr& expr, IdentExpr* identExpr)
 {
     auto nonBracketExpr = expr->FindFirstNotOf(AST::Types::BracketExpr);
-    if (auto prefixExpr = nonBracketExpr->As<ObjectExpr>())
-        ConvertEntryPointStructPrefixObject(expr, prefixExpr, objectExpr);
-    else if (auto prefixExpr = nonBracketExpr->As<ArrayExpr>())
-        ConvertEntryPointStructPrefixArray(expr, prefixExpr, objectExpr);
+    if (auto prefixExpr = nonBracketExpr->As<IdentExpr>())
+        ConvertEntryPointStructPrefixObject(expr, prefixExpr, identExpr);
+    else if (auto prefixExpr = nonBracketExpr->As<SubscriptExpr>())
+        ConvertEntryPointStructPrefixArray(expr, prefixExpr, identExpr);
 }
 
 // Marks the object expression as 'immutable', if the specified structure is a non-entry-point (NEP) parameter
-static bool MakeObjectExprImmutableForNEPStruct(ObjectExpr* objectExpr, const StructDecl* structDecl)
+static bool MakeObjectExprImmutableForNEPStruct(IdentExpr* identExpr, const StructDecl* structDecl)
 {
     if (structDecl)
     {
         if (structDecl->flags(StructDecl::isNonEntryPointParam))
         {
             /* Mark object expression as immutable */
-            objectExpr->flags << ObjectExpr::isImmutable;
+            identExpr->flags << IdentExpr::isImmutable;
             return true;
         }
     }
     return false;
 }
 
-void GLSLConverter::ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExpr* prefixExpr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertEntryPointStructPrefixObject(ExprPtr& expr, IdentExpr* prefixExpr, IdentExpr* identExpr)
 {
     /* Does this l-value refer to a variable declaration? */
     if (auto varDecl = prefixExpr->FetchVarDecl())
@@ -1345,17 +1345,17 @@ void GLSLConverter::ConvertEntryPointStructPrefixObject(ExprPtr& expr, ObjectExp
         if (auto structTypeDen = varTypeDen.As<StructTypeDenoter>())
         {
             /* Can the structure be resolved? */
-            if (!MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef))
+            if (!MakeObjectExprImmutableForNEPStruct(identExpr, structTypeDen->structDeclRef))
             {
                 /* Drop prefix expression for global input/output variables */
-                if (IsGlobalInOutVarDecl(objectExpr->FetchVarDecl()))
+                if (IsGlobalInOutVarDecl(identExpr->FetchVarDecl()))
                     expr.reset();
             }
         }
     }
 }
 
-void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr* prefixExpr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, SubscriptExpr* prefixExpr, IdentExpr* identExpr)
 {
     /* Does this l-value refer to a variable declaration? */
     if (auto varDecl = prefixExpr->prefixExpr->FetchVarDecl())
@@ -1368,7 +1368,7 @@ void GLSLConverter::ConvertEntryPointStructPrefixArray(ExprPtr& expr, ArrayExpr*
             if (auto structTypeDen = varSubTypeDen.As<StructTypeDenoter>())
             {
                 /* Can the structure be resolved? */
-                MakeObjectExprImmutableForNEPStruct(objectExpr, structTypeDen->structDeclRef);
+                MakeObjectExprImmutableForNEPStruct(identExpr, structTypeDen->structDeclRef);
             }
         }
     }
@@ -1401,7 +1401,7 @@ void GLSLConverter::ConvertEntryPointReturnStmtSequenceExpr(ReturnStmt& ast, Str
     Visit(varDeclStmt);
 
     /* Make member assignments */
-    auto prefixExpr = ASTFactory::MakeObjectExpr(varDecl);
+    auto prefixExpr = ASTFactory::MakeIdentExpr(varDecl);
 
     std::size_t idx = 0;
 
@@ -1412,7 +1412,7 @@ void GLSLConverter::ConvertEntryPointReturnStmtSequenceExpr(ReturnStmt& ast, Str
             {
                 /* Make assignment statement for structure member */
                 auto assignStmt = ASTFactory::MakeAssignStmt(
-                    ASTFactory::MakeObjectExpr(prefixExpr, varDecl->ident.Original(), varDecl.get()),
+                    ASTFactory::MakeIdentExpr(prefixExpr, varDecl->ident.Original(), varDecl.get()),
                     typeConstructor.exprs[idx++]
                 );
 
@@ -1453,7 +1453,7 @@ void GLSLConverter::ConvertEntryPointReturnStmtToCodeBlock(StmtPtr& stmt)
         if (stmt && stmt->Type() == AST::Types::ReturnStmt)
         {
             /* Convert statement into a code block statement */
-            stmt = ASTFactory::MakeCodeBlockStmt(stmt);
+            stmt = ASTFactory::MakeScopeStmt(stmt);
         }
     }
 }
@@ -1478,10 +1478,10 @@ void GLSLConverter::AddMissingInterpModifiers(const std::vector<VarDecl*>& varDe
 
 /* ----- Object expressions ----- */
 
-void GLSLConverter::ConvertObjectExpr(ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectExpr(IdentExpr* identExpr)
 {
     /* Does this object expression refer to a static variable declaration? */
-    if (auto varDecl = objectExpr->FetchVarDecl())
+    if (auto varDecl = identExpr->FetchVarDecl())
     {
         /*
         Don't convert 'self'-parameter again!
@@ -1491,44 +1491,44 @@ void GLSLConverter::ConvertObjectExpr(ObjectExpr* objectExpr)
         if (!varFlags(VarDeclStmt::isSelfParameter))
         {
             if (varDecl->IsStatic())
-                ConvertObjectExprStaticVar(objectExpr);
+                ConvertObjectExprStaticVar(identExpr);
             else
-                ConvertObjectExprDefault(objectExpr);
+                ConvertObjectExprDefault(identExpr);
         }
     }
     else
-        ConvertObjectExprDefault(objectExpr);
+        ConvertObjectExprDefault(identExpr);
 }
 
-void GLSLConverter::ConvertObjectExprStaticVar(ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectExprStaticVar(IdentExpr* identExpr)
 {
     /* Remove prefix from static variable access */
-    objectExpr->prefixExpr.reset();
+    identExpr->prefixExpr.reset();
 }
 
-void GLSLConverter::ConvertObjectExprDefault(ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectExprDefault(IdentExpr* identExpr)
 {
     /* Convert prefix expression if it's the identifier of an entry-point struct instance */
-    if (objectExpr->prefixExpr)
-        ConvertEntryPointStructPrefix(objectExpr->prefixExpr, objectExpr);
+    if (identExpr->prefixExpr)
+        ConvertEntryPointStructPrefix(identExpr->prefixExpr, identExpr);
 
-    if (objectExpr->prefixExpr)
+    if (identExpr->prefixExpr)
     {
-        if (objectExpr->isStatic)
+        if (identExpr->isStatic)
         {
             /* Convert prefix expression if it's a base structure namespace expression (e.g. "obj.BaseStruct::member" -> "obj.xsn_base.member") */
-            ConvertObjectPrefixNamespace(objectExpr->prefixExpr, objectExpr);
+            ConvertObjectPrefixNamespace(identExpr->prefixExpr, identExpr);
         }
         else
         {
             /* Convert prefix expression if the object refers to a member variable of a base structure */
-            ConvertObjectPrefixBaseStruct(objectExpr->prefixExpr, objectExpr);
+            ConvertObjectPrefixBaseStruct(identExpr->prefixExpr, identExpr);
         }
     }
 
     /* Add 'self'-parameter to front, if the variable refers to a member of the active structure */
-    if (!objectExpr->prefixExpr)
-        ConvertObjectPrefixSelfParam(objectExpr->prefixExpr, objectExpr);
+    if (!identExpr->prefixExpr)
+        ConvertObjectPrefixSelfParam(identExpr->prefixExpr, identExpr);
 }
 
 void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const StructDecl* ownerStructDecl, const StructDecl* callerStructDecl, bool useSelfParam)
@@ -1543,7 +1543,7 @@ void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const S
                 if (auto selfParam = ActiveSelfParameter())
                 {
                     /* Make the 'self'-parameter the new prefix expression */
-                    prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
+                    prefixExpr = ASTFactory::MakeIdentExpr(selfParam);
                 }
             }
         }
@@ -1553,19 +1553,19 @@ void GLSLConverter::ConvertObjectPrefixStructMember(ExprPtr& prefixExpr, const S
     }
 }
 
-void GLSLConverter::ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, IdentExpr* identExpr)
 {
     /* Is this object a member of the active owner structure (like 'this->memberVar')? */
     if (auto activeStructDecl = ActiveStructDecl())
     {
         if (auto selfParam = ActiveSelfParameter())
         {
-            if (auto varDecl = objectExpr->FetchVarDecl())
+            if (auto varDecl = identExpr->FetchVarDecl())
             {
                 if (auto ownerStructDecl = varDecl->structDeclRef)
                 {
                     /* Make the 'self'-parameter the new prefix expression */
-                    prefixExpr = ASTFactory::MakeObjectExpr(selfParam);
+                    prefixExpr = ASTFactory::MakeIdentExpr(selfParam);
 
                     /* Insert 'base' member prefixes */
                     InsertBaseMemberPrefixes(prefixExpr, ownerStructDecl, activeStructDecl);
@@ -1575,14 +1575,14 @@ void GLSLConverter::ConvertObjectPrefixSelfParam(ExprPtr& prefixExpr, ObjectExpr
     }
 }
 
-void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, IdentExpr* identExpr)
 {
     const auto& prefixTypeDen = prefixExpr->GetTypeDenoter()->GetAliased();
     if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
     {
         if (auto activeStructDecl = prefixStructTypeDen->structDeclRef)
         {
-            if (auto varDecl = objectExpr->FetchVarDecl())
+            if (auto varDecl = identExpr->FetchVarDecl())
             {
                 /* Insert 'self' or 'base' prefix if necessary */
                 ConvertObjectPrefixStructMember(prefixExpr, varDecl->structDeclRef, activeStructDecl, false);
@@ -1591,10 +1591,10 @@ void GLSLConverter::ConvertObjectPrefixBaseStruct(ExprPtr& prefixExpr, ObjectExp
     }
 }
 
-void GLSLConverter::ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr* objectExpr)
+void GLSLConverter::ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, IdentExpr* identExpr)
 {
     /* Is the prefix expression a base structure namespace expression? */
-    if (auto prefixObjectExpr = prefixExpr->As<ObjectExpr>())
+    if (auto prefixObjectExpr = prefixExpr->As<IdentExpr>())
     {
         /* Get base structure namespace */
         if (auto baseStructDecl = prefixObjectExpr->FetchSymbol<StructDecl>())
@@ -1606,33 +1606,33 @@ void GLSLConverter::ConvertObjectPrefixNamespace(ExprPtr& prefixExpr, ObjectExpr
                 if (auto prefixStructTypeDen = prefixTypeDen.As<StructTypeDenoter>())
                 {
                     if (auto activeStructDecl = prefixStructTypeDen->structDeclRef)
-                        ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, objectExpr, baseStructDecl, activeStructDecl);
+                        ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, identExpr, baseStructDecl, activeStructDecl);
                 }
             }
             else
             {
                 /* Fetch 'base'-member from active structure declaration */
                 if (auto activeStructDecl = ActiveStructDecl())
-                    ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, objectExpr, baseStructDecl, activeStructDecl);
+                    ConvertObjectPrefixNamespaceStruct(prefixObjectExpr, identExpr, baseStructDecl, activeStructDecl);
             }
         }
     }
 }
 
-void GLSLConverter::ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectExpr, ObjectExpr* objectExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl)
+void GLSLConverter::ConvertObjectPrefixNamespaceStruct(IdentExpr* prefixObjectExpr, IdentExpr* identExpr, const StructDecl* baseStructDecl, const StructDecl* activeStructDecl)
 {
     if (activeStructDecl == baseStructDecl)
     {
         /* Remove this redundant prefix */
-        objectExpr->isStatic    = false;
-        objectExpr->prefixExpr  = prefixObjectExpr->prefixExpr;
+        identExpr->isStatic    = false;
+        identExpr->prefixExpr  = prefixObjectExpr->prefixExpr;
     }
     else
     {
         /* Convert prefix expression from base struct namespace to 'base'-member */
         if (auto baseMember = activeStructDecl->FetchBaseMember())
         {
-            objectExpr->isStatic        = false;
+            identExpr->isStatic        = false;
             prefixObjectExpr->symbolRef = baseMember;
             prefixObjectExpr->ident     = baseMember->ident.Original();
         }
@@ -1648,7 +1648,7 @@ void GLSLConverter::ConvertObjectPrefixNamespaceStruct(ObjectExpr* prefixObjectE
             if (auto baseMember = activeStructDecl->FetchBaseMember())
             {
                 /* Insert next 'base'-member object expression */
-                objectExpr->prefixExpr = ASTFactory::MakeObjectExpr(objectExpr->prefixExpr, baseMember->ident, baseMember);
+                identExpr->prefixExpr = ASTFactory::MakeIdentExpr(identExpr->prefixExpr, baseMember->ident, baseMember);
             }
             else
                 break;
@@ -1664,7 +1664,7 @@ void GLSLConverter::InsertBaseMemberPrefixes(ExprPtr& prefixExpr, const StructDe
         {
             /* Insert 'base' member object expression */
             if (auto baseMember = callerStructDecl->FetchBaseMember())
-                prefixExpr = ASTFactory::MakeObjectExpr(prefixExpr, baseMember->ident.Original(), baseMember);
+                prefixExpr = ASTFactory::MakeIdentExpr(prefixExpr, baseMember->ident.Original(), baseMember);
 
             /* Check for next base structure */
             callerStructDecl = callerStructDecl->baseStructRef;

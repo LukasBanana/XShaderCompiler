@@ -62,13 +62,13 @@ VarDeclStmtPtr                  MakeVarDeclStmt(const DataType dataType, const s
 // Returns a new VarDeclStmt with the specified VarDecl index and removes the specified VarDecl from the input statement, except there is only one VarDecl.
 VarDeclStmtPtr                  MakeVarDeclStmtSplit(const VarDeclStmtPtr& varDeclStmt, std::size_t idx);
 
-ObjectExprPtr                   MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef = nullptr);
-ObjectExprPtr                   MakeObjectExpr(const std::string& ident, Decl* symbolRef = nullptr);
-ObjectExprPtr                   MakeObjectExpr(Decl* symbolRef);
+IdentExprPtr                    MakeIdentExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef = nullptr);
+IdentExprPtr                    MakeIdentExpr(const std::string& ident, Decl* symbolRef = nullptr);
+IdentExprPtr                    MakeIdentExpr(Decl* symbolRef);
 
-ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arrayIndices);
-ArrayExprPtr                    MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
-ArrayExprPtr                    MakeArrayExpr(
+SubscriptExprPtr                MakeSubscriptExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arrayIndices);
+SubscriptExprPtr                MakeSubscriptExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices);
+SubscriptExprPtr                MakeSubscriptExpr(
                                     const ExprPtr&                              prefixExpr,
                                     const std::vector<ExprPtr>::const_iterator& arrayIndicesBegin,
                                     const std::vector<ExprPtr>::const_iterator& arrayIndicesEnd
@@ -76,11 +76,11 @@ ArrayExprPtr                    MakeArrayExpr(
 
 /*
 Splits the specified array expression at the specified array index location.
-If 'lastPrefixArrayIndex' is zero, or greater than or equal to the number of array indices, the input expression 'arrayExpr' is returned.
+If 'lastPrefixArrayIndex' is zero, or greater than or equal to the number of array indices, the input expression 'subscriptExpr' is returned.
 Otherwise, the left hand side is splitted as prefix expression into the return expression.
-Example (pseudocode): MakeArrayExprSplit('prefix[0][1][2]', 2) --> '(prefix[0][1])[2]'
+Example (pseudocode): MakeSubscriptExprSplit('prefix[0][1][2]', 2) --> '(prefix[0][1])[2]'
 */
-ArrayExprPtr                    MakeArrayExprSplit(const ArrayExprPtr& arrayExpr, std::size_t splitArrayIndex);
+SubscriptExprPtr                MakeSubscriptExprSplit(const SubscriptExprPtr& subscriptExpr, std::size_t splitArrayIndex);
 
 RegisterPtr                     MakeRegister(int slot, const RegisterType registerType = RegisterType::Undefined);
 
@@ -98,8 +98,8 @@ ExprStmtPtr                     MakeArrayAssignStmt(VarDecl* varDecl, const std:
 
 ArrayDimensionPtr               MakeArrayDimension(int arraySize);
 
-// Makes a code block statement with initial code block and the specified statement inserted.
-CodeBlockStmtPtr                MakeCodeBlockStmt(const StmtPtr& stmt);
+// Makes a scope statement with initial code block and the specified statement inserted.
+ScopeStmtPtr                    MakeScopeStmt(const StmtPtr& stmt);
 
 BasicDeclStmtPtr                MakeStructDeclStmt(const StructDeclPtr& structDecl);
 

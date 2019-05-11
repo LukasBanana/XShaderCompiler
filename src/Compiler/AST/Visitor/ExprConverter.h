@@ -91,28 +91,28 @@ class ExprConverter : public VisitorTracker
 
         /* ----- Visitor implementation ----- */
 
-        DECL_VISIT_PROC( VarDecl         );
+        DECL_VISIT_PROC( VarDecl       );
 
-        DECL_VISIT_PROC( FunctionDecl    );
+        DECL_VISIT_PROC( FunctionDecl  );
 
-        DECL_VISIT_PROC( ForLoopStmt     );
-        DECL_VISIT_PROC( WhileLoopStmt   );
-        DECL_VISIT_PROC( DoWhileLoopStmt );
-        DECL_VISIT_PROC( IfStmt          );
-        DECL_VISIT_PROC( SwitchStmt      );
-        DECL_VISIT_PROC( ExprStmt        );
-        DECL_VISIT_PROC( ReturnStmt      );
+        DECL_VISIT_PROC( ForStmt       );
+        DECL_VISIT_PROC( WhileStmt     );
+        DECL_VISIT_PROC( DoWhileStmt   );
+        DECL_VISIT_PROC( IfStmt        );
+        DECL_VISIT_PROC( SwitchStmt    );
+        DECL_VISIT_PROC( ExprStmt      );
+        DECL_VISIT_PROC( ReturnStmt    );
 
-        DECL_VISIT_PROC( LiteralExpr     );
-        DECL_VISIT_PROC( TernaryExpr     );
-        DECL_VISIT_PROC( BinaryExpr      );
-        DECL_VISIT_PROC( UnaryExpr       );
-        DECL_VISIT_PROC( CallExpr        );
-        DECL_VISIT_PROC( BracketExpr     );
-        DECL_VISIT_PROC( CastExpr        );
-        DECL_VISIT_PROC( ObjectExpr      );
-        DECL_VISIT_PROC( AssignExpr      );
-        DECL_VISIT_PROC( ArrayExpr       );
+        DECL_VISIT_PROC( LiteralExpr   );
+        DECL_VISIT_PROC( TernaryExpr   );
+        DECL_VISIT_PROC( BinaryExpr    );
+        DECL_VISIT_PROC( UnaryExpr     );
+        DECL_VISIT_PROC( CallExpr      );
+        DECL_VISIT_PROC( BracketExpr   );
+        DECL_VISIT_PROC( CastExpr      );
+        DECL_VISIT_PROC( IdentExpr     );
+        DECL_VISIT_PROC( AssignExpr    );
+        DECL_VISIT_PROC( SubscriptExpr );
 
         /* ----- Conversion ----- */
 
@@ -124,11 +124,11 @@ class ExprConverter : public VisitorTracker
 
         // Converts the expression if a vector subscript is used on a scalar type expression.
         void ConvertExprVectorSubscript(ExprPtr& expr);
-        void ConvertExprVectorSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
+        void ConvertExprVectorSubscriptObject(ExprPtr& expr, IdentExpr* identExpr);
 
         // Converts the expression if a matrix subscript is used.
         void ConvertExprMatrixSubscript(ExprPtr& expr);
-        void ConvertExprMatrixSubscriptObject(ExprPtr& expr, ObjectExpr* objectExpr);
+        void ConvertExprMatrixSubscriptObject(ExprPtr& expr, IdentExpr* identExpr);
 
         // Converts the expression from a vector comparison to the respective intrinsic call (e.g. "a < b" -> "lessThan(a, b)").
         void ConvertExprVectorCompare(ExprPtr& expr);
@@ -139,11 +139,11 @@ class ExprConverter : public VisitorTracker
         // Converts the expression from an image access to the respective intrinsic call (e.g. "image[int2(1, 2)]" -> "imageLoad(image, ivec2(1, 2))").
         void ConvertExprImageAccess(ExprPtr& expr);
         void ConvertExprImageAccessAssign(ExprPtr& expr, AssignExpr* assignExpr);
-        void ConvertExprImageAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr, AssignExpr* assignExpr = nullptr);
+        void ConvertExprImageAccessArray(ExprPtr& expr, SubscriptExpr* subscriptExpr, AssignExpr* assignExpr = nullptr);
 
         // Converts the expression from a sampler buffer access to the texelFetch intrinsic call (e.g. "buffer[2]" -> "texelFetch(buffer, 2)").
         void ConvertExprSamplerBufferAccess(ExprPtr& expr);
-        void ConvertExprSamplerBufferAccessArray(ExprPtr& expr, ArrayExpr* arrayExpr);
+        void ConvertExprSamplerBufferAccessArray(ExprPtr& expr, SubscriptExpr* subscriptExpr);
 
         // Converts the expression by moving its sub expression into a bracket (e.g. "-+x" -> "-(+x)").
         void ConvertExprIntoBracket(ExprPtr& expr);

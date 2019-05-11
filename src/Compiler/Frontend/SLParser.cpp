@@ -65,23 +65,23 @@ NullStmtPtr SLParser::ParseNullStmt()
     return ast;
 }
 
-CodeBlockStmtPtr SLParser::ParseCodeBlockStmt()
+ScopeStmtPtr SLParser::ParseScopeStmt()
 {
-    /* Parse code block statement */
-    auto ast = Make<CodeBlockStmt>();
+    /* Parse scope statement */
+    auto ast = Make<ScopeStmt>();
     ast->codeBlock = ParseCodeBlock();
     return ast;
 }
 
-ForLoopStmtPtr SLParser::ParseForLoopStmt()
+ForStmtPtr SLParser::ParseForStmt()
 {
-    auto ast = Make<ForLoopStmt>();
+    auto ast = Make<ForStmt>();
 
     /* Parse loop initializer statement (attributes not allowed here) */
     Accept(Tokens::For);
     Accept(Tokens::LBracket);
 
-    ast->initStmt = ParseForLoopInitializer();
+    ast->initStmt = ParseForStmtInitializer();
 
     /* Parse loop condExpr */
     if (!Is(Tokens::Semicolon))
@@ -99,9 +99,9 @@ ForLoopStmtPtr SLParser::ParseForLoopStmt()
     return ast;
 }
 
-WhileLoopStmtPtr SLParser::ParseWhileLoopStmt()
+WhileStmtPtr SLParser::ParseWhileStmt()
 {
-    auto ast = Make<WhileLoopStmt>();
+    auto ast = Make<WhileStmt>();
 
     /* Parse loop condExpr */
     Accept(Tokens::While);
@@ -116,9 +116,9 @@ WhileLoopStmtPtr SLParser::ParseWhileLoopStmt()
     return ast;
 }
 
-DoWhileLoopStmtPtr SLParser::ParseDoWhileLoopStmt()
+DoWhileStmtPtr SLParser::ParseDoWhileStmt()
 {
-    auto ast = Make<DoWhileLoopStmt>();
+    auto ast = Make<DoWhileStmt>();
 
     /* Parse loop body */
     Accept(Tokens::Do);
@@ -183,10 +183,10 @@ SwitchStmtPtr SLParser::ParseSwitchStmt()
     return ast;
 }
 
-CtrlTransferStmtPtr SLParser::ParseCtrlTransferStmt()
+JumpStmtPtr SLParser::ParseJumpStmt()
 {
     /* Parse control transfer statement */
-    auto ast = Make<CtrlTransferStmt>();
+    auto ast = Make<JumpStmt>();
 
     auto ctrlTransfer = Accept(Tokens::CtrlTransfer)->Spell();
     ast->transfer = StringToCtrlTransfer(ctrlTransfer);
@@ -290,9 +290,9 @@ SequenceExprPtr SLParser::ParseSequenceExpr(const ExprPtr& firstExpr)
     return ast;
 }
 
-ArrayExprPtr SLParser::ParseArrayExpr(const ExprPtr& expr)
+SubscriptExprPtr SLParser::ParseSubscriptExpr(const ExprPtr& expr)
 {
-    auto ast = Make<ArrayExpr>();
+    auto ast = Make<SubscriptExpr>();
 
     /* Take sub expression and parse array dimensions */
     ast->prefixExpr     = expr;
@@ -492,13 +492,13 @@ Variant SLParser::ParseAndEvaluateConstExpr()
     {
         /* Evaluate expression and throw error on object access */
         ExprEvaluator exprEvaluator;
-        return exprEvaluator.Evaluate(*expr, [](ObjectExpr* expr) -> Variant { throw expr; });
+        return exprEvaluator.Evaluate(*expr, [](IdentExpr* expr) -> Variant { throw expr; });
     }
     catch (const std::exception& e)
     {
         Error(e.what(), tkn.get());
     }
-    catch (const ObjectExpr* expr)
+    catch (const IdentExpr* expr)
     {
         GetReportHandler().SubmitReport(
             true, ReportTypes::Error, R_SyntaxError,

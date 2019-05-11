@@ -74,10 +74,10 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( VarDeclStmt      );
         DECL_VISIT_PROC( BasicDeclStmt    );
 
-        DECL_VISIT_PROC( CodeBlockStmt    );
-        DECL_VISIT_PROC( ForLoopStmt      );
-        DECL_VISIT_PROC( WhileLoopStmt    );
-        DECL_VISIT_PROC( DoWhileLoopStmt  );
+        DECL_VISIT_PROC( ScopeStmt    );
+        DECL_VISIT_PROC( ForStmt      );
+        DECL_VISIT_PROC( WhileStmt    );
+        DECL_VISIT_PROC( DoWhileStmt  );
         DECL_VISIT_PROC( IfStmt           );
         DECL_VISIT_PROC( SwitchStmt       );
         DECL_VISIT_PROC( ExprStmt         );
@@ -87,8 +87,8 @@ class HLSLAnalyzer : public Analyzer
         DECL_VISIT_PROC( PostUnaryExpr     );
         DECL_VISIT_PROC( CallExpr          );
         DECL_VISIT_PROC( AssignExpr        );
-        DECL_VISIT_PROC( ObjectExpr        );
-        DECL_VISIT_PROC( ArrayExpr         );
+        DECL_VISIT_PROC( IdentExpr        );
+        DECL_VISIT_PROC( SubscriptExpr         );
 
         /* ----- Declarations ----- */
 
@@ -107,21 +107,21 @@ class HLSLAnalyzer : public Analyzer
 
         void AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr);
 
-        /* ----- Object expressions ----- */
+        /* ----- Identifier expressions ----- */
 
-        void AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args);
-        void AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, StructDecl* baseStructDecl, const StructTypeDenoter& structTypeDen);
-        void AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs& outputArgs, const StructTypeDenoter& structTypeDen);
+        void AnalyzeIdentExpr(IdentExpr* expr, PrefixArgs* args);
+        void AnalyzeIdentExprVarDeclFromStruct(IdentExpr* expr, StructDecl* baseStructDecl, const StructTypeDenoter& structTypeDen);
+        void AnalyzeIdentExprBaseStructDeclFromStruct(IdentExpr* expr, PrefixArgs& outputArgs, const StructTypeDenoter& structTypeDen);
 
         bool AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast = nullptr);
         bool AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier, const std::string& ident, const Expr* expr, bool isStatic);
 
         void AnalyzeLValueExpr(Expr* expr, const AST* ast = nullptr, VarDecl* param = nullptr);
-        void AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* ast = nullptr, VarDecl* param = nullptr);
+        void AnalyzeLValueExprObject(IdentExpr* identExpr, const AST* ast = nullptr, VarDecl* param = nullptr);
 
-        /* ----- Array expressions ----- */
+        /* ----- Subscription expressions ----- */
 
-        void AnalyzeArrayExpr(ArrayExpr* expr);
+        void AnalyzeSubscriptExpr(SubscriptExpr* expr);
 
         /* ----- Entry point ----- */
 

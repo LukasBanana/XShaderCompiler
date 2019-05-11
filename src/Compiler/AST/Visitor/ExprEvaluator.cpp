@@ -106,7 +106,7 @@ void ExprEvaluator::SetObjectExprCallback(const OnObjectExprCallback& callback)
     else
     {
         /* Default callback returns the initializer value of a variable */
-        onObjectExprCallback_ = [](ObjectExpr* expr) -> Variant
+        onObjectExprCallback_ = [](IdentExpr* expr) -> Variant
         {
             /* Fetch variable from expression and return its initializer value */
             if (auto varDecl = expr->FetchVarDecl())
@@ -462,12 +462,12 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
         Abort();
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
     Push(onObjectExprCallback_(ast));
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
     /* Evaluate prefix expression */
     Visit(ast->prefixExpr);

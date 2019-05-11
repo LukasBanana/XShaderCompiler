@@ -226,9 +226,9 @@ VarDeclStmtPtr MakeVarDeclStmtSplit(const VarDeclStmtPtr& varDeclStmt, std::size
     return varDeclStmt;
 }
 
-ObjectExprPtr MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef)
+IdentExprPtr MakeIdentExpr(const ExprPtr& prefixExpr, const std::string& ident, Decl* symbolRef)
 {
-    auto ast = MakeAST<ObjectExpr>();
+    auto ast = MakeAST<IdentExpr>();
     {
         ast->prefixExpr = prefixExpr;
         ast->ident      = ident;
@@ -237,19 +237,19 @@ ObjectExprPtr MakeObjectExpr(const ExprPtr& prefixExpr, const std::string& ident
     return ast;
 }
 
-ObjectExprPtr MakeObjectExpr(const std::string& ident, Decl* symbolRef)
+IdentExprPtr MakeIdentExpr(const std::string& ident, Decl* symbolRef)
 {
-    return MakeObjectExpr(nullptr, ident, symbolRef);
+    return MakeIdentExpr(nullptr, ident, symbolRef);
 }
 
-ObjectExprPtr MakeObjectExpr(Decl* symbolRef)
+IdentExprPtr MakeIdentExpr(Decl* symbolRef)
 {
-    return MakeObjectExpr(symbolRef->ident.Original(), symbolRef);
+    return MakeIdentExpr(symbolRef->ident.Original(), symbolRef);
 }
 
-ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arrayIndices)
+SubscriptExprPtr MakeSubscriptExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arrayIndices)
 {
-    auto ast = MakeAST<ArrayExpr>();
+    auto ast = MakeAST<SubscriptExpr>();
     {
         ast->prefixExpr     = prefixExpr;
         ast->arrayIndices   = std::move(arrayIndices);
@@ -257,17 +257,17 @@ ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, std::vector<ExprPtr>&& arr
     return ast;
 }
 
-ArrayExprPtr MakeArrayExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices)
+SubscriptExprPtr MakeSubscriptExpr(const ExprPtr& prefixExpr, const std::vector<int>& arrayIndices)
 {
-    return MakeArrayExpr(prefixExpr, MakeArrayIndices(arrayIndices));
+    return MakeSubscriptExpr(prefixExpr, MakeArrayIndices(arrayIndices));
 }
 
-ArrayExprPtr MakeArrayExpr(
+SubscriptExprPtr MakeSubscriptExpr(
     const ExprPtr& prefixExpr,
     const std::vector<ExprPtr>::const_iterator& arrayIndicesBegin,
     const std::vector<ExprPtr>::const_iterator& arrayIndicesEnd)
 {
-    auto ast = MakeAST<ArrayExpr>();
+    auto ast = MakeAST<SubscriptExpr>();
     {
         ast->prefixExpr = prefixExpr;
         ast->arrayIndices.insert(
@@ -279,26 +279,26 @@ ArrayExprPtr MakeArrayExpr(
     return ast;
 }
 
-ArrayExprPtr MakeArrayExprSplit(const ArrayExprPtr& arrayExpr, std::size_t splitArrayIndex)
+SubscriptExprPtr MakeSubscriptExprSplit(const SubscriptExprPtr& subscriptExpr, std::size_t splitArrayIndex)
 {
-    if (arrayExpr != nullptr && splitArrayIndex > 0 && splitArrayIndex < arrayExpr->NumIndices())
+    if (subscriptExpr != nullptr && splitArrayIndex > 0 && splitArrayIndex < subscriptExpr->NumIndices())
     {
         /* Make main array expression */
-        auto ast = MakeArrayExpr(
-            MakeArrayExpr(
-                arrayExpr->prefixExpr,
-                arrayExpr->arrayIndices.begin(),
-                arrayExpr->arrayIndices.begin() + splitArrayIndex
+        auto ast = MakeSubscriptExpr(
+            MakeSubscriptExpr(
+                subscriptExpr->prefixExpr,
+                subscriptExpr->arrayIndices.begin(),
+                subscriptExpr->arrayIndices.begin() + splitArrayIndex
             ),
-            arrayExpr->arrayIndices.begin() + splitArrayIndex,
-            arrayExpr->arrayIndices.end()
+            subscriptExpr->arrayIndices.begin() + splitArrayIndex,
+            subscriptExpr->arrayIndices.end()
         );
 
-        ast->area = arrayExpr->area;;
+        ast->area = subscriptExpr->area;;
 
         return ast;
     }
-    return arrayExpr;
+    return subscriptExpr;
 }
 
 RegisterPtr MakeRegister(int slot, const RegisterType registerType)
@@ -400,7 +400,7 @@ ExprStmtPtr MakeAssignStmt(const ExprPtr& lvalueExpr, const ExprPtr& rvalueExpr,
 
 ExprStmtPtr MakeArrayAssignStmt(VarDecl* varDecl, const std::vector<int>& arrayIndices, const ExprPtr& assignExpr)
 {
-    return MakeAssignStmt(MakeArrayExpr(MakeObjectExpr(varDecl), arrayIndices), assignExpr);
+    return MakeAssignStmt(MakeSubscriptExpr(MakeIdentExpr(varDecl), arrayIndices), assignExpr);
 }
 
 ArrayDimensionPtr MakeArrayDimension(int arraySize)
@@ -421,9 +421,9 @@ ArrayDimensionPtr MakeArrayDimension(int arraySize)
     return ast;
 }
 
-CodeBlockStmtPtr MakeCodeBlockStmt(const StmtPtr& stmt)
+ScopeStmtPtr MakeScopeStmt(const StmtPtr& stmt)
 {
-    auto ast = MakeASTWithOrigin<CodeBlockStmt>(stmt);
+    auto ast = MakeASTWithOrigin<ScopeStmt>(stmt);
     {
         ast->codeBlock = MakeASTWithOrigin<CodeBlock>(stmt);
         ast->codeBlock->stmts.push_back(stmt);

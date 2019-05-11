@@ -130,7 +130,7 @@ class Parser
 
         /*
         Pushes the specified AST node onto the stack of pre-parsed AST nodes.
-        This can be used to pass AST nodes down a parsing function call stack (e.g. used for ObjectExpr which is used in many parsing functions).
+        This can be used to pass AST nodes down a parsing function call stack (e.g. used for IdentExpr which is used in many parsing functions).
         This is meant to be used only for a few situations because care must be taken that none of these AST nodes will be ignored (i.e. lost in the stack).
         */
         void PushPreParsedAST(const ASTPtr& ast);

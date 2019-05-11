@@ -270,7 +270,7 @@ StmtPtr GLSLParser::ParseLocalStmt()
     return ParseStmt();
 }
 
-StmtPtr GLSLParser::ParseForLoopInitializer()
+StmtPtr GLSLParser::ParseForStmtInitializer()
 {
     return ParseStmt();
 }
@@ -798,7 +798,7 @@ StmtPtr GLSLParser::ParseStmt()
         case Tokens::Semicolon:
             return ParseNullStmt();
         case Tokens::LCurly:
-            return ParseCodeBlockStmt();
+            return ParseScopeStmt();
         case Tokens::Return:
             return ParseReturnStmt();
         #if 0
@@ -806,17 +806,17 @@ StmtPtr GLSLParser::ParseStmt()
             return ParseStmtWithIdent();
         #endif
         case Tokens::For:
-            return ParseForLoopStmt();
+            return ParseForStmt();
         case Tokens::While:
-            return ParseWhileLoopStmt();
+            return ParseWhileStmt();
         case Tokens::Do:
-            return ParseDoWhileLoopStmt();
+            return ParseDoWhileStmt();
         case Tokens::If:
             return ParseIfStmt();
         case Tokens::Switch:
             return ParseSwitchStmt();
         case Tokens::CtrlTransfer:
-            return ParseCtrlTransferStmt();
+            return ParseJumpStmt();
         case Tokens::Struct:
             return ParseStmtWithStructDecl();
         #if 0
@@ -877,9 +877,9 @@ StmtPtr GLSLParser::ParseStmtWithStructDecl()
 StmtPtr GLSLParser::ParseStmtWithIdent()
 {
     /* Parse the identifier as object expression (can be converted later) */
-    auto objectExpr = ParseObjectExpr();
+    auto identExpr = ParseIdentExpr();
 
-    auto expr = ParseExprWithSuffixOpt(objectExpr);
+    auto expr = ParseExprWithSuffixOpt(identExpr);
 
     if (Is(Tokens::LBracket) || Is(Tokens::UnaryOp) || Is(Tokens::BinaryOp) || Is(Tokens::TernaryOp))
     {
@@ -897,20 +897,20 @@ StmtPtr GLSLParser::ParseStmtWithIdent()
         /* Parse sequence expression */
         return ParseExprStmt(ParseSequenceExpr(expr));
     }
-    else if (expr == objectExpr)
+    else if (expr == identExpr)
     {
         /* Convert variable identifier to alias type denoter */
         auto ast = Make<VarDeclStmt>();
 
         ast->typeSpecifier              = Make<TypeSpecifier>();
-        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(std::make_shared<StructTypeDenoter>(objectExpr->ident));
+        ast->typeSpecifier->typeDenoter = ParseTypeDenoterWithArrayOpt(std::make_shared<StructTypeDenoter>(identExpr->ident));
 
-        UpdateSourceArea(ast->typeSpecifier, objectExpr.get());
+        UpdateSourceArea(ast->typeSpecifier, identExpr.get());
 
         ast->varDecls = ParseVarDeclList(ast.get());
         Semi();
 
-        return UpdateSourceArea(ast, objectExpr.get());
+        return UpdateSourceArea(ast, identExpr.get());
     }
     else
         return ParseExprStmt(expr);
@@ -939,14 +939,14 @@ ExprPtr GLSLParser::ParsePrimaryExprPrefix()
     /* Check if a pre-parsed AST node is available */
     if (auto preParsedAST = PopPreParsedAST())
     {
-        if (preParsedAST->Type() == AST::Types::ObjectExpr)
+        if (preParsedAST->Type() == AST::Types::IdentExpr)
         {
             /* Parse call expression or return pre-parsed object expression */
-            auto objectExpr = std::static_pointer_cast<ObjectExpr>(preParsedAST);
+            auto identExpr = std::static_pointer_cast<IdentExpr>(preParsedAST);
             if (Is(Tokens::LBracket))
-                return ParseCallExpr(objectExpr);
+                return ParseCallExpr(identExpr);
             else
-                return objectExpr;
+                return identExpr;
         }
         else if (preParsedAST->Type() == AST::Types::CallExpr)
         {
@@ -971,7 +971,7 @@ ExprPtr GLSLParser::ParsePrimaryExprPrefix()
     if (Is(Tokens::LCurly))
         return ParseInitializerExpr();
     if (Is(Tokens::Ident))
-        return ParseObjectOrCallExpr();
+        return ParseIdentOrCallExpr();
 
     ErrorUnexpected(R_ExpectedPrimaryExpr, nullptr, true);
 
@@ -984,9 +984,9 @@ ExprPtr GLSLParser::ParseExprWithSuffixOpt(ExprPtr expr)
     while (true)
     {
         if (Is(Tokens::LParen))
-            expr = ParseArrayExpr(expr);
+            expr = ParseSubscriptExpr(expr);
         else if (Is(Tokens::Dot))
-            expr = ParseObjectOrCallExpr(expr);
+            expr = ParseIdentOrCallExpr(expr);
         else if (Is(Tokens::AssignOp))
             expr = ParseAssignExpr(expr);
         else if (Is(Tokens::UnaryOp))
@@ -1093,10 +1093,10 @@ BracketExprPtr GLSLParser::ParseBracketExpr()
     return UpdateSourceArea(ast);
 }
 
-ObjectExprPtr GLSLParser::ParseObjectExpr(const ExprPtr& expr)
+IdentExprPtr GLSLParser::ParseIdentExpr(const ExprPtr& prefixExpr)
 {
     /* Parse prefix token if prefix expression is specified  */
-    if (expr != nullptr)
+    if (prefixExpr)
     {
         /* Parse '.' prefix */
         if (Is(Tokens::Dot))
@@ -1105,25 +1105,25 @@ ObjectExprPtr GLSLParser::ParseObjectExpr(const ExprPtr& expr)
             ErrorUnexpected(R_ExpectedIdentPrefix);
     }
 
-    auto ast = Make<ObjectExpr>();
+    auto ast = Make<IdentExpr>();
 
-    if (expr)
-        ast->area = expr->area;
+    if (prefixExpr)
+        ast->area = prefixExpr->area;
 
     /* Take sub expression and parse identifier */
-    ast->prefixExpr = expr;
+    ast->prefixExpr = prefixExpr;
     ast->ident      = ParseIdent();
 
     return UpdateSourceArea(ast);
 }
 
-AssignExprPtr GLSLParser::ParseAssignExpr(const ExprPtr& expr)
+AssignExprPtr GLSLParser::ParseAssignExpr(const ExprPtr& lvalueExpr)
 {
     auto ast = Make<AssignExpr>();
 
     /* Take sub expression and parse assignment */
-    ast->area       = expr->area;
-    ast->lvalueExpr = expr;
+    ast->area       = lvalueExpr->area;
+    ast->lvalueExpr = lvalueExpr;
 
     /* Parse assign expression */
     if (Is(Tokens::AssignOp))
@@ -1138,26 +1138,26 @@ AssignExprPtr GLSLParser::ParseAssignExpr(const ExprPtr& expr)
     return UpdateSourceArea(ast);
 }
 
-ExprPtr GLSLParser::ParseObjectOrCallExpr(const ExprPtr& expr)
+ExprPtr GLSLParser::ParseIdentOrCallExpr(const ExprPtr& prefixExpr)
 {
     /* Parse variable identifier first (for variables and functions) */
-    auto objectExpr = ParseObjectExpr(expr);
+    auto identExpr = ParseIdentExpr(prefixExpr);
 
     if (Is(Tokens::LBracket))
-        return ParseCallExpr(objectExpr);
+        return ParseCallExpr(identExpr);
 
-    return objectExpr;
+    return identExpr;
 }
 
-CallExprPtr GLSLParser::ParseCallExpr(const ObjectExprPtr& objectExpr, const TypeDenoterPtr& typeDenoter)
+CallExprPtr GLSLParser::ParseCallExpr(const IdentExprPtr& identExpr, const TypeDenoterPtr& typeDenoter)
 {
-    if (objectExpr)
+    if (identExpr)
     {
         /* Make new identifier token with source position from input */
-        auto identTkn = std::make_shared<Token>(objectExpr->area.Pos(), Tokens::Ident, objectExpr->ident);
+        auto identTkn = std::make_shared<Token>(identExpr->area.Pos(), Tokens::Ident, identExpr->ident);
 
         /* Parse call expression and take prefix expression from input */
-        return ParseCallExprWithPrefixOpt(objectExpr->prefixExpr, objectExpr->isStatic, identTkn);
+        return ParseCallExprWithPrefixOpt(identExpr->prefixExpr, identExpr->isStatic, identTkn);
     }
     else if (typeDenoter)
     {

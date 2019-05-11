@@ -142,7 +142,7 @@ IMPLEMENT_VISIT_PROC(Attribute)
         {
             for (const auto& arg : ast->arguments)
             {
-                if (arg->Type() != AST::Types::ObjectExpr)
+                if (arg->Type() != AST::Types::IdentExpr)
                     Error(R_ExpectedIdentInSpaceAttr, arg.get());
             }
         }
@@ -452,7 +452,7 @@ IMPLEMENT_VISIT_PROC(BasicDeclStmt)
 
 /* --- Statements --- */
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
     Visit(ast->attribs);
     OpenScope();
@@ -462,7 +462,7 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmt)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
     WarningOnNullStmt(ast->bodyStmt, "for loop");
 
@@ -505,7 +505,7 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
     WarningOnNullStmt(ast->bodyStmt, "while loop");
 
@@ -519,7 +519,7 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmt)
     CloseScope();
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
     WarningOnNullStmt(ast->bodyStmt, "do-while loop");
 
@@ -695,14 +695,14 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     #endif // XSC_ENABLE_LANGUAGE_EXT
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
-    AnalyzeObjectExpr(ast, reinterpret_cast<PrefixArgs*>(args));
+    AnalyzeIdentExpr(ast, reinterpret_cast<PrefixArgs*>(args));
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
-    AnalyzeArrayExpr(ast);
+    AnalyzeSubscriptExpr(ast);
 }
 
 #undef IMPLEMENT_VISIT_PROC
@@ -1232,7 +1232,7 @@ void HLSLAnalyzer::AnalyzeIntrinsicWrapperInlining(CallExpr* callExpr)
 
 /* ----- Object expressions ----- */
 
-void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args)
+void HLSLAnalyzer::AnalyzeIdentExpr(IdentExpr* expr, PrefixArgs* args)
 {
     /* Analyze prefix expression first */
     if (expr->prefixExpr)
@@ -1254,12 +1254,12 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args)
             if (args != nullptr && args->inIsPostfixStatic && !expr->isStatic)
             {
                 /* Analyze object expression as base structure namespace */
-                AnalyzeObjectExprBaseStructDeclFromStruct(expr, *args, *structTypeDen);
+                AnalyzeIdentExprBaseStructDeclFromStruct(expr, *args, *structTypeDen);
             }
             else
             {
                 /* Analyze object expression as structure member */
-                AnalyzeObjectExprVarDeclFromStruct(expr, prefixArgs.outPrefixBaseStruct, *structTypeDen);
+                AnalyzeIdentExprVarDeclFromStruct(expr, prefixArgs.outPrefixBaseStruct, *structTypeDen);
             }
         }
         else if (prefixTypeDen.IsBase())
@@ -1289,7 +1289,7 @@ void HLSLAnalyzer::AnalyzeObjectExpr(ObjectExpr* expr, PrefixArgs* args)
     }
 }
 
-void HLSLAnalyzer::AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, StructDecl* baseStructDecl, const StructTypeDenoter& structTypeDen)
+void HLSLAnalyzer::AnalyzeIdentExprVarDeclFromStruct(IdentExpr* expr, StructDecl* baseStructDecl, const StructTypeDenoter& structTypeDen)
 {
     if (baseStructDecl)
     {
@@ -1311,7 +1311,7 @@ void HLSLAnalyzer::AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, StructDe
                     }
 
                     /* Check if the prefix is a base structure namespace expression */
-                    if (expr->prefixExpr && expr->prefixExpr->flags(ObjectExpr::isBaseStructNamespace))
+                    if (expr->prefixExpr && expr->prefixExpr->flags(IdentExpr::isBaseStructNamespace))
                         return;
                 }
             }
@@ -1335,7 +1335,7 @@ void HLSLAnalyzer::AnalyzeObjectExprVarDeclFromStruct(ObjectExpr* expr, StructDe
     }
 }
 
-void HLSLAnalyzer::AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, PrefixArgs& outputArgs, const StructTypeDenoter& structTypeDen)
+void HLSLAnalyzer::AnalyzeIdentExprBaseStructDeclFromStruct(IdentExpr* expr, PrefixArgs& outputArgs, const StructTypeDenoter& structTypeDen)
 {
     if (auto structDecl = structTypeDen.structDeclRef)
     {
@@ -1344,7 +1344,7 @@ void HLSLAnalyzer::AnalyzeObjectExprBaseStructDeclFromStruct(ObjectExpr* expr, P
         {
             /* Store symbol reference in object expression and pass it as output argument */
             expr->symbolRef = symbol;
-            expr->flags << ObjectExpr::isBaseStructNamespace;
+            expr->flags << IdentExpr::isBaseStructNamespace;
             outputArgs.outPrefixBaseStruct = symbol;
         }
         else
@@ -1359,9 +1359,9 @@ bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic
         /* This function returns true, if the specified expression is an object expression with a typename (i.e. structure or alias name) */
         auto IsObjectExprWithTypename = [](const Expr& expr) -> bool
         {
-            if (auto objectExpr = expr.As<ObjectExpr>())
+            if (auto identExpr = expr.As<IdentExpr>())
             {
-                if (auto symbol = objectExpr->symbolRef)
+                if (auto symbol = identExpr->symbolRef)
                 {
                     /* Fetch type declaration from symbol reference */
                     return (symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl);
@@ -1371,7 +1371,7 @@ bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic
         };
 
         /* Fetch static type expression from prefix expression */
-        if (auto staticTypeExpr = AST::GetAs<ObjectExpr>(prefixExpr->Find(IsObjectExprWithTypename, SearchLValue)))
+        if (auto staticTypeExpr = AST::GetAs<IdentExpr>(prefixExpr->Find(IsObjectExprWithTypename, SearchLValue)))
         {
             if (!isStatic)
             {
@@ -1433,12 +1433,12 @@ void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast, VarDecl* param)
     }
 }
 
-void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* ast, VarDecl* param)
+void HLSLAnalyzer::AnalyzeLValueExprObject(IdentExpr* identExpr, const AST* ast, VarDecl* param)
 {
     /* Analyze prefix expression as l-value */
-    AnalyzeLValueExpr(objectExpr->prefixExpr.get(), ast);
+    AnalyzeLValueExpr(identExpr->prefixExpr.get(), ast);
 
-    if (auto symbol = objectExpr->symbolRef)
+    if (auto symbol = identExpr->symbolRef)
     {
         if (auto varDecl = symbol->As<VarDecl>())
         {
@@ -1454,8 +1454,8 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* as
                 if (!lhsTypeDen->Equals(*rhsTypeDen))
                 {
                     Error(
-                        R_IllegalLValueAssignmentToTypeCast(objectExpr->ident, param->declStmtRef->ToString()),
-                        (ast != nullptr ? ast : objectExpr)
+                        R_IllegalLValueAssignmentToTypeCast(identExpr->ident, param->declStmtRef->ToString()),
+                        (ast != nullptr ? ast : identExpr)
                     );
                 }
             }
@@ -1465,10 +1465,10 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* as
                 /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
                 Error(
                     R_IllegalLValueAssignmentToConst(
-                        objectExpr->ident,
+                        identExpr->ident,
                         (varDecl->declStmtRef->flags(VarDeclStmt::isImplicitConst) ? R_Implicitly : "")
                     ),
-                    (ast != nullptr ? ast : objectExpr)
+                    (ast != nullptr ? ast : identExpr)
                 );
             }
         }
@@ -1476,15 +1476,15 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(ObjectExpr* objectExpr, const AST* as
     else
     {
         Error(
-            R_MissingObjectExprSymbolRef(objectExpr->ident),
-            (ast != nullptr ? ast : objectExpr)
+            R_MissingObjectExprSymbolRef(identExpr->ident),
+            (ast != nullptr ? ast : identExpr)
         );
     }
 }
 
 /* ----- Array expressions ----- */
 
-void HLSLAnalyzer::AnalyzeArrayExpr(ArrayExpr* expr)
+void HLSLAnalyzer::AnalyzeSubscriptExpr(SubscriptExpr* expr)
 {
     /* Visit prefix and array index expressions */
     Visit(expr->prefixExpr.get());
@@ -2043,9 +2043,9 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
 void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
 {
-    if (auto objectExpr = expr->FetchLValueExpr())
+    if (auto identExpr = expr->FetchLValueExpr())
     {
-        if (auto varDecl = objectExpr->FetchVarDecl())
+        if (auto varDecl = identExpr->FetchVarDecl())
         {
             //TODO: replace by "AddFlagsRecursive" if it's sure, that it can safely be used!
             #if 0
@@ -2440,9 +2440,9 @@ void HLSLAnalyzer::AnalyzeAttributeLayout(Attribute* attrib, const TypeDenoterPt
         if (AnalyzeNumArgsAttribute(attrib, 1, true))
         {
             auto expr = attrib->arguments[0].get();
-            if (auto objectExpr = expr->As<ObjectExpr>())
+            if (auto identExpr = expr->As<IdentExpr>())
             {
-                const auto& layoutFormat = objectExpr->ident;
+                const auto& layoutFormat = identExpr->ident;
                 auto imageLayoutFormat = ExtHLSLKeywordToImageLayoutFormat(layoutFormat);
                 if (imageLayoutFormat != ImageLayoutFormat::Undefined)
                 {
@@ -2503,9 +2503,9 @@ bool HLSLAnalyzer::AnalyzeAttributeSpaceIdent(Attribute* attrib, std::size_t arg
     if (argIndex < attrib->arguments.size())
     {
         auto expr = attrib->arguments[argIndex].get();
-        if (auto objectExpr = expr->As<ObjectExpr>())
+        if (auto identExpr = expr->As<IdentExpr>())
         {
-            ident = objectExpr->ident;
+            ident = identExpr->ident;
             return true;
         }
         else

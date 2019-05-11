@@ -148,8 +148,8 @@ class Analyzer : protected VisitorTracker
         // Evaluates the specified constant expression.
         Variant EvaluateConstExpr(Expr& expr);
 
-        // Evaluates the specified constant object expression or throws the expression if it's not constant.
-        Variant EvaluateConstExprObject(const ObjectExpr& expr);
+        // Evaluates the specified constant identifier expression or throws the expression if it's not constant.
+        Variant EvaluateConstIdentExpr(const IdentExpr& expr);
 
         // Tries to evaluate the specified constant expression, or returns the default value on failure.
         Variant EvaluateOrDefault(Expr& expr, const Variant& defaultValue = {});

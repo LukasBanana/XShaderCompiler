@@ -44,9 +44,9 @@ class Optimizer : private Visitor
 
         DECL_VISIT_PROC( VarDecl         );
 
-        DECL_VISIT_PROC( ForLoopStmt     );
-        DECL_VISIT_PROC( WhileLoopStmt   );
-        DECL_VISIT_PROC( DoWhileLoopStmt );
+        DECL_VISIT_PROC( ForStmt         );
+        DECL_VISIT_PROC( WhileStmt       );
+        DECL_VISIT_PROC( DoWhileStmt     );
         DECL_VISIT_PROC( IfStmt          );
         DECL_VISIT_PROC( SwitchStmt      );
         DECL_VISIT_PROC( ExprStmt        );
@@ -58,9 +58,9 @@ class Optimizer : private Visitor
         DECL_VISIT_PROC( UnaryExpr       );
         DECL_VISIT_PROC( PostUnaryExpr   );
         DECL_VISIT_PROC( BracketExpr     );
-        DECL_VISIT_PROC( ObjectExpr      );
+        DECL_VISIT_PROC( IdentExpr       );
         DECL_VISIT_PROC( AssignExpr      );
-        DECL_VISIT_PROC( ArrayExpr       );
+        DECL_VISIT_PROC( SubscriptExpr   );
         DECL_VISIT_PROC( CastExpr        );
         DECL_VISIT_PROC( InitializerExpr );
 

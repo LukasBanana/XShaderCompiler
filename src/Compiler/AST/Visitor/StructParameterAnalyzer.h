@@ -62,7 +62,7 @@ class StructParameterAnalyzer : private VisitorTracker
         DECL_VISIT_PROC( BufferDeclStmt    );
 
         DECL_VISIT_PROC( CallExpr          );
-        DECL_VISIT_PROC( ObjectExpr        );
+        DECL_VISIT_PROC( IdentExpr         );
 
     private:
 

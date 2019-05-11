@@ -83,7 +83,7 @@ class GLSLParser : public SLParser
         CodeBlockPtr                    ParseCodeBlock() override;
         VarDeclStmtPtr                  ParseParameter() override;
         StmtPtr                         ParseLocalStmt() override;
-        StmtPtr                         ParseForLoopInitializer() override;
+        StmtPtr                         ParseForStmtInitializer() override;
         SwitchCasePtr                   ParseSwitchCase() override;
         VarDeclPtr                      ParseVarDecl(VarDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr) override;
 
@@ -130,10 +130,10 @@ class GLSLParser : public SLParser
         UnaryExprPtr                    ParseUnaryExpr();
         PostUnaryExprPtr                ParsePostUnaryExpr(const ExprPtr& expr);
         BracketExprPtr                  ParseBracketExpr();
-        ObjectExprPtr                   ParseObjectExpr(const ExprPtr& expr = nullptr);
-        AssignExprPtr                   ParseAssignExpr(const ExprPtr& expr);
-        ExprPtr                         ParseObjectOrCallExpr(const ExprPtr& expr = nullptr);
-        CallExprPtr                     ParseCallExpr(const ObjectExprPtr& objectExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
+        IdentExprPtr                    ParseIdentExpr(const ExprPtr& prefixExpr = nullptr);
+        AssignExprPtr                   ParseAssignExpr(const ExprPtr& lvalueExpr);
+        ExprPtr                         ParseIdentOrCallExpr(const ExprPtr& prefixExpr = nullptr);
+        CallExprPtr                     ParseCallExpr(const IdentExprPtr& identExpr = nullptr, const TypeDenoterPtr& typeDenoter = nullptr);
         CallExprPtr                     ParseCallExprWithPrefixOpt(const ExprPtr& prefixExpr = nullptr, bool isStatic = false, const TokenPtr& identTkn = nullptr);
         CallExprPtr                     ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenoter);
 

@@ -328,9 +328,9 @@ IMPLEMENT_VISIT_PROC(NullStmt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(CodeBlockStmt)
+IMPLEMENT_VISIT_PROC(ScopeStmt)
 {
-    PushPrintable(ast, WriteLabel("CodeBlockStmt"));
+    PushPrintable(ast, WriteLabel("ScopeStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(codeBlock);
@@ -338,9 +338,9 @@ IMPLEMENT_VISIT_PROC(CodeBlockStmt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ForLoopStmt)
+IMPLEMENT_VISIT_PROC(ForStmt)
 {
-    PushPrintable(ast, WriteLabel("ForLoopStmt"));
+    PushPrintable(ast, WriteLabel("ForStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(initStmt);
@@ -351,9 +351,9 @@ IMPLEMENT_VISIT_PROC(ForLoopStmt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(WhileLoopStmt)
+IMPLEMENT_VISIT_PROC(WhileStmt)
 {
-    PushPrintable(ast, WriteLabel("WhileLoopStmt"));
+    PushPrintable(ast, WriteLabel("WhileStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(condition);
@@ -362,9 +362,9 @@ IMPLEMENT_VISIT_PROC(WhileLoopStmt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(DoWhileLoopStmt)
+IMPLEMENT_VISIT_PROC(DoWhileStmt)
 {
-    PushPrintable(ast, WriteLabel("DoWhileLoopStmt"));
+    PushPrintable(ast, WriteLabel("DoWhileStmt"));
     {
         VISIT_MEMBER(attribs);
         VISIT_MEMBER(bodyStmt);
@@ -416,9 +416,9 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(CtrlTransferStmt)
+IMPLEMENT_VISIT_PROC(JumpStmt)
 {
-    PushPrintable(ast, WriteLabel("CtrlTransferStmt"));
+    PushPrintable(ast, WriteLabel("JumpStmt"));
     {
         VISIT_MEMBER(attribs);
         Printable(ast, "transfer", CtrlTransformToString(ast->transfer));
@@ -545,9 +545,9 @@ IMPLEMENT_VISIT_PROC(AssignExpr)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ObjectExpr)
+IMPLEMENT_VISIT_PROC(IdentExpr)
 {
-    PushPrintable(ast, WriteLabel("ObjectExpr", ast));
+    PushPrintable(ast, WriteLabel("IdentExpr", ast));
     {
         VISIT_MEMBER(prefixExpr);
         ADD_PRINTABLE_MEMBER(isStatic);
@@ -556,9 +556,9 @@ IMPLEMENT_VISIT_PROC(ObjectExpr)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(ArrayExpr)
+IMPLEMENT_VISIT_PROC(SubscriptExpr)
 {
-    PushPrintable(ast, WriteLabel("ArrayExpr", ast));
+    PushPrintable(ast, WriteLabel("SubscriptExpr", ast));
     {
         VISIT_MEMBER(prefixExpr);
         VISIT_MEMBER(arrayIndices);

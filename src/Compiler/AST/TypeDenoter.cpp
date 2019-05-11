@@ -271,10 +271,10 @@ TypeDenoterPtr TypeDenoter::GetSub(const Expr* expr)
 {
     if (expr)
     {
-        if (auto objExpr = expr->As<ObjectExpr>())
+        if (auto objExpr = expr->As<IdentExpr>())
             return GetSubObject(objExpr->ident, expr);
-        if (auto arrayExpr = expr->As<ArrayExpr>())
-            return GetSubArray(arrayExpr->NumIndices(), expr);
+        if (auto subscriptExpr = expr->As<SubscriptExpr>())
+            return GetSubArray(subscriptExpr->NumIndices(), expr);
         RuntimeErr(R_InvalidExprForSubTypeDen(ToString()), expr);
     }
     return shared_from_this();

@@ -588,9 +588,9 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
         ExprEvaluator exprEvaluator;
         return exprEvaluator.Evaluate(
             expr,
-            [this](ObjectExpr* expr) -> Variant
+            [this](IdentExpr* expr) -> Variant
             {
-                return EvaluateConstExprObject(*expr);
+                return EvaluateConstIdentExpr(*expr);
             }
         );
     }
@@ -602,14 +602,14 @@ Variant Analyzer::EvaluateConstExpr(Expr& expr)
     {
         Error(e.what(), &expr);
     }
-    catch (const ObjectExpr* expr)
+    catch (const IdentExpr* expr)
     {
         Error(R_ExpectedConstExpr, expr);
     }
     return Variant();
 }
 
-Variant Analyzer::EvaluateConstExprObject(const ObjectExpr& expr)
+Variant Analyzer::EvaluateConstIdentExpr(const IdentExpr& expr)
 {
     /* Fetch variable from expression */
     if (auto varDecl = expr.FetchVarDecl())

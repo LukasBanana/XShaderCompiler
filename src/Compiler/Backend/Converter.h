@@ -177,8 +177,8 @@ class Converter : public VisitorTracker
         // Stack with information of the current 'self' parameter of a member function.
         std::vector<VarDecl*>           selfParamStack_;
 
-        std::stack<StmtScopeHandler>   stmtScopeHandlerStack_;
-        StmtScopeHandler*              stmtScopeHandlerGlobalRef_ = nullptr;
+        std::stack<StmtScopeHandler>    stmtScopeHandlerStack_;
+        StmtScopeHandler*               stmtScopeHandlerGlobalRef_  = nullptr;
 
         unsigned int                    anonymCounter_              = 0;
         unsigned int                    obfuscationCounter_         = 0;
