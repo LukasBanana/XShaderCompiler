@@ -1755,9 +1755,6 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
         }
         else
         {
-            WriteInterpModifiers(interpModifiers, varDecl->declStmtRef);
-            Separator();
-
             if ( ( !IsESSL() && explicitBinding_ ) || ( IsESSL() && IsVertexShader() ) )
             {
                 /* Get slot index */
@@ -1792,6 +1789,13 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
             }
 
             Separator();
+
+            if (!IsVertexShader())
+            {
+                WriteInterpModifiers(interpModifiers, varDecl->declStmtRef);
+                Separator();
+            }
+
             Write("in ");
             Separator();
         }
@@ -1912,10 +1916,6 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
         }
         else
         {
-            if (varDeclStmt)
-                WriteInterpModifiers(varDeclStmt->typeSpecifier->interpModifiers, varDecl);
-            Separator();
-
             if ( ( !IsESSL() && explicitBinding_ ) || ( IsESSL() && IsFragmentShader() ) )
             {
                 /* Get slot index: directly for fragment output, and automatically otherwise */
@@ -1940,6 +1940,13 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
                 }
             }
 
+            if (!IsFragmentShader())
+            {
+                if (varDeclStmt)
+                    WriteInterpModifiers(varDeclStmt->typeSpecifier->interpModifiers, varDecl);
+                Separator();
+            }
+
             Write("out ");
             Separator();
         }
@@ -1956,7 +1963,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
             else
                 Visit(varDecl->arrayDims);
         }
-        
+
         Write(";");
     }
     EndLn();
@@ -1972,7 +1979,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     if (expr)
         lvalueExpr = expr->FetchLValueExpr();
     #endif
-    
+
     /* Write wrapped structures */
     for (const auto& paramStruct : entryPoint->paramStructs)
     {

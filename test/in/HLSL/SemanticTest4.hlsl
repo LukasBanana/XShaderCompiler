@@ -8,7 +8,8 @@ struct VIn
 	noperspective float3 normal : NORMAL;
 };
 
-float4 VS(VIn inp, nointerpolation uint id : SV_VertexID) : SV_Position
+float4 VS(VIn inp, nointerpolation uint id : SV_VertexID, out nointerpolation float x : FOO) : SV_Position
 {
+    x = 2;
 	return 1;
 }
