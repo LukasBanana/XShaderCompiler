@@ -55,7 +55,7 @@ struct ShellState
     std::vector<std::string>        searchPaths;
 
     // Print line marks for compiler reports.
-    bool                            verbose             = true;
+    bool                            verbose             = false;
 
     // Pause application after everything is done.
     bool                            pauseApp            = false;

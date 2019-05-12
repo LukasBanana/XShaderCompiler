@@ -79,7 +79,6 @@ CommandFactory::CommandFactory()
         OptimizeCommand,
         ExtensionCommand,
         EnumExtensionCommand,
-        ValidateCommand,
         BindingCommand,
         CommentCommand,
         WrapperCommand,

@@ -60,8 +60,8 @@ void HelpPrinter::PrintHelpReference(std::ostream& output, std::size_t indentSiz
 
     /* Print usage example */
     PrintHeader("Example");
-    output << "  xsc -E VS -T vert Example.hlsl -E PS -T frag Example.hlsl" << std::endl;
-    output << "   -> Output files: 'Example.VS.vert', and 'Example.PS.frag'" << std::endl;
+    output << "  xsc -o * -E EntryPoint -T vert Example.hlsl" << std::endl;
+    output << "   -> Output file: 'Example.EntryPoint.vert'" << std::endl;
 
     if (!entireReference)
     {

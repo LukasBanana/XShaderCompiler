@@ -280,6 +280,7 @@ HelpDescriptor OutputCommand::Help() const
 void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
 {
     state.outputFilename = cmdLine.Accept();
+    state.outputDesc.options.validateOnly = false;
 }
 
 
@@ -917,7 +918,7 @@ HelpDescriptor VerboseCommand::Help() const
     return
     {
         "-V, --verbose [" + CommandLine::GetBooleanOption() + "]",
-        R_CmdHelpVerbose(CommandLine::GetBooleanTrue())
+        R_CmdHelpVerbose(CommandLine::GetBooleanFalse())
     };
 }
 
@@ -1022,30 +1023,6 @@ void EnumExtensionCommand::Run(CommandLine& cmdLine, ShellState& state)
     for (const auto& it : GetGLSLExtensionEnumeration())
         std::cout << it.first << std::endl;
     state.actionPerformed = true;
-}
-
-
-/*
- * ValidateCommand class
- */
-
-std::vector<Command::Identifier> ValidateCommand::Idents() const
-{
-    return { { "-Valid" }, { "--validate-only" } };
-}
-
-HelpDescriptor ValidateCommand::Help() const
-{
-    return
-    {
-        "-Valid, --validate-only [" + CommandLine::GetBooleanOption() + "]",
-        R_CmdHelpValidate(CommandLine::GetBooleanFalse())
-    };
-}
-
-void ValidateCommand::Run(CommandLine& cmdLine, ShellState& state)
-{
-    state.outputDesc.options.validateOnly = cmdLine.AcceptBoolean(true);
 }
 
 

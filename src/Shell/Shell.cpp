@@ -52,6 +52,9 @@ Shell::Shell(std::ostream& output) :
     output { output }
 {
     Shell::instance_ = this;
+
+    /* By default, Xsc shell only validates code, unless an output file is specified */
+    state_.outputDesc.options.validateOnly = true;
 }
 
 Shell::~Shell()
