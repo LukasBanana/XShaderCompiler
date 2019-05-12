@@ -125,7 +125,6 @@ class GLSLGenerator : public Generator
 
         DECL_VISIT_PROC( SequenceExpr      );
         DECL_VISIT_PROC( LiteralExpr       );
-        DECL_VISIT_PROC( TypeSpecifierExpr );
         DECL_VISIT_PROC( TernaryExpr       );
         DECL_VISIT_PROC( BinaryExpr        );
         DECL_VISIT_PROC( UnaryExpr         );

@@ -68,7 +68,6 @@ DECL_PTR( LayoutStmt        );
 DECL_PTR( NullExpr          );
 DECL_PTR( SequenceExpr      );
 DECL_PTR( LiteralExpr       );
-DECL_PTR( TypeSpecifierExpr );
 DECL_PTR( TernaryExpr       );
 DECL_PTR( BinaryExpr        );
 DECL_PTR( UnaryExpr         );
@@ -79,6 +78,8 @@ DECL_PTR( AssignExpr        );
 DECL_PTR( SubscriptExpr     );
 DECL_PTR( CastExpr          );
 DECL_PTR( InitializerExpr   );
+
+DECL_PTR( ExprProxy         );
 
 #undef DECL_PTR
 
@@ -139,7 +140,6 @@ class Visitor
         VISITOR_VISIT_PROC( NullExpr          );
         VISITOR_VISIT_PROC( SequenceExpr      );
         VISITOR_VISIT_PROC( LiteralExpr       );
-        VISITOR_VISIT_PROC( TypeSpecifierExpr );
         VISITOR_VISIT_PROC( TernaryExpr       );
         VISITOR_VISIT_PROC( BinaryExpr        );
         VISITOR_VISIT_PROC( UnaryExpr         );
@@ -150,6 +150,8 @@ class Visitor
         VISITOR_VISIT_PROC( SubscriptExpr     );
         VISITOR_VISIT_PROC( CastExpr          );
         VISITOR_VISIT_PROC( InitializerExpr   );
+
+        VISITOR_VISIT_PROC( ExprProxy         );
 
     protected:
 

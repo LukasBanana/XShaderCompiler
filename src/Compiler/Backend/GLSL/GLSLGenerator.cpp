@@ -918,11 +918,6 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     Write(ast->value);
 }
 
-IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
-{
-    WriteTypeDenoter(*ast->typeSpecifier->typeDenoter, false, ast);
-}
-
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     Visit(ast->condExpr);

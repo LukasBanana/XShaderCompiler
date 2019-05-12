@@ -462,15 +462,6 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     PopPrintable();
 }
 
-IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
-{
-    PushPrintable(ast, WriteLabel("TypeSpecifierExpr", ast));
-    {
-        VISIT_MEMBER(typeSpecifier);
-    }
-    PopPrintable();
-}
-
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     PushPrintable(ast, WriteLabel("TernaryExpr", ast));

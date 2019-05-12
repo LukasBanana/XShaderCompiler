@@ -58,20 +58,19 @@ class ExprEvaluator : private Visitor
 
         /* --- Visitor implementation --- */
 
-        DECL_VISIT_PROC( NullExpr          );
-        DECL_VISIT_PROC( SequenceExpr      );
-        DECL_VISIT_PROC( LiteralExpr       );
-        DECL_VISIT_PROC( TypeSpecifierExpr );
-        DECL_VISIT_PROC( TernaryExpr       );
-        DECL_VISIT_PROC( BinaryExpr        );
-        DECL_VISIT_PROC( UnaryExpr         );
-        DECL_VISIT_PROC( CallExpr          );
-        DECL_VISIT_PROC( BracketExpr       );
-        DECL_VISIT_PROC( AssignExpr        );
-        DECL_VISIT_PROC( IdentExpr         );
-        DECL_VISIT_PROC( SubscriptExpr     );
-        DECL_VISIT_PROC( CastExpr          );
-        DECL_VISIT_PROC( InitializerExpr   );
+        DECL_VISIT_PROC( NullExpr        );
+        DECL_VISIT_PROC( SequenceExpr    );
+        DECL_VISIT_PROC( LiteralExpr     );
+        DECL_VISIT_PROC( TernaryExpr     );
+        DECL_VISIT_PROC( BinaryExpr      );
+        DECL_VISIT_PROC( UnaryExpr       );
+        DECL_VISIT_PROC( CallExpr        );
+        DECL_VISIT_PROC( BracketExpr     );
+        DECL_VISIT_PROC( AssignExpr      );
+        DECL_VISIT_PROC( IdentExpr       );
+        DECL_VISIT_PROC( SubscriptExpr   );
+        DECL_VISIT_PROC( CastExpr        );
+        DECL_VISIT_PROC( InitializerExpr );
 
     private:
 

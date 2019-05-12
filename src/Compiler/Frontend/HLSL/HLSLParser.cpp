@@ -111,9 +111,9 @@ bool HLSLParser::IsModifier() const
 
 TypeSpecifierPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& expr)
 {
-    /* Type specifier expression (float, int3 etc.) is always allowed for a cast expression */
-    if (auto typeSpecifierExpr = expr->As<TypeSpecifierExpr>())
-        return typeSpecifierExpr->typeSpecifier;
+    /* Expression proxy with type specifier is always allowed for a cast expression */
+    if (auto exprProxy = expr->As<ExprProxy>())
+        return exprProxy->typeSpecifier;
 
     /* Is this an object expression? */
     if (auto identExpr = expr->As<IdentExpr>())
@@ -1226,7 +1226,7 @@ ExprPtr HLSLParser::ParsePrimaryExprPrefix()
     if (IsLiteral())
         return ParseLiteralExpr();
     if (IsModifier())
-        return ParseTypeSpecifierExpr();
+        return ParseTypeSpecifierExprProxy();
     if (IsDataType() || Is(Tokens::Struct))
         return ParseTypeSpecifierOrCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
@@ -1300,7 +1300,7 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrCallExpr()
     }
 
     /* Return type name expression */
-    auto ast = Make<TypeSpecifierExpr>();
+    auto ast = Make<ExprProxy>();
     {
         ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
         ast->typeSpecifier->structDecl   = structDecl;
@@ -1310,9 +1310,9 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrCallExpr()
     return UpdateSourceArea(ast, structDecl.get());
 }
 
-TypeSpecifierExprPtr HLSLParser::ParseTypeSpecifierExpr()
+ExprProxyPtr HLSLParser::ParseTypeSpecifierExprProxy()
 {
-    auto ast = Make<TypeSpecifierExpr>();
+    auto ast = Make<ExprProxy>();
 
     /* Parse type specifier */
     ast->typeSpecifier = ParseTypeSpecifier();

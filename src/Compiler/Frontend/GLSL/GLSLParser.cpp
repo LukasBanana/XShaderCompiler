@@ -961,7 +961,7 @@ ExprPtr GLSLParser::ParsePrimaryExprPrefix()
     if (IsLiteral())
         return ParseLiteralExpr();
     if (IsModifier())
-        return ParseTypeSpecifierExpr();
+        return ParseTypeSpecifierExprProxy();
     if (IsDataType() || Is(Tokens::Struct))
         return ParseTypeSpecifierOrCallExpr();
     if (Is(Tokens::UnaryOp) || IsArithmeticUnaryExpr())
@@ -1029,7 +1029,7 @@ ExprPtr GLSLParser::ParseTypeSpecifierOrCallExpr()
     }
 
     /* Return type name expression */
-    auto ast = Make<TypeSpecifierExpr>();
+    auto ast = Make<ExprProxy>();
     {
         ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
         ast->typeSpecifier->structDecl   = structDecl;
@@ -1039,9 +1039,9 @@ ExprPtr GLSLParser::ParseTypeSpecifierOrCallExpr()
     return UpdateSourceArea(ast, structDecl.get());
 }
 
-TypeSpecifierExprPtr GLSLParser::ParseTypeSpecifierExpr()
+ExprProxyPtr GLSLParser::ParseTypeSpecifierExprProxy()
 {
-    auto ast = Make<TypeSpecifierExpr>();
+    auto ast = Make<ExprProxy>();
 
     /* Parse type specifier */
     ast->typeSpecifier = ParseTypeSpecifier();

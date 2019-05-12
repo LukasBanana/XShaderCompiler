@@ -1896,14 +1896,6 @@ bool LiteralExpr::IsInfConst() const
 }
 
 
-/* ----- TypeSpecifierExpr ----- */
-
-TypeDenoterPtr TypeSpecifierExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
-{
-    return typeSpecifier->GetTypeDenoter();
-}
-
-
 /* ----- TernaryExpr ----- */
 
 TypeDenoterPtr TernaryExpr::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
@@ -2790,6 +2782,14 @@ static bool NextArrayIndicesFromInitializerExpr(const InitializerExpr* ast, std:
 bool InitializerExpr::NextArrayIndices(std::vector<int>& arrayIndices) const
 {
     return NextArrayIndicesFromInitializerExpr(this, arrayIndices, 0);
+}
+
+
+/* ----- ExprProxy ----- */
+
+TypeDenoterPtr ExprProxy::DeriveTypeDenoter(const TypeDenoter* /*expectedTypeDenoter*/)
+{
+    return typeSpecifier->GetTypeDenoter();
 }
 
 

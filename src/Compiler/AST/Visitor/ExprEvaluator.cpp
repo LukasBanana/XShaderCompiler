@@ -307,14 +307,6 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     }
 }
 
-IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
-{
-    if (throwOnFailure_)
-        IllegalExpr(R_TypeSpecifier, ast);
-    else
-        Abort();
-}
-
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     Visit(ast->condExpr);

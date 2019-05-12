@@ -131,24 +131,23 @@ struct AST
 
         /* ----- Common statements ----- */
 
-        NullStmt,
-        ScopeStmt,
-        ForStmt,
-        WhileStmt,
-        DoWhileStmt, // TODO: replace by WhileStmt
-        IfStmt,
-        SwitchStmt,
-        ExprStmt,
-        ReturnStmt,
+        NullStmt,           // Null statement, i.e. only a semicolon (e.g. "if (x);")
+        ScopeStmt,          // Scope statement containing a single code block.
+        ForStmt,            // For-loop statement
+        WhileStmt,          // While-loop statemnet
+        DoWhileStmt,        // Do-while-loop statement
+        IfStmt,             // Conditional if-statement
+        SwitchStmt,         // Switch-case statement
+        ExprStmt,           // General purpose statement for expressions
+        ReturnStmt,         // Function return statement
         JumpStmt,           // Jump (or control transfer statement): break, continue, discard
-        LayoutStmt,         // GLSL only
+        LayoutStmt,         // Layout qualifier statement (GLSL only)
 
         /* ----- Expressions ----- */
 
         NullExpr,
-        SequenceExpr,
-        LiteralExpr,
-        TypeSpecifierExpr,
+        SequenceExpr,       // Sequence of two or more expressions: expr0 , expr1
+        LiteralExpr,        // Integer-, floating-point-, boolean-, string literal
         TernaryExpr,
         BinaryExpr,
         UnaryExpr,
@@ -159,6 +158,8 @@ struct AST
         SubscriptExpr,
         CastExpr,
         InitializerExpr,
+
+        ExprProxy,          // Proxy expression to simplify parsing of type casts
     };
 
     virtual ~AST();
@@ -1033,7 +1034,6 @@ struct WhileStmt : public Stmt
     StmtPtr bodyStmt;   // Loop body statement.
 };
 
-//TODO: replace by WhileStmt
 // 'do/while'-loop statement.
 struct DoWhileStmt : public Stmt
 {
@@ -1154,16 +1154,6 @@ struct LiteralExpr : public Expr
     std::string     value;                              // Literal expression value.
 
     DataType        dataType    = DataType::Undefined;  // Valid data types: String, Bool, Int, UInt, Half, Float, Double. Undefined for 'NULL'.
-};
-
-// Type name expression (used for simpler cast-expression parsing).
-struct TypeSpecifierExpr : public Expr
-{
-    AST_INTERFACE(TypeSpecifierExpr);
-
-    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
-
-    TypeSpecifierPtr typeSpecifier; // Type specifier.
 };
 
 // Ternary expression.
@@ -1420,6 +1410,16 @@ struct InitializerExpr : public Expr
     bool NextArrayIndices(std::vector<int>& arrayIndices) const;
 
     std::vector<ExprPtr> exprs; // Sub expression list.
+};
+
+// Expression proxy to simplify parsing of type casts.
+struct ExprProxy : public Expr
+{
+    AST_INTERFACE(ExprProxy);
+
+    TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
+
+    TypeSpecifierPtr typeSpecifier; // Type specifier.
 };
 
 

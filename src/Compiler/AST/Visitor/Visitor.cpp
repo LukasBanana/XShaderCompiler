@@ -238,11 +238,6 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
     // do nothing
 }
 
-IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
-{
-    Visit(ast->typeSpecifier);
-}
-
 IMPLEMENT_VISIT_PROC(TernaryExpr)
 {
     Visit(ast->condExpr);
@@ -298,6 +293,11 @@ IMPLEMENT_VISIT_PROC(CastExpr)
 IMPLEMENT_VISIT_PROC(InitializerExpr)
 {
     Visit(ast->exprs);
+}
+
+IMPLEMENT_VISIT_PROC(ExprProxy)
+{
+    // do not visit sub nodes in proxy AST nodes
 }
 
 #undef IMPLEMENT_VISIT_PROC
