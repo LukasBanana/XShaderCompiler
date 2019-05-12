@@ -486,7 +486,6 @@ DECL_REPORT( StaticMemberVarRedef,              "redefinition of static member v
 DECL_REPORT( MemberVarsCantHaveDefaultValues,   "member variables cannot have default values[: '{0}']"                                                          );
 DECL_REPORT( DeclTypeDiffersFromDefType,        "declaration type '{0}' differs from definition type '{1}'"                                                     );
 DECL_REPORT( ArrayTypeCanOnlyAppearInDef,       "array type can only appear in definition of static member variables[: '{0}']"                                  );
-DECL_REPORT( FuncCallShadowsClassIntrinsic,     "function call shadows class intrinsic '{0}'"                                                                   );
 
 /* ----- MetalGenerator ----- */
 

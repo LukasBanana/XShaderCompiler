@@ -1010,10 +1010,6 @@ void HLSLAnalyzer::AnalyzeCallExprIntrinsic(CallExpr* callExpr, const HLSLIntrin
         }
         else
         {
-            /* Report warning on reserved identifier for class intrinsic */
-            if (WarnEnabled(Warnings::DeclarationShadowing))
-                Warning(R_FuncCallShadowsClassIntrinsic(callExpr->ident), callExpr);
-
             /* Try to interpet intrinsic identifier as globally declared function */
             AnalyzeCallExprFunction(callExpr, callExpr->isStatic, callExpr->prefixExpr.get(), prefixTypeDenoter);
         }
