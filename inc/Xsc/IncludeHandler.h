@@ -1,7 +1,7 @@
 /*
  * IncludeHandler.h
  * 
- * This file is part of the XShaderCompiler project (Copyright (c) 2014-2018 by Lukas Hermanns)
+ * This file is part of the XShaderCompiler project (Copyright (c) 2014-2019 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
 
