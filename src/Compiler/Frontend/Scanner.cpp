@@ -32,34 +32,14 @@ bool Scanner::ScanSource(const SourceCodePtr& source)
     return false;
 }
 
-void Scanner::PushTokenString(const TokenPtrString& tokenString)
+TokenPtr Scanner::LookAheadToken() const
 {
-    tokenStringItStack_.push_back(tokenString.Begin());
+    return nextTkn_;
 }
 
-void Scanner::PopTokenString()
+TokenPtr Scanner::CurrentToken() const
 {
-    tokenStringItStack_.pop_back();
-}
-
-TokenPtrString::ConstIterator Scanner::TopTokenStringIterator() const
-{
-    for (auto it = tokenStringItStack_.rbegin(); it != tokenStringItStack_.rend(); ++it)
-    {
-        if (!(*it).ReachedEnd())
-            return *it;
-    }
-    return TokenPtrString::ConstIterator();
-}
-
-TokenPtr Scanner::ActiveToken() const
-{
-    return activeToken_;
-}
-
-TokenPtr Scanner::PreviousToken() const
-{
-    return prevToken_;
+    return currentTkn_;
 }
 
 
@@ -67,35 +47,17 @@ TokenPtr Scanner::PreviousToken() const
  * ======= Protected: =======
  */
 
-//private
 TokenPtr Scanner::NextToken(bool scanComments, bool scanWhiteSpaces)
 {
     TokenPtr tkn;
 
-    /* Store previous token */
-    prevToken_ = activeToken_;
+    /* Take next token as new current one */
+    currentTkn_ = nextTkn_;
 
-    for (auto it = tokenStringItStack_.rbegin(); it != tokenStringItStack_.rend(); ++it)
-    {
-        if (!it->ReachedEnd())
-        {
-            /* Scan next token from token string */
-            auto& tokenStringIt = tokenStringItStack_.back();
-            tkn = *(tokenStringIt++);
-            break;
-        }
-    }
+    /* Scan next token from token sub-scanner */
+    nextTkn_ = NextTokenScan(scanComments, scanWhiteSpaces);
 
-    if (!tkn)
-    {
-        /* Scan next token from token sub-scanner */
-        tkn = NextTokenScan(scanComments, scanWhiteSpaces);
-    }
-
-    /* Store new active token */
-    activeToken_ = tkn;
-
-    return tkn;
+    return nextTkn_;
 }
 
 //private

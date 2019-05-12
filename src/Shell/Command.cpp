@@ -787,8 +787,9 @@ static void PrintCompilerVersion(std::ostream& s)
 {
     #if defined _MSC_VER
 
-    /* Decode MSC version */
     s << "MSVC ";
+
+    /* Decode MSC version */
     #   if _MSC_VER == 800
     s << "1.0";
     #   elif _MSC_VER == 900
@@ -827,6 +828,12 @@ static void PrintCompilerVersion(std::ostream& s)
     s << "15.6 (2017)";
     #   elif _MSC_VER == 1914
     s << "15.7 (2017)";
+    #   elif _MSC_VER == 1915
+    s << "15.8 (2017)";
+    #   elif _MSC_VER == 1916
+    s << "15.9 (2017)";
+    #   elif _MSC_VER == 1920
+    s << "16.0 (2019)";
     #   else
     s << "unknown version";
     #   endif
@@ -872,7 +879,7 @@ void VersionCommand::Run(CommandLine& cmdLine, ShellState& state)
     std::cout << " on " << __DATE__ << " at " << __TIME__ << std::endl;
 
     /* Print copyright and license notice */
-    std::cout << "Copyright (c) 2014-2018 by Lukas Hermanns" << std::endl;
+    std::cout << "Copyright (c) 2014-2019 by Lukas Hermanns" << std::endl;
     std::cout << "3-Clause BSD License" << std::endl;
 
     state.actionPerformed = true;

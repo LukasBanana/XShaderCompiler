@@ -54,7 +54,7 @@ void Parser::Error(const std::string& msg, const Token* tkn, bool breakWithExpec
 void Parser::Error(const std::string& msg, bool prevToken, bool breakWithExpection)
 {
     /* Get token and submit error */
-    auto tkn = (prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
+    auto tkn = (prevToken ? GetScanner().CurrentToken().get() : GetScanner().LookAheadToken().get());
     Error(msg, tkn, breakWithExpection);
 }
 
@@ -107,7 +107,7 @@ void Parser::Warning(const std::string& msg, const Token* tkn)
 
 void Parser::Warning(const std::string& msg, bool prevToken)
 {
-    Warning(msg, prevToken ? GetScanner().PreviousToken().get() : GetScanner().ActiveToken().get());
+    Warning(msg, prevToken ? GetScanner().CurrentToken().get() : GetScanner().LookAheadToken().get());
 }
 
 void Parser::EnableWarnings(bool enable)
@@ -193,24 +193,52 @@ TokenPtr Parser::AcceptIt()
     if (tkn_ && tkn_->Type() == Tokens::EndOfStream)
         Error(R_UnexpectedEndOfStream, tkn_.get());
 
-    /* Scan next token and return previous one */
+    /* Return previous token */
     auto prevTkn = tkn_;
-    tkn_ = GetScanner().Next();
 
+    /* Try to scan next token from stack of token strings */
+    if (!tokenStringItStack_.empty())
+    {
+        for (auto it = tokenStringItStack_.rbegin(); it != tokenStringItStack_.rend(); ++it)
+        {
+            if (!it->ReachedEnd())
+            {
+                /* Scan next token from token string */
+                auto& tokenStringIt = tokenStringItStack_.back();
+                tkn_ = *(tokenStringIt++);
+                return prevTkn;
+            }
+        }
+
+        tkn_ = Make<Token>(Tokens::EndOfStream);
+        return prevTkn;
+    }
+
+    /* Scan next token from scanner */
+    tkn_ = GetScanner().Next();
     return prevTkn;
 }
 
-void Parser::PushTokenString(const TokenPtrString& tokenString)
+void Parser::PushTokenString(const TokenPtrString& tokenString, bool acceptFirst)
 {
-    /* Push token string onto stack in the scanner and accept first token */
-    GetScanner().PushTokenString(tokenString);
-    AcceptIt();
+    /* Cache current token that will come next (after the token strings) */
+    if (tokenStringItStack_.empty())
+        cachedTkn_ = tkn_;
+
+    /* Push token string into stack */
+    tokenStringItStack_.push_back(tokenString.Begin());
+
+    if (acceptFirst)
+        AcceptIt();
 }
 
 void Parser::PopTokenString()
 {
-    /* Pop token string from the stack in the scanner */
-    GetScanner().PopTokenString();
+    tokenStringItStack_.pop_back();
+
+    /* Restore cached token before token strings where added */
+    if (tokenStringItStack_.empty())
+        tkn_ = cachedTkn_;
 }
 
 void Parser::IgnoreWhiteSpaces(bool includeNewLines, bool includeComments)

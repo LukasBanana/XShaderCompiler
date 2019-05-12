@@ -36,21 +36,14 @@ class Scanner
         // Starts scanning the specified source code.
         bool ScanSource(const SourceCodePtr& source);
 
-        // Pushes the specified token string onto the stack where further tokens will be parsed from the top of the stack.
-        void PushTokenString(const TokenPtrString& tokenString);
-        void PopTokenString();
-
-        // Returns the iterator of the top most token string on the stack.
-        TokenPtrString::ConstIterator TopTokenStringIterator() const;
-
         // Scanes the source code for the next token
         virtual TokenPtr Next() = 0;
 
         // Returns the token previously returned by the "Next" function.
-        TokenPtr ActiveToken() const;
+        TokenPtr LookAheadToken() const;
 
         // Returns the token previously returned by the "Next" function.
-        TokenPtr PreviousToken() const;
+        TokenPtr CurrentToken() const;
 
         // Returns the start position of the token previously returned by the "Next" function.
         inline const SourcePosition& Pos() const
@@ -163,21 +156,19 @@ class Scanner
 
     private:
 
-        SourceCodePtr                               source_;
-        char                                        chr_                = 0;
+        SourceCodePtr   source_;
+        char            chr_                = 0;
 
-        Log*                                        log_                = nullptr;
+        Log*            log_                = nullptr;
 
-        SourcePosition                              nextStartPos_;
-        TokenPtr                                    activeToken_;
-        TokenPtr                                    prevToken_;
-
-        std::vector<TokenPtrString::ConstIterator>  tokenStringItStack_;
+        SourcePosition  nextStartPos_;
+        TokenPtr        nextTkn_;
+        TokenPtr        currentTkn_;
 
         // Active commentary string (in front of the next token).
-        std::string                                 comment_;
-        unsigned int                                commentStartPos_    = 0;
-        bool                                        commentFirstLine_   = false;
+        std::string     comment_;
+        unsigned int    commentStartPos_    = 0;
+        bool            commentFirstLine_   = false;
 
 };
 

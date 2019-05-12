@@ -46,7 +46,7 @@ class Parser
             bool activeTemplate; // If true, '<' and '>' will not be parsed as a binary operator.
         };
 
-        /* === Functions === */
+    protected:
 
         Parser(Log* log);
 
@@ -87,7 +87,7 @@ class Parser
         virtual TokenPtr AcceptIt();
 
         // Pushes the specified token string onto the stack where further tokens will be parsed from the top of the stack.
-        void PushTokenString(const TokenPtrString& tokenString);
+        void PushTokenString(const TokenPtrString& tokenString, bool acceptFirst = true);
         void PopTokenString();
 
         // Ignores the next tokens if they are white spaces and optionally new lines.
@@ -102,7 +102,7 @@ class Parser
         {
             if (areaOriginAST)
                 ast->area = areaOriginAST->area;
-            ast->area.Update(GetScanner().PreviousToken()->Area());
+            ast->area.Update(GetScanner().CurrentToken()->Area());
             return ast;
         }
 
@@ -119,7 +119,7 @@ class Parser
         template <typename T>
         const T& UpdateSourceAreaOffset(const T& ast)
         {
-            ast->area.Offset(GetScanner().PreviousToken()->Pos());
+            ast->area.Offset(GetScanner().CurrentToken()->Pos());
             return ast;
         }
 
@@ -233,20 +233,22 @@ class Parser
 
     private:
 
-        ReportHandler                   reportHandler_;
-        NameMangling                    nameMangling_;
+        ReportHandler                               reportHandler_;
+        NameMangling                                nameMangling_;
 
-        Log*                            log_                    = nullptr;
-        TokenPtr                        tkn_;
+        Log*                                        log_                    = nullptr;
+        TokenPtr                                    tkn_;
+        TokenPtr                                    cachedTkn_;
 
-        std::stack<ScannerStackEntry>   scannerStack_;
-        std::stack<ParsingState>        parsingStateStack_;
-        std::stack<ASTPtr>              preParsedASTStack_;
+        std::stack<ScannerStackEntry>               scannerStack_;
+        std::stack<ParsingState>                    parsingStateStack_;
+        std::stack<ASTPtr>                          preParsedASTStack_;
+        std::vector<TokenPtrString::ConstIterator>  tokenStringItStack_;
 
-        unsigned int                    unexpectedTokenCounter_ = 0;
-        const unsigned int              unexpectedTokenLimit_   = 3; //< this should never be less than 1
+        unsigned int                                unexpectedTokenCounter_ = 0;
+        const unsigned int                          unexpectedTokenLimit_   = 3; //< this should never be less than 1
 
-        bool                            enableWarnings_         = false;
+        bool                                        enableWarnings_         = false;
 
 };
 

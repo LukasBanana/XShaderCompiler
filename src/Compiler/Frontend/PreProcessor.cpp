@@ -26,7 +26,11 @@ PreProcessor::PreProcessor(IncludeHandler& includeHandler, Log* log) :
 }
 
 std::unique_ptr<std::iostream> PreProcessor::Process(
-    const SourceCodePtr& input, const std::string& filename, bool writeLineMarks, bool writeLineMarkFilenames, bool enableWarnings)
+    const SourceCodePtr&    input,
+    const std::string&      filename,
+    bool                    writeLineMarks,
+    bool                    writeLineMarkFilenames,
+    bool                    enableWarnings)
 {
     output_                 = MakeUnique<std::stringstream>();
     writeLineMarks_         = writeLineMarks;
@@ -242,13 +246,13 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
 
         try
         {
-            ExprEvaluator exprEvaluator { ExprEvaluator::EvaluateReducedBinaryExpr };
+            ExprEvaluator exprEvaluator{ ExprEvaluator::EvaluateReducedBinaryExpr };
             value = exprEvaluator.Evaluate(
                 *conditionExpr,
-                [](IdentExpr* expr) -> Variant
+                [this](IdentExpr* expr) -> Variant
                 {
-                    RuntimeErr(R_UndeclaredIdent(expr->ident), expr);
-                    return {};
+                    /* Undeclared identifiers default to zero for the pre-processor */
+                    return Variant{ 0ll };
                 }
             );
         }
@@ -256,13 +260,6 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
         {
             Error(e.what(), tkn);
         }
-
-        #if 0
-        /* Check if token string has reached the end */
-        auto tokenStringIt = GetScanner().TopTokenStringIterator();
-        if (!tokenStringIt.ReachedEnd())
-            Error("illegal end of constant expression", tokenStringIt->get());
-        #endif
     }
     PopTokenString();
 
@@ -271,18 +268,7 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
 
 Variant PreProcessor::ParseAndEvaluateExpr(const Token* tkn)
 {
-    /*
-    Parse condExpr token string, and wrap it inside a bracket expression
-    to easier find the legal end of the expression during parsing.
-    TODO: this is a work around to detect an illegal end of a constant expression.
-    */
-    TokenPtrString tokenString;
-
-    tokenString.PushBack(Make<Token>(Tokens::LBracket, "("));
-    tokenString.PushBack(ParseDirectiveTokenString(true));
-    tokenString.PushBack(Make<Token>(Tokens::RBracket, ")"));
-
-    return EvaluateExpr(tokenString, tkn);
+    return EvaluateExpr(ParseDirectiveTokenString(true), tkn);
 }
 
 Variant PreProcessor::ParseAndEvaluateArgumentExpr(const Token* tkn)
@@ -484,7 +470,7 @@ void PreProcessor::WritePosToLineDirective()
 {
     if (writeLineMarks_)
     {
-        auto pos = GetScanner().ActiveToken()->Pos();
+        auto pos = GetScanner().LookAheadToken()->Pos();
         WriteLineDirective(pos.Row(), GetCurrentFilename());
     }
 }
@@ -850,7 +836,7 @@ void PreProcessor::ParseDirectiveIf(bool skipEvaluation)
 // '#' 'ifdef' IDENT
 void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
 {
-    auto tkn = GetScanner().PreviousToken();
+    auto tkn = GetScanner().CurrentToken();
 
     if (skipEvaluation)
     {
@@ -871,7 +857,7 @@ void PreProcessor::ParseDirectiveIfdef(bool skipEvaluation)
 // '#' 'ifndef' IDENT
 void PreProcessor::ParseDirectiveIfndef(bool skipEvaluation)
 {
-    auto tkn = GetScanner().PreviousToken();
+    auto tkn = GetScanner().CurrentToken();
 
     /* Parse identifier */
     IgnoreWhiteSpaces();
@@ -895,7 +881,7 @@ void PreProcessor::ParseDirectiveElif(bool skipEvaluation)
 
 void PreProcessor::ParseDirectiveIfOrElifCondition(bool isElseBranch, bool skipEvaluation)
 {
-    auto tkn = GetScanner().PreviousToken();
+    auto tkn = GetScanner().CurrentToken();
 
     if (skipEvaluation)
     {
@@ -943,7 +929,7 @@ void PreProcessor::ParseDirectiveEndif()
 // see https://msdn.microsoft.com/de-de/library/windows/desktop/dd607351(v=vs.85).aspx
 void PreProcessor::ParseDirectivePragma()
 {
-    auto tkn = GetScanner().PreviousToken();
+    auto tkn = GetScanner().CurrentToken();
 
     /* Parse pragma command identifier */
     IgnoreWhiteSpaces();
@@ -1051,7 +1037,7 @@ void PreProcessor::ParseDirectiveLine()
 // '#' 'error' TOKEN-STRING
 void PreProcessor::ParseDirectiveError()
 {
-    auto tkn = GetScanner().PreviousToken();
+    auto tkn = GetScanner().CurrentToken();
 
     /* Parse token string */
     auto tokenString = ParseDirectiveTokenString();
@@ -1086,6 +1072,23 @@ ExprPtr PreProcessor::ParsePrimaryExpr()
                 /* Parse identifier without macro expansion (this already happend at this point) */
                 return ASTFactory::MakeIdentExpr(AcceptIt()->Spell());
             }
+        }
+        break;
+
+        case Tokens::BinaryOp:
+        {
+            /* Parse binary operator as unary expression (only addition and subtraction operators) */
+            if (Tkn()->Spell() == "+" || Tkn()->Spell() == "-")
+            {
+                auto ast = Make<UnaryExpr>();
+                {
+                    ast->op     = StringToUnaryOp(AcceptIt()->Spell(), false);
+                    ast->expr   = ParseValueExpr();
+                }
+                return ast;
+            }
+            else
+                ErrorUnexpected(R_ExpectedConstExpr, nullptr, true);
         }
         break;
 

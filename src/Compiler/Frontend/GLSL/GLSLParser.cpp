@@ -134,7 +134,7 @@ void GLSLParser::ProcessDirectiveLine()
         filename = GetScanner().Source()->Filename();
 
     /* Set new line number and filename */
-    auto currentLine = static_cast<int>(GetScanner().PreviousToken()->Pos().Row());
+    auto currentLine = static_cast<int>(GetScanner().CurrentToken()->Pos().Row());
     GetScanner().Source()->NextSourceOrigin(filename, (lineNo - currentLine - 1));
 }
 
@@ -475,7 +475,7 @@ FunctionDeclPtr GLSLParser::ParseFunctionDecl(BasicDeclStmt* declStmtRef, const 
     }
     else
     {
-        ast->area   = GetScanner().ActiveToken()->Area();
+        ast->area   = GetScanner().LookAheadToken()->Area();
         ast->ident  = ParseIdent();
     }
 
@@ -1335,7 +1335,7 @@ TypeDenoterPtr GLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
     else if (Is(Tokens::Sampler) || Is(Tokens::SamplerState))
         return ParseSamplerTypeDenoter();
 
-    ErrorUnexpected(R_ExpectedTypeDen, GetScanner().ActiveToken().get(), true);
+    ErrorUnexpected(R_ExpectedTypeDen, GetScanner().LookAheadToken().get(), true);
     return nullptr;
 }
 
