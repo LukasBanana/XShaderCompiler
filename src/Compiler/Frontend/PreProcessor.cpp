@@ -129,10 +129,9 @@ void PreProcessor::DefineMacro(const Macro& macro)
         /* Check if identifier is already defined */
         const auto& ident = macro.identTkn->Spell();
 
-        auto previousMacroIt = macros_.find(ident);
-        if (previousMacroIt != macros_.end())
+        if (auto previousMacro = FindMacro(ident))
         {
-            if (!OnRedefineMacro(macro, *previousMacroIt->second))
+            if (!OnRedefineMacro(macro, *previousMacro))
                 return;
         }
 
@@ -154,7 +153,6 @@ void PreProcessor::DefineStandardMacro(const std::string& ident, int intValue)
 
 void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
 {
-    /* Remove macro */
     auto it = macros_.find(ident);
     if (it != macros_.end())
     {
@@ -167,7 +165,14 @@ void PreProcessor::UndefineMacro(const std::string& ident, const Token* tkn)
 
 bool PreProcessor::IsDefined(const std::string& ident) const
 {
-    return (macros_.find(ident) != macros_.end());
+    auto it = macros_.find(ident);
+    return (it != macros_.end());
+}
+
+const PreProcessor::Macro* PreProcessor::FindMacro(const std::string& ident) const
+{
+    auto it = macros_.find(ident);
+    return (it != macros_.end() ? it->second.get() : nullptr);
 }
 
 bool PreProcessor::OnDefineMacro(const Macro& macro)
@@ -377,90 +382,148 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
     if (macro.parameters.size() > arguments.size())
         return expandedString;
 
-    auto ExpandTokenString = [&](TokenPtrString::Container::const_iterator& tknIt, const TokenPtrString::Container::const_iterator& tknItEnd) -> bool
+    const auto& tokens = macro.tokenString.GetTokens();
+    auto tknIt = tokens.begin();
+    auto tknItEnd = tokens.end();
+
+    auto ParseMacroWithOptArguments = [&](const Macro& interleavedMacro) -> TokenPtrString
+    {
+        /* Construct token string exclusively for macro call */
+        TokenPtrString macroTokenString;
+        macroTokenString.PushBack(*tknIt++);
+
+        if (interleavedMacro.HasParameterList())
+        {
+            if (tknIt != tknItEnd && (*tknIt)->Type() == Tokens::LBracket)
+            {
+                for (; tknIt != tknItEnd; ++tknIt)
+                {
+                    macroTokenString.PushBack(*tknIt);
+                    if ((*tknIt)->Type() == Tokens::RBracket)
+                    {
+                        ++tknIt;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return macroTokenString;
+    };
+
+    auto ExpandTokenIdent = [&]() -> bool
+    {
+        const auto& tkn = **tknIt;
+        auto ident = tkn.Spell();
+
+        if (ident == "__VA_ARGS__")
+        {
+            /* Replace '__VA_ARGS__' identifier with all variadic arguments (i.e. all after the number of parameters) */
+            for (std::size_t i = macro.parameters.size(); i < arguments.size(); ++i)
+            {
+                expandedString.PushBack(arguments[i]);
+                if (i + 1 < arguments.size())
+                    expandedString.PushBack(Make<Token>(Tokens::Comma, ","));
+            }
+            ++tknIt;
+            return true;
+        }
+        else
+        {
+            /* Try to find identifier in parameter list of the macro */
+            for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+            {
+                if (ident == macro.parameters[i])
+                {
+                    /* Expand identifier by argument token string */
+                    expandedString.PushBack(arguments[i]);
+                    ++tknIt;
+                    return true;
+                }
+            }
+
+            /* Now try to find identifier from another registered macro */
+            if (auto interleavedMacro = FindMacro(ident))
+            {
+                /* Don't consider the macro we are already in */
+                if (interleavedMacro != &macro)
+                {
+                    /* Keep instance of "macroTokenString" during this scope! */
+                    auto macroTokenString = ParseMacroWithOptArguments(*interleavedMacro);
+                    PushTokenString(macroTokenString);
+                    {
+                        expandedString.PushBack(ParseIdentAsTokenString());
+                    }
+                    PopTokenString();
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };
+
+    auto ExpandTokenDirective = [&]() -> bool
+    {
+        const auto& tkn = **tknIt;
+        auto ident = tkn.Spell();
+
+        for (std::size_t i = 0; i < macro.parameters.size(); ++i)
+        {
+            if (ident == macro.parameters[i])
+            {
+                /* Expand identifier by converting argument token string to string literal */
+                std::stringstream stringLiteral;
+                stringLiteral << '\"' << arguments[i] << '\"';
+                expandedString.PushBack(Make<Token>(Tokens::StringLiteral, stringLiteral.str()));
+                ++tknIt;
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    auto ExpandTokenDirectiveConcat = [&]() -> bool
+    {
+        /* Rremove previous white spaces and comments */
+        expandedString.TrimBack();
+
+        /* Ignore concatenation token */
+        ++tknIt;
+
+        /* Ignore following white spaces and comments */
+        while (tknIt != tknItEnd && !DefaultTokenOfInterestFunctor::IsOfInterest(*tknIt))
+            ++tknIt;
+
+        return true;
+    };
+
+    auto ExpandTokenString = [&]() -> bool
     {
         const auto& tkn = **tknIt;
 
         /* Check if current token is an identifier which matches one of the parameters of the macro */
-        switch (tkn.Type())
+        switch ((*tknIt)->Type())
         {
             case Tokens::Ident:
-            {
-                auto ident = tkn.Spell();
-                if (ident == "__VA_ARGS__")
-                {
-                    /* Replace '__VA_ARGS__' identifier with all variadic arguments (i.e. all after the number of parameters) */
-                    for (std::size_t i = macro.parameters.size(); i < arguments.size(); ++i)
-                    {
-                        expandedString.PushBack(arguments[i]);
-                        if (i + 1 < arguments.size())
-                            expandedString.PushBack(Make<Token>(Tokens::Comma, ","));
-                    }
-                    return true;
-                }
-                else
-                {
-                    for (std::size_t i = 0; i < macro.parameters.size(); ++i)
-                    {
-                        if (ident == macro.parameters[i])
-                        {
-                            /* Expand identifier by argument token string */
-                            expandedString.PushBack(arguments[i]);
-                            return true;
-                        }
-                    }
-                }
-            }
-            break;
-
+                return ExpandTokenIdent();
             case Tokens::Directive:
-            {
-                auto ident = tkn.Spell();
-                for (std::size_t i = 0; i < macro.parameters.size(); ++i)
-                {
-                    if (ident == macro.parameters[i])
-                    {
-                        /* Expand identifier by converting argument token string to string literal */
-                        std::stringstream stringLiteral;
-                        stringLiteral << '\"' << arguments[i] << '\"';
-                        expandedString.PushBack(Make<Token>(Tokens::StringLiteral, stringLiteral.str()));
-                        return true;
-                    }
-                }
-            }
-            break;
-
+                return ExpandTokenDirective();
             case Tokens::DirectiveConcat:
-            {
-                /* Rremove previous white spaces and comments */
-                expandedString.TrimBack();
-
-                /* Ignore concatenation token */
-                ++tknIt;
-
-                /* Ignore following white spaces and comments */
-                while (tknIt != tknItEnd && !DefaultTokenOfInterestFunctor::IsOfInterest(*tknIt))
-                    ++tknIt;
-
-                /* Iterate one token back since it will be incremented in the outer for-loop */
-                --tknIt;
-                return true;
-            }
-            break;
-
+                return ExpandTokenDirectiveConcat();
             default:
-            break;
+                return false;
         }
-
-        /* Return false -> meaning this function has not added any tokens to the expanded string */
-        return false;
     };
 
-    const auto& tokens = macro.tokenString.GetTokens();
-    for (auto it = tokens.begin(); it != tokens.end(); ++it)
+    while (tknIt != tknItEnd)
     {
-        if (!ExpandTokenString(it, tokens.end()))
-            expandedString.PushBack(*it);
+        if (!ExpandTokenString())
+        {
+            expandedString.PushBack(*tknIt);
+            ++tknIt;
+        }
     }
 
     return expandedString;
@@ -552,17 +615,15 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
     if (!OnSubstitueStdMacro(*identTkn, tokenString))
     {
         /* Search for defined macro */
-        auto it = macros_.find(identTkn->Spell());
-        if (it != macros_.end())
+        if (auto macro = FindMacro(identTkn->Spell()))
         {
             /* Perform macro expansion */
-            auto& macro = *it->second;
-            if (macro.HasParameterList())
+            if (macro->HasParameterList())
             {
                 /* Replace identifier to macro with arguments */
-                tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, macro));
+                tokenString.PushBack(ParseIdentArgumentsForMacro(identTkn, *macro));
             }
-            else if (macro.tokenString.Empty())
+            else if (macro->tokenString.Empty())
             {
                 /* Replace identifier with single blank to avoid parsing problems in next pass */
                 tokenString.PushBack(Make<Token>(Tokens::WhiteSpace, " "));
@@ -570,7 +631,7 @@ TokenPtrString PreProcessor::ParseIdentAsTokenString()
             else
             {
                 /* Replace identifier with macro value */
-                tokenString.PushBack(macro.tokenString);
+                tokenString.PushBack(ExpandMacro(*macro, {}));
             }
         }
         else

@@ -105,6 +105,9 @@ class PreProcessor : public Parser
         // Returns true if the specified macro identifier is defined.
         bool IsDefined(const std::string& ident) const;
 
+        // Returns the defined macro with the specified identifer, or null if there is no such macro.
+        const Macro* FindMacro(const std::string& ident) const;
+
         // Callback function when a macro is about to be defined
         virtual bool OnDefineMacro(const Macro& macro);
 
