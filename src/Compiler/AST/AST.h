@@ -1331,6 +1331,9 @@ struct IdentExpr : public Expr
     // Replaces the old symbol and identifier by the new symbol.
     void ReplaceSymbol(Decl* symbol);
 
+    // Returns true if this is AST node identifies a swizzle operator (e.g. vec.xy).
+    bool IsSwizzle() const;
+
     // Returns the specified type of AST node from the symbol (if the symbol refers to one).
     template <typename T>
     T* FetchSymbol() const
@@ -1343,8 +1346,11 @@ struct IdentExpr : public Expr
         return nullptr;
     }
 
-    // Returns the variable AST node (if the symbol refers to one).
+    // Returns the variable AST node (if the symbol refers to one). For swizzle operators, the call is forwarded to the prefix expression.
     VarDecl* FetchVarDecl() const;
+
+    // Returns the symbol reference of this AST node or the first prefix is this is a swizzle operator.
+    Decl* FetchLvalueSymbolRef() const;
 
     ExprPtr     prefixExpr;             // Optional prefix expression. May be null.
     bool        isStatic    = false;    // Specifies whether this object is a static member.

@@ -1418,7 +1418,7 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(IdentExpr* identExpr, const AST* ast,
     /* Analyze prefix expression as l-value */
     AnalyzeLValueExpr(identExpr->prefixExpr.get(), ast);
 
-    if (auto symbol = identExpr->symbolRef)
+    if (auto symbol = identExpr->FetchLvalueSymbolRef())
     {
         if (auto varDecl = symbol->As<VarDecl>())
         {
@@ -1428,7 +1428,7 @@ void HLSLAnalyzer::AnalyzeLValueExprObject(IdentExpr* identExpr, const AST* ast,
             */
             if (param != nullptr)
             {
-                const auto& lhsTypeDen = varDecl->GetTypeDenoter();
+                const auto& lhsTypeDen = identExpr->GetTypeDenoter();
                 const auto& rhsTypeDen = param->GetTypeDenoter();
 
                 if (!lhsTypeDen->Equals(*rhsTypeDen))

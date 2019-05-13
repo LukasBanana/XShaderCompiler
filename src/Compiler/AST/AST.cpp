@@ -2414,7 +2414,13 @@ const IdentExpr* IdentExpr::FetchLValueExpr() const
     else if (prefixExpr)
     {
         /* Fetch l-value from prefix expression */
-        return prefixExpr->FetchLValueExpr();
+        if (auto lvalueExpr = prefixExpr->FetchLValueExpr())
+        {
+            if (IsSwizzle())
+                return this;
+            else
+                return lvalueExpr;
+        }
     }
     return this;
 }
@@ -2504,9 +2510,62 @@ void IdentExpr::ReplaceSymbol(Decl* symbol)
     }
 }
 
+static bool IsSwizzleOperator(const std::string& s)
+{
+    if (s.size() >= 1 && s.size() <= 4)
+    {
+        const std::string swizzleOperators = "xyzwrgba";
+        for (char c : s)
+        {
+            if (swizzleOperators.find(c) == std::string::npos)
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool IdentExpr::IsSwizzle() const
+{
+    /* The expression has no symbol reference but a prefix? */
+    if (symbolRef == nullptr && prefixExpr != nullptr)
+    {
+        /* Has the prefix a scalar, vector, or matrix type? */
+        const auto& typeDen = prefixExpr->GetTypeDenoter()->GetAliased();
+        if (auto baseTypeDen = typeDen.As<BaseTypeDenoter>())
+        {
+            if (IsScalarType(baseTypeDen->dataType) ||
+                IsVectorType(baseTypeDen->dataType) ||
+                IsMatrixType(baseTypeDen->dataType))
+            {
+                /* Is the identifier a valid swizzle operator? */
+                return IsSwizzleOperator(ident);
+            }
+        }
+    }
+    return false;
+}
+
 VarDecl* IdentExpr::FetchVarDecl() const
 {
-    return FetchSymbol<VarDecl>();
+    if (symbolRef != nullptr)
+        return FetchSymbol<VarDecl>();
+    else if (IsSwizzle())
+        return prefixExpr->FetchVarDecl();
+    else
+        return nullptr;
+}
+
+Decl* IdentExpr::FetchLvalueSymbolRef() const
+{
+    if (symbolRef != nullptr)
+        return symbolRef;
+    if (IsSwizzle())
+    {
+        if (auto prefixIdentExpr = prefixExpr->As<IdentExpr>())
+            return prefixIdentExpr->FetchLvalueSymbolRef();
+    }
+    return nullptr;
 }
 
 
