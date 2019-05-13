@@ -631,7 +631,7 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    if (IsLValueOp(ast->op))
+    if (IsLvalueOp(ast->op))
     {
         PushLValueExpr(ast);
         {
@@ -1351,7 +1351,7 @@ bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic
         };
 
         /* Fetch static type expression from prefix expression */
-        if (auto staticTypeExpr = AST::GetAs<IdentExpr>(prefixExpr->Find(IsObjectExprWithTypename, SearchLValue)))
+        if (auto staticTypeExpr = AST::GetAs<IdentExpr>(prefixExpr->Find(IsObjectExprWithTypename, SearchLvalue)))
         {
             if (!isStatic)
             {
@@ -1400,7 +1400,7 @@ void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast, VarDecl* param)
     if (expr)
     {
         /* Fetch l-value from expression */
-        if (auto lvalueExpr = expr->FetchLValueExpr())
+        if (auto lvalueExpr = expr->FetchLvalueExpr())
             AnalyzeLValueExprObject(lvalueExpr, ast, param);
         else
         {
@@ -2023,7 +2023,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
 void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
 {
-    if (auto identExpr = expr->FetchLValueExpr())
+    if (auto identExpr = expr->FetchLvalueExpr())
     {
         if (auto varDecl = identExpr->FetchVarDecl())
         {

@@ -86,24 +86,24 @@ void TypedAST::ResetTypeDenoter()
 
 VarDecl* Expr::FetchVarDecl() const
 {
-    if (auto lvalueExpr = FetchLValueExpr())
+    if (auto lvalueExpr = FetchLvalueExpr())
         return lvalueExpr->FetchVarDecl();
     else
         return nullptr;
 }
 
-const IdentExpr* Expr::FetchLValueExpr() const
+const IdentExpr* Expr::FetchLvalueExpr() const
 {
     return nullptr;
 }
 
-IdentExpr* Expr::FetchLValueExpr()
+IdentExpr* Expr::FetchLvalueExpr()
 {
     /*
     Use const function and cast the constness away,
     which is allowed here, since this is a non-const member function
     */
-    return const_cast<IdentExpr*>(const_cast<const Expr*>(this)->FetchLValueExpr());
+    return const_cast<IdentExpr*>(const_cast<const Expr*>(this)->FetchLvalueExpr());
 }
 
 IndexedSemantic Expr::FetchSemantic() const
@@ -1946,7 +1946,7 @@ const Expr* TernaryExpr::Find(const FindPredicateConstFunctor& predicate, unsign
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expressions */
-        if ((flags & SearchRValue) != 0)
+        if ((flags & SearchRvalue) != 0)
         {
             if (auto e = condExpr->Find(predicate, flags))
                 return e;
@@ -2011,7 +2011,7 @@ const Expr* BinaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expressions */
-        if ((flags & SearchRValue) != 0)
+        if ((flags & SearchRvalue) != 0)
         {
             if (auto e = lhsExpr->Find(predicate, flags))
                 return e;
@@ -2043,8 +2043,8 @@ const Expr* UnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expression */
-        if ( ( IsLValueOp(op) && ((flags & SearchLValue) != 0) ) ||
-             ( !IsLValueOp(op) && ((flags & SearchRValue) != 0) ) )
+        if ( ( IsLvalueOp(op) && ((flags & SearchLvalue) != 0) ) ||
+             ( !IsLvalueOp(op) && ((flags & SearchRvalue) != 0) ) )
         {
             if (auto e = expr->Find(predicate, flags))
                 return e;
@@ -2053,10 +2053,10 @@ const Expr* UnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
-const IdentExpr* UnaryExpr::FetchLValueExpr() const
+const IdentExpr* UnaryExpr::FetchLvalueExpr() const
 {
-    if (IsLValueOp(op))
-        return expr->FetchLValueExpr();
+    if (IsLvalueOp(op))
+        return expr->FetchLvalueExpr();
     else
         return nullptr;
 }
@@ -2130,7 +2130,7 @@ const Expr* CallExpr::Find(const FindPredicateConstFunctor& predicate, unsigned 
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expression */
-        if ((flags & SearchRValue) != 0 && prefixExpr)
+        if ((flags & SearchRvalue) != 0 && prefixExpr)
         {
             if (auto e = prefixExpr->Find(predicate, flags))
                 return e;
@@ -2303,9 +2303,9 @@ const Expr* BracketExpr::Find(const FindPredicateConstFunctor& predicate, unsign
     return nullptr;
 }
 
-const IdentExpr* BracketExpr::FetchLValueExpr() const
+const IdentExpr* BracketExpr::FetchLvalueExpr() const
 {
-    return expr->FetchLValueExpr();
+    return expr->FetchLvalueExpr();
 }
 
 IndexedSemantic BracketExpr::FetchSemantic() const
@@ -2329,12 +2329,12 @@ const Expr* AssignExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expressions */
-        if ((flags & SearchLValue) != 0)
+        if ((flags & SearchLvalue) != 0)
         {
             if (auto e = lvalueExpr->Find(predicate, flags))
                 return e;
         }
-        if ((flags & SearchRValue) != 0)
+        if ((flags & SearchRvalue) != 0)
         {
             if (auto e = rvalueExpr->Find(predicate, flags))
                 return e;
@@ -2343,9 +2343,9 @@ const Expr* AssignExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
     return nullptr;
 }
 
-const IdentExpr* AssignExpr::FetchLValueExpr() const
+const IdentExpr* AssignExpr::FetchLvalueExpr() const
 {
-    return lvalueExpr->FetchLValueExpr();
+    return lvalueExpr->FetchLvalueExpr();
 }
 
 
@@ -2387,7 +2387,7 @@ const Expr* IdentExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
-const IdentExpr* IdentExpr::FetchLValueExpr() const
+const IdentExpr* IdentExpr::FetchLvalueExpr() const
 {
     if (symbolRef)
     {
@@ -2404,7 +2404,7 @@ const IdentExpr* IdentExpr::FetchLValueExpr() const
                 e.g. "obj.BaseStruct::member" -> "BaseStruct" is a base structure namespace.
                 */
                 if (prefixExpr)
-                    return prefixExpr->FetchLValueExpr();
+                    return prefixExpr->FetchLvalueExpr();
                 else
                     return nullptr;
             default:
@@ -2414,7 +2414,7 @@ const IdentExpr* IdentExpr::FetchLValueExpr() const
     else if (prefixExpr)
     {
         /* Fetch l-value from prefix expression */
-        if (auto lvalueExpr = prefixExpr->FetchLValueExpr())
+        if (auto lvalueExpr = prefixExpr->FetchLvalueExpr())
         {
             if (IsSwizzle())
                 return this;
@@ -2597,9 +2597,9 @@ const Expr* SubscriptExpr::Find(const FindPredicateConstFunctor& predicate, unsi
     return nullptr;
 }
 
-const IdentExpr* SubscriptExpr::FetchLValueExpr() const
+const IdentExpr* SubscriptExpr::FetchLvalueExpr() const
 {
-    return prefixExpr->FetchLValueExpr();
+    return prefixExpr->FetchLvalueExpr();
 }
 
 std::size_t SubscriptExpr::NumIndices() const
@@ -2717,7 +2717,7 @@ const Expr* InitializerExpr::Find(const FindPredicateConstFunctor& predicate, un
         CALL_EXPR_FIND_PREDICATE(predicate);
 
         /* Search in sub expressions */
-        if ((flags & SearchRValue) != 0)
+        if ((flags & SearchRvalue) != 0)
         {
             for (const auto& subExpr : exprs)
             {

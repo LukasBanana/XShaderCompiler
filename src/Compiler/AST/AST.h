@@ -40,8 +40,8 @@ class Visitor;
 // Enumeration for expression finding predicates.
 enum SearchFlags : unsigned int
 {
-    SearchLValue    = (1 << 0),
-    SearchRValue    = (1 << 1),
+    SearchLvalue    = (1 << 0),
+    SearchRvalue    = (1 << 1),
     SearchAll       = (~0u),
 };
 
@@ -273,8 +273,8 @@ struct Expr : public TypedAST
     Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
     If the return value is non-null, the object expression must refer to a declaration object. By default null.
     */
-    virtual const IdentExpr* FetchLValueExpr() const;
-    IdentExpr* FetchLValueExpr();
+    virtual const IdentExpr* FetchLvalueExpr() const;
+    IdentExpr* FetchLvalueExpr();
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
@@ -1196,7 +1196,7 @@ struct UnaryExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const IdentExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLvalueExpr() const override;
 
     // Return true if this is a post unary expression (e.g. x++ instead of ++x); see also Xsc::IsPostUnaryOp.
     bool IsPostUnary() const;
@@ -1278,7 +1278,7 @@ struct BracketExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const IdentExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLvalueExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1294,7 +1294,7 @@ struct AssignExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const IdentExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLvalueExpr() const override;
 
     ExprPtr     lvalueExpr;                         // L-value expression.
     AssignOp    op          = AssignOp::Undefined;  // Assignment operator. Must not be undefined.
@@ -1316,7 +1316,7 @@ struct IdentExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const IdentExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLvalueExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1369,7 +1369,7 @@ struct SubscriptExpr : public Expr
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
 
-    const IdentExpr* FetchLValueExpr() const override;
+    const IdentExpr* FetchLvalueExpr() const override;
 
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
     std::size_t NumIndices() const;

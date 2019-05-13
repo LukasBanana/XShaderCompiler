@@ -221,7 +221,7 @@ bool IsPostUnaryOp(const UnaryOp o)
     return (o == UnaryOp::PostInc || o == UnaryOp::PostDec);
 }
 
-bool IsLValueOp(const UnaryOp o)
+bool IsLvalueOp(const UnaryOp o)
 {
     return (o >= UnaryOp::Inc && o <= UnaryOp::PostDec);
 }

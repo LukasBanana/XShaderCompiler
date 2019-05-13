@@ -235,7 +235,7 @@ IMPLEMENT_VISIT_PROC(AliasDeclStmt)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    if (IsLValueOp(ast->op))
+    if (IsLvalueOp(ast->op))
         MarkLValueExpr(ast->expr.get());
     VISIT_DEFAULT(UnaryExpr);
 }

@@ -1972,7 +1972,7 @@ void GLSLGenerator::WriteOutputSemanticsAssignment(Expr* expr, bool writeAsListe
     /* Fetch variable identifier if expression is set */
     const IdentExpr* lvalueExpr = nullptr;
     if (expr)
-        lvalueExpr = expr->FetchLValueExpr();
+        lvalueExpr = expr->FetchLvalueExpr();
     #endif
 
     /* Write wrapped structures */

@@ -124,7 +124,7 @@ bool IsBitwiseOp(const UnaryOp o);
 bool IsPostUnaryOp(const UnaryOp o);
 
 // Returns true if the specified unary operator is only for l-values (i.e. ++x, --x, x++, and x--).
-bool IsLValueOp(const UnaryOp o);
+bool IsLvalueOp(const UnaryOp o);
 
 
 /* ----- CtrlTransfer Enum ----- */
