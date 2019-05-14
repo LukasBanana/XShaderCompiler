@@ -103,7 +103,7 @@ class HLSLParser : public SLParser
         AttributePtr                    ParseAttribute();
         RegisterPtr                     ParseRegister(bool parseColon = true);
         PackOffsetPtr                   ParsePackOffset(bool parseColon = true);
-        TypeSpecifierPtr                ParseTypeSpecifier(bool parseVoidType = false);
+        TypeSpecifierPtr                ParseTypeSpecifier(bool acceptVoidType = false);
 
         BufferDeclPtr                   ParseBufferDecl(BufferDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr);
         SamplerDeclPtr                  ParseSamplerDecl(SamplerDeclStmt* declStmtRef, const TokenPtr& identTkn = nullptr);
@@ -156,9 +156,9 @@ class HLSLParser : public SLParser
 
         std::string                     ParseIdentWithNamespaceOpt(IdentExprPtr& namespaceExpr, TokenPtr identTkn = nullptr, SourceArea* area = nullptr);
 
-        TypeDenoterPtr                  ParseTypeDenoter(bool allowVoidType = true, StructDeclPtr* structDecl = nullptr);
+        TypeDenoterPtr                  ParseTypeDenoter(bool acceptVoidType = true, StructDeclPtr* structDecl = nullptr);
         TypeDenoterPtr                  ParseTypeDenoterPrimary(StructDeclPtr* structDecl = nullptr);
-        TypeDenoterPtr                  ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType = true);
+        TypeDenoterPtr                  ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool acceptVoidType = true);
         VoidTypeDenoterPtr              ParseVoidTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseTypeDenoter();
         BaseTypeDenoterPtr              ParseBaseVectorTypeDenoter();

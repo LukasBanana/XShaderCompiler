@@ -188,6 +188,15 @@ class Parser
             return std::make_shared<T>(GetScanner().Pos(), std::forward<Args>(args)...);
         }
 
+        // Makes a new shared pointer of the specified type denoter class.
+        template <typename T, typename... Args>
+        std::shared_ptr<T> MakeType(Args&&... args)
+        {
+            auto typeDen = std::make_shared<T>(std::forward<Args>(args)...);
+            typeDen->area = SourceArea(GetScanner().Pos(), 1);
+            return typeDen;
+        }
+
         // Returns the current token.
         inline const TokenPtr& Tkn() const
         {

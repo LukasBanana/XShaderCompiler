@@ -218,6 +218,8 @@ IMPLEMENT_VISIT_PROC(StructDecl)
     PushPrintable(ast, WriteLabel("StructDecl", ast));
     {
         ADD_PRINTABLE_MEMBER(ident);
+        if (ast->isClass)
+            ADD_PRINTABLE_MEMBER(isClass);
         ADD_PRINTABLE_MEMBER(baseStructName);
         VISIT_MEMBER(localStmts);
     }
@@ -507,7 +509,8 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     PushPrintable(ast, WriteLabel("CallExpr", ast));
     {
         VISIT_MEMBER(prefixExpr);
-        ADD_PRINTABLE_MEMBER(isStatic);
+        if (ast->isStatic)
+            ADD_PRINTABLE_MEMBER(isStatic);
         ADD_PRINTABLE_MEMBER(ident);
         VISIT_MEMBER(arguments);
     }
@@ -539,7 +542,8 @@ IMPLEMENT_VISIT_PROC(IdentExpr)
     PushPrintable(ast, WriteLabel("IdentExpr", ast));
     {
         VISIT_MEMBER(prefixExpr);
-        ADD_PRINTABLE_MEMBER(isStatic);
+        if (ast->isStatic)
+            ADD_PRINTABLE_MEMBER(isStatic);
         ADD_PRINTABLE_MEMBER(ident);
     }
     PopPrintable();

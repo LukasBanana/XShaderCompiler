@@ -152,7 +152,7 @@ AliasDeclStmtPtr MakeBaseTypeAlias(const DataType dataType, const std::string& i
         {
             aliasDecl->ident        = ident;
             aliasDecl->typeDenoter  = std::make_shared<BaseTypeDenoter>(dataType);
-            aliasDecl->declStmtRef = ast.get();
+            aliasDecl->declStmtRef  = ast.get();
         }
         ast->aliasDecls.push_back(aliasDecl);
     }
@@ -174,6 +174,8 @@ TypeSpecifierPtr MakeTypeSpecifier(const TypeDenoterPtr& typeDenoter)
 {
     auto ast = MakeAST<TypeSpecifier>();
     {
+        if (typeDenoter)
+            ast->area = typeDenoter->area;
         ast->typeDenoter = typeDenoter;
     }
     return ast;
@@ -194,7 +196,7 @@ VarDeclStmtPtr MakeVarDeclStmt(const TypeSpecifierPtr& typeSpecifier, const std:
         {
             varDecl->ident          = ident;
             varDecl->initializer    = initializer;
-            varDecl->declStmtRef   = ast.get();
+            varDecl->declStmtRef    = ast.get();
         }
         ast->varDecls.push_back(varDecl);
     }

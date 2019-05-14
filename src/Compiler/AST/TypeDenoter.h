@@ -13,6 +13,7 @@
 #include "ASTEnums.h"
 #include "Flags.h"
 #include "CiString.h"
+#include "SourceArea.h"
 #include <memory>
 #include <string>
 
@@ -246,6 +247,8 @@ struct TypeDenoter : std::enable_shared_from_this<TypeDenoter>
         const TypeDenoter& sourceTypeDen, const TypeDenoter& destTypeDen,
         int& sourceVecSize, int& destVecSize
     );
+
+    SourceArea area; // Source code area.
 };
 
 // Void type denoter.

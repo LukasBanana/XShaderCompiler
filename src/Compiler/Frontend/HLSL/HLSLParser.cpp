@@ -122,7 +122,9 @@ TypeSpecifierPtr HLSLParser::MakeTypeSpecifierIfLhsOfCastExpr(const ExprPtr& exp
         if (IsRegisteredTypeName(identExpr->ident))
         {
             /* Convert the variable access into a type specifier */
-            return ASTFactory::MakeTypeSpecifier(std::make_shared<AliasTypeDenoter>(identExpr->ident));
+            auto typeSpecifier = ASTFactory::MakeTypeSpecifier(MakeType<AliasTypeDenoter>(identExpr->ident));
+            typeSpecifier->area = expr->area;
+            return typeSpecifier;
         }
     }
 
@@ -542,7 +544,7 @@ PackOffsetPtr HLSLParser::ParsePackOffset(bool parseColon)
     return UpdateSourceArea(ast);
 }
 
-TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
+TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool acceptVoidType)
 {
     auto ast = MakeTypeSpecifierWithPackAlignment();
 
@@ -551,7 +553,7 @@ TypeSpecifierPtr HLSLParser::ParseTypeSpecifier(bool parseVoidType)
         ParseModifiers(ast.get(), true);
 
     /* Parse variable type denoter with optional struct declaration */
-    ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl);
+    ast->typeDenoter = ParseTypeDenoterWithStructDeclOpt(ast->structDecl, acceptVoidType);
 
     return UpdateSourceArea(ast);
 }
@@ -705,7 +707,7 @@ AliasDeclPtr HLSLParser::ParseAliasDecl(TypeDenoterPtr typeDenoter)
     if (Is(Tokens::LParen))
     {
         /* Make array type denoter and use input as sub type denoter */
-        typeDenoter = std::make_shared<ArrayTypeDenoter>(typeDenoter, ParseArrayDimensionList());
+        typeDenoter = MakeType<ArrayTypeDenoter>(typeDenoter, ParseArrayDimensionList());
     }
 
     /* Store final type denoter in alias declaration */
@@ -1289,6 +1291,8 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrCallExpr()
     if (!IsDataType() && !Is(Tokens::Struct))
         ErrorUnexpected(R_ExpectedTypeNameOrFuncCall);
 
+    auto sourcePos = GetScanner().Pos();
+
     StructDeclPtr structDecl;
     auto typeDenoter = ParseTypeDenoter(true, &structDecl);
 
@@ -1354,7 +1358,7 @@ UnaryExprPtr HLSLParser::ParsePostUnaryExpr(const ExprPtr& expr)
 ExprPtr HLSLParser::ParseExprWithBracketPrefix()
 {
     ExprPtr expr;
-    SourceArea area(GetScanner().Pos(), 1);
+    const SourceArea area{ GetScanner().Pos(), 1 };
 
     /* First parse bracket prefix (bracket: "(EXPR)", cast: "(TYPE)VALUE", call: "(EXPR)(ARGS)") */
     Accept(Tokens::LBracket);
@@ -1703,12 +1707,12 @@ std::string HLSLParser::ParseIdentWithNamespaceOpt(IdentExprPtr& namespaceExpr, 
     return ident;
 }
 
-TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* structDecl)
+TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool acceptVoidType, StructDeclPtr* structDecl)
 {
     if (Is(Tokens::Void))
     {
         /* Parse void type denoter */
-        if (allowVoidType)
+        if (acceptVoidType)
             return ParseVoidTypeDenoter();
 
         Error(R_NotAllowedInThisContext(R_VoidTypeDen));
@@ -1722,7 +1726,7 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoter(bool allowVoidType, StructDeclPtr* s
         if (Is(Tokens::LParen))
         {
             /* Make array type denoter */
-            typeDenoter = std::make_shared<ArrayTypeDenoter>(typeDenoter, ParseArrayDimensionList());
+            typeDenoter = MakeType<ArrayTypeDenoter>(typeDenoter, ParseArrayDimensionList());
         }
 
         return typeDenoter;
@@ -1755,18 +1759,18 @@ TypeDenoterPtr HLSLParser::ParseTypeDenoterPrimary(StructDeclPtr* structDecl)
     return nullptr;
 }
 
-TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool allowVoidType)
+TypeDenoterPtr HLSLParser::ParseTypeDenoterWithStructDeclOpt(StructDeclPtr& structDecl, bool acceptVoidType)
 {
     if (Is(Tokens::Struct) || Is(Tokens::Class))
         return ParseStructTypeDenoterWithStructDeclOpt(structDecl);
     else
-        return ParseTypeDenoter(allowVoidType);
+        return ParseTypeDenoter(acceptVoidType);
 }
 
 VoidTypeDenoterPtr HLSLParser::ParseVoidTypeDenoter()
 {
     Accept(Tokens::Void);
-    return std::make_shared<VoidTypeDenoter>();
+    return MakeType<VoidTypeDenoter>();
 }
 
 BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
@@ -1776,7 +1780,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
         auto keyword = AcceptIt()->Spell();
 
         /* Make base type denoter by data type keyword */
-        auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+        auto typeDenoter = MakeType<BaseTypeDenoter>();
         typeDenoter->dataType = ParseDataType(keyword);
         return typeDenoter;
     }
@@ -1815,7 +1819,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseVectorTypeDenoter()
         vectorType = "float4";
 
     /* Make base type denoter by data type keyword */
-    auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+    auto typeDenoter = MakeType<BaseTypeDenoter>();
     typeDenoter->dataType = ParseDataType(vectorType);
 
     return typeDenoter;
@@ -1855,7 +1859,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
         matrixType = "float4x4";
 
     /* Make base type denoter by data type keyword */
-    auto typeDenoter = std::make_shared<BaseTypeDenoter>();
+    auto typeDenoter = MakeType<BaseTypeDenoter>();
     typeDenoter->dataType = ParseDataType(matrixType);
 
     return typeDenoter;
@@ -1864,7 +1868,7 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseMatrixTypeDenoter()
 BufferTypeDenoterPtr HLSLParser::ParseBufferTypeDenoter()
 {
     /* Make buffer type denoter */
-    auto typeDenoter = std::make_shared<BufferTypeDenoter>();
+    auto typeDenoter = MakeType<BufferTypeDenoter>();
 
     /* Parse buffer type */
     auto bufferTypeTkn = Tkn();
@@ -1924,7 +1928,7 @@ SamplerTypeDenoterPtr HLSLParser::ParseSamplerTypeDenoter()
 {
     /* Make sampler type denoter */
     auto samplerType = ParseSamplerType();
-    return std::make_shared<SamplerTypeDenoter>(samplerType);
+    return MakeType<SamplerTypeDenoter>(samplerType);
 }
 
 StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
@@ -1937,7 +1941,7 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoter()
     auto ident = ParseIdent();
 
     /* Make struct type denoter */
-    auto typeDenoter = std::make_shared<StructTypeDenoter>(ident);
+    auto typeDenoter = MakeType<StructTypeDenoter>(ident);
 
     return typeDenoter;
 }
@@ -1962,7 +1966,7 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoterWithStructDeclOpt(StructD
         structDecl->isClass = isClass;
 
         /* Make struct type denoter with reference to the structure of this alias decl */
-        return std::make_shared<StructTypeDenoter>(structDecl.get());
+        return MakeType<StructTypeDenoter>(structDecl.get());
     }
     else
     {
@@ -1976,12 +1980,12 @@ StructTypeDenoterPtr HLSLParser::ParseStructTypeDenoterWithStructDeclOpt(StructD
             structDecl->isClass = isClass;
 
             /* Make struct type denoter with reference to the structure of this alias decl */
-            return std::make_shared<StructTypeDenoter>(structDecl.get());
+            return MakeType<StructTypeDenoter>(structDecl.get());
         }
         else
         {
             /* Make struct type denoter without struct decl */
-            return std::make_shared<StructTypeDenoter>(structIdentTkn->Spell());
+            return MakeType<StructTypeDenoter>(structIdentTkn->Spell());
         }
     }
 }
@@ -1993,7 +1997,7 @@ AliasTypeDenoterPtr HLSLParser::ParseAliasTypeDenoter(std::string ident)
         ident = ParseIdent();
 
     /* Make alias type denoter per default (change this to a struct type later) */
-    return std::make_shared<AliasTypeDenoter>(ident);
+    return MakeType<AliasTypeDenoter>(ident);
 }
 
 void HLSLParser::ParseAndIgnoreTechniquesAndNullStmts()
