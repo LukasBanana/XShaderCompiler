@@ -1451,9 +1451,6 @@ IdentExprPtr HLSLParser::ParseIdentExpr(const ExprPtr& expr)
 
     auto ast = Make<IdentExpr>();
 
-    if (expr)
-        ast->area = expr->area;
-
     /* Take sub expression and parse identifier */
     ast->prefixExpr = expr;
     ast->isStatic   = isStatic;

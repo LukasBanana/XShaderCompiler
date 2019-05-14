@@ -801,16 +801,17 @@ static DataType FloatLiteralTokenToDataType(const Token& tkn)
 
     if (!s.empty())
     {
-        /* Has literal the 'f' or 'F' suffix for single precision floats? */
-        if (s.back() == 'f' || s.back() == 'F')
-            return DataType::Float;
+        /* Has literal the 'l' or 'L' suffix for double precision floats? */
+        if (s.back() == 'l' || s.back() == 'L')
+            return DataType::Double;
 
         /* Has literal the 'h' or 'H' suffix for half precision floats? */
         if (s.back() == 'h' || s.back() == 'H')
             return DataType::Half;
     }
 
-    return DataType::Double;
+    /* Single precision floats are the default */
+    return DataType::Float;
 }
 
 DataType TokenToDataType(const Token& tkn)
