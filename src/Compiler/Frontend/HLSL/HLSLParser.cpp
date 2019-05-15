@@ -1291,8 +1291,6 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrCallExpr()
     if (!IsDataType() && !Is(Tokens::Struct))
         ErrorUnexpected(R_ExpectedTypeNameOrFuncCall);
 
-    auto sourcePos = GetScanner().Pos();
-
     StructDeclPtr structDecl;
     auto typeDenoter = ParseTypeDenoter(true, &structDecl);
 
@@ -1306,12 +1304,13 @@ ExprPtr HLSLParser::ParseTypeSpecifierOrCallExpr()
     /* Return type name expression */
     auto ast = Make<ExprProxy>();
     {
-        ast->typeSpecifier               = ASTFactory::MakeTypeSpecifier(typeDenoter);
-        ast->typeSpecifier->structDecl   = structDecl;
+        ast->area                       = typeDenoter->area;
+        ast->typeSpecifier              = ASTFactory::MakeTypeSpecifier(typeDenoter);
+        ast->typeSpecifier->structDecl  = structDecl;
     }
     UpdateSourceArea(ast->typeSpecifier, structDecl.get());
 
-    return UpdateSourceArea(ast, structDecl.get());
+    return UpdateSourceArea(ast);
 }
 
 ExprProxyPtr HLSLParser::ParseTypeSpecifierExprProxy()
@@ -1546,11 +1545,10 @@ CallExprPtr HLSLParser::ParseCallExprAsTypeCtor(const TypeDenoterPtr& typeDenote
 {
     auto ast = Make<CallExpr>();
 
-    /* Take type denoter */
-    ast->typeDenoter = typeDenoter;
-
-    /* Parse argument list */
-    ast->arguments = ParseArgumentList();
+    /* Take type denoter and parse argument list */
+    ast->area           = typeDenoter->area;
+    ast->typeDenoter    = typeDenoter;
+    ast->arguments      = ParseArgumentList();
 
     return UpdateSourceArea(ast);
 }
@@ -1774,11 +1772,12 @@ BaseTypeDenoterPtr HLSLParser::ParseBaseTypeDenoter()
 {
     if (IsBaseDataType())
     {
-        auto keyword = AcceptIt()->Spell();
-
         /* Make base type denoter by data type keyword */
         auto typeDenoter = MakeType<BaseTypeDenoter>();
-        typeDenoter->dataType = ParseDataType(keyword);
+        {
+            auto keyword = AcceptIt()->Spell();
+            typeDenoter->dataType = ParseDataType(keyword);
+        }
         return typeDenoter;
     }
     ErrorUnexpected(R_ExpectedBaseTypeDen, nullptr, true);

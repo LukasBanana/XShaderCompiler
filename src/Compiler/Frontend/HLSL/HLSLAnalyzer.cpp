@@ -731,8 +731,10 @@ void HLSLAnalyzer::AnalyzeVarDeclLocal(VarDecl* varDecl, bool registerVarIdent)
         /* Try to evaluate initializer expression */
         varDecl->initializerValue = EvaluateOrDefault(*(varDecl->initializer));
 
+        #if 0//TODO: vector type initializers are currently not supported in ExprEvaluator
         if (!varDecl->initializerValue.IsValid() && varDecl->IsParameter())
             Error(R_ExpectedConstExpr(R_DefaultArgOfFuncParam(varDecl->ident)), varDecl->initializer.get());
+        #endif
     }
     else if (auto varDeclStmt = varDecl->declStmtRef)
     {

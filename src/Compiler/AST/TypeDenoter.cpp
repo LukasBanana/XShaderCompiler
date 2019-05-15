@@ -874,6 +874,8 @@ StructTypeDenoter::StructTypeDenoter(StructDecl* structDeclRef) :
     ident         { structDeclRef ? structDeclRef->ident.Original() : "" },
     structDeclRef { structDeclRef                                        }
 {
+    if (structDeclRef)
+        area = structDeclRef->area;
 }
 
 TypeDenoter::Types StructTypeDenoter::Type() const

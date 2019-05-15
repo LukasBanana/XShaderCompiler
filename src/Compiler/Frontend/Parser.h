@@ -193,7 +193,8 @@ class Parser
         std::shared_ptr<T> MakeType(Args&&... args)
         {
             auto typeDen = std::make_shared<T>(std::forward<Args>(args)...);
-            typeDen->area = SourceArea(GetScanner().Pos(), 1);
+            if (!typeDen->area.IsValid())
+                typeDen->area = SourceArea{ GetScanner().Pos(), 1 };
             return typeDen;
         }
 
