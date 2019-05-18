@@ -2565,6 +2565,19 @@ VarDecl* IdentExpr::FetchVarDecl() const
     return FetchSymbol<VarDecl>();
 }
 
+Decl* IdentExpr::FetchTypenameDecl() const
+{
+    if (symbolRef)
+    {
+        if (symbolRef->Type() == AST::Types::StructDecl ||
+            symbolRef->Type() == AST::Types::AliasDecl)
+        {
+            return symbolRef;
+        }
+    }
+    return nullptr;
+}
+
 
 /* ----- SubscriptExpr ----- */
 

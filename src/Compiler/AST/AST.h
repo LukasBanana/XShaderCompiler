@@ -1319,6 +1319,9 @@ struct IdentExpr : public Expr
     // Returns the variable AST node (if the symbol refers to one). For swizzle operators, the call is forwarded to the prefix expression.
     VarDecl* FetchVarDecl() const override;
 
+    // Returns the symbol reference if it refers to a typename, i.e. StructDecl or AliasDecl.
+    Decl* FetchTypenameDecl() const;
+
     IndexedSemantic FetchSemantic() const override;
 
     bool IsTrivialCopyable(unsigned int maxTreeDepth = 3) const override;

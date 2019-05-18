@@ -1334,26 +1334,22 @@ void HLSLAnalyzer::AnalyzeIdentExprBaseStructDeclFromStruct(IdentExpr* expr, Pre
     }
 }
 
+static const IdentExpr* FindTypenameIdentExpr(const Expr* expr)
+{
+    if (auto identExpr = expr->As<IdentExpr>())
+    {
+        if (identExpr->FetchTypenameDecl())
+            return identExpr;
+    }
+    return nullptr;
+}
+
 bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic, const AST* ast)
 {
     if (prefixExpr)
     {
-        /* This function returns true, if the specified expression is an identifier expression with a typename (i.e. structure or alias name) */
-        auto IsIdentExprWithTypename = [](const Expr& expr) -> bool
-        {
-            if (auto identExpr = expr.As<IdentExpr>())
-            {
-                if (auto symbol = identExpr->symbolRef)
-                {
-                    /* Fetch type declaration from symbol reference */
-                    return (symbol->Type() == AST::Types::StructDecl || symbol->Type() == AST::Types::AliasDecl);
-                }
-            }
-            return false;
-        };
-
         /* Fetch static type expression from prefix expression */
-        if (auto staticTypeExpr = AST::GetAs<IdentExpr>(prefixExpr->Find(IsIdentExprWithTypename, SearchLvalue)))
+        if (auto staticTypeExpr = FindTypenameIdentExpr(prefixExpr))
         {
             if (!isStatic)
             {
