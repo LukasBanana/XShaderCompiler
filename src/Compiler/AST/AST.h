@@ -267,14 +267,15 @@ struct Expr : public TypedAST
     };
 
     // Returns the variable or null if this is not just a single variable expression.
-    VarDecl* FetchVarDecl() const;
+    virtual VarDecl* FetchVarDecl() const;
 
-    /*
-    Returns the first node in the expression tree that is an l-value (may also be constant!), or null if there is no l-value.
-    If the return value is non-null, the object expression must refer to a declaration object. By default null.
-    */
-    virtual const IdentExpr* FetchLvalueExpr() const;
-    IdentExpr* FetchLvalueExpr();
+    // Returns the first sub expression that is an r-value, i.e. it's allowed on the right-hand-side of an assignment. By default this.
+    virtual const Expr* FindRvalueExpr() const;
+    Expr* FindRvalueExpr();
+
+    // Returns the first sub expression that is an l-value, i.e. it's allowed on the left-hand-side of an assignment. By default null.
+    virtual const IdentExpr* FindLvalueExpr() const;
+    IdentExpr* FindLvalueExpr();
 
     // Returns the semantic of this expression, or Semantic::Undefined if this expression has no semantic.
     virtual IndexedSemantic FetchSemantic() const;
@@ -1195,8 +1196,7 @@ struct UnaryExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
-
-    const IdentExpr* FetchLvalueExpr() const override;
+    const IdentExpr* FindLvalueExpr() const override;
 
     // Return true if this is a post unary expression (e.g. x++ instead of ++x); see also Xsc::IsPostUnaryOp.
     bool IsPostUnary() const;
@@ -1277,8 +1277,7 @@ struct BracketExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
-
-    const IdentExpr* FetchLvalueExpr() const override;
+    const IdentExpr* FindLvalueExpr() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1293,8 +1292,7 @@ struct AssignExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
-
-    const IdentExpr* FetchLvalueExpr() const override;
+    const IdentExpr* FindLvalueExpr() const override;
 
     ExprPtr     lvalueExpr;                         // L-value expression.
     AssignOp    op          = AssignOp::Undefined;  // Assignment operator. Must not be undefined.
@@ -1315,8 +1313,11 @@ struct IdentExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
+    const Expr* FindRvalueExpr() const override;
+    const IdentExpr* FindLvalueExpr() const override;
 
-    const IdentExpr* FetchLvalueExpr() const override;
+    // Returns the variable AST node (if the symbol refers to one). For swizzle operators, the call is forwarded to the prefix expression.
+    VarDecl* FetchVarDecl() const override;
 
     IndexedSemantic FetchSemantic() const override;
 
@@ -1346,12 +1347,6 @@ struct IdentExpr : public Expr
         return nullptr;
     }
 
-    // Returns the variable AST node (if the symbol refers to one). For swizzle operators, the call is forwarded to the prefix expression.
-    VarDecl* FetchVarDecl() const;
-
-    // Returns the symbol reference of this AST node or the first prefix is this is a swizzle operator.
-    Decl* FetchLvalueSymbolRef() const;
-
     ExprPtr     prefixExpr;             // Optional prefix expression. May be null.
     bool        isStatic    = false;    // Specifies whether this object is a static member.
     std::string ident;                  // Object identifier.
@@ -1368,8 +1363,7 @@ struct SubscriptExpr : public Expr
     TypeDenoterPtr DeriveTypeDenoter(const TypeDenoter* expectedTypeDenoter) override;
 
     const Expr* Find(const FindPredicateConstFunctor& predicate, unsigned int flags = SearchAll) const override;
-
-    const IdentExpr* FetchLvalueExpr() const override;
+    const IdentExpr* FindLvalueExpr() const override;
 
     // Returns the number of array indices (shortcut for "arrayIndices.size()").
     std::size_t NumIndices() const;

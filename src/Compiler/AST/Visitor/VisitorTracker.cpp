@@ -100,22 +100,27 @@ CallExpr* VisitorTracker::ActiveCallExpr() const
 
 /* ----- L-value expression tracker ----- */
 
-void VisitorTracker::PushLValueExpr(Expr* expr)
+void VisitorTracker::PushExprFlags(Expr* expr, const Flags& flags)
 {
-    lvalueExprStack_.push(expr);
+    ExprFlags entry;
+    {
+        entry.expr  = expr;
+        entry.flags = flags;
+    }
+    epxrFlagsStack_.push(entry);
 }
 
-void VisitorTracker::PopLValueExpr()
+void VisitorTracker::PopExprFlags()
 {
-    if (!lvalueExprStack_.empty())
-        lvalueExprStack_.pop();
+    if (!epxrFlagsStack_.empty())
+        epxrFlagsStack_.pop();
     else
-        throw std::runtime_error(R_LValueExprStackUnderflow);
+        throw std::runtime_error(R_ExprFlagsStackUnderflow);
 }
 
-Expr* VisitorTracker::ActiveLValueExpr() const
+VisitorTracker::ExprFlags VisitorTracker::ActiveExprFlags() const
 {
-    return (lvalueExprStack_.empty() ? nullptr : lvalueExprStack_.top());
+    return (epxrFlagsStack_.empty() ? ExprFlags{} : epxrFlagsStack_.top());
 }
 
 /* ----- Structure declaration tracker ----- */

@@ -631,15 +631,15 @@ IMPLEMENT_VISIT_PROC(ReturnStmt)
 
 IMPLEMENT_VISIT_PROC(UnaryExpr)
 {
-    if (IsLvalueOp(ast->op))
+    if (IsWriteOp(ast->op))
     {
-        PushLValueExpr(ast);
+        PushExprFlags(ast, Decl::isWrittenTo);
         {
             Visit(ast->expr);
         }
-        PopLValueExpr();
+        PopExprFlags();
 
-        AnalyzeLValueExpr(ast->expr.get(), ast);
+        AnalyzeLvalueExpr(ast->expr.get(), ast);
     }
     else
         Visit(ast->expr);
@@ -656,16 +656,16 @@ IMPLEMENT_VISIT_PROC(CallExpr)
 
 IMPLEMENT_VISIT_PROC(AssignExpr)
 {
-    PushLValueExpr(ast);
+    PushExprFlags(ast, Decl::isWrittenTo);
     {
         Visit(ast->lvalueExpr);
     }
-    PopLValueExpr();
+    PopExprFlags();
 
     Visit(ast->rvalueExpr);
 
     ValidateTypeCastFrom(ast->rvalueExpr.get(), ast->lvalueExpr.get(), R_VarAssignment);
-    AnalyzeLValueExpr(ast->lvalueExpr.get(), ast);
+    AnalyzeLvalueExpr(ast->lvalueExpr.get(), ast);
 
     #ifdef XSC_ENABLE_LANGUAGE_EXT
 
@@ -875,7 +875,7 @@ void HLSLAnalyzer::AnalyzeCallExprPrimary(CallExpr* callExpr, const TypeDenoter*
         callExpr->ForEachOutputArgument(
             [this](ExprPtr& argExpr, VarDecl* param)
             {
-                AnalyzeLValueExpr(argExpr.get(), nullptr, param);
+                AnalyzeLvalueExpr(argExpr.get(), nullptr, param);
             }
         );
 
@@ -1264,8 +1264,8 @@ void HLSLAnalyzer::AnalyzeIdentExpr(IdentExpr* expr, PrefixArgs* args)
                     args->outPrefixBaseStruct = structDecl;
             }
 
-            /* Mark is 'read from' if this object expression is not part of an l-value expression */
-            if (ActiveLValueExpr() == nullptr)
+            /* Mark as 'read from' if this object expression is not written to */
+            if (!ActiveExprFlags().flags(Decl::isWrittenTo))
                 symbol->flags << Decl::isReadFrom;
         }
     }
@@ -1338,8 +1338,8 @@ bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic
 {
     if (prefixExpr)
     {
-        /* This function returns true, if the specified expression is an object expression with a typename (i.e. structure or alias name) */
-        auto IsObjectExprWithTypename = [](const Expr& expr) -> bool
+        /* This function returns true, if the specified expression is an identifier expression with a typename (i.e. structure or alias name) */
+        auto IsIdentExprWithTypename = [](const Expr& expr) -> bool
         {
             if (auto identExpr = expr.As<IdentExpr>())
             {
@@ -1353,7 +1353,7 @@ bool HLSLAnalyzer::AnalyzeStaticAccessExpr(const Expr* prefixExpr, bool isStatic
         };
 
         /* Fetch static type expression from prefix expression */
-        if (auto staticTypeExpr = AST::GetAs<IdentExpr>(prefixExpr->Find(IsObjectExprWithTypename, SearchLvalue)))
+        if (auto staticTypeExpr = AST::GetAs<IdentExpr>(prefixExpr->Find(IsIdentExprWithTypename, SearchLvalue)))
         {
             if (!isStatic)
             {
@@ -1397,70 +1397,62 @@ bool HLSLAnalyzer::AnalyzeStaticTypeSpecifier(const TypeSpecifier* typeSpecifier
     return true;
 }
 
-void HLSLAnalyzer::AnalyzeLValueExpr(Expr* expr, const AST* ast, VarDecl* param)
+void HLSLAnalyzer::AnalyzeLvalueExpr(Expr* expr, const AST* ast, VarDecl* param)
 {
     if (expr)
     {
-        /* Fetch l-value from expression */
-        if (auto lvalueExpr = expr->FetchLvalueExpr())
-            AnalyzeLValueExprObject(lvalueExpr, ast, param);
+        /* Find l-value in current expression */
+        if (auto lvalueExpr = expr->FindLvalueExpr())
+        {
+            /*
+            Pass l-value expression and current expression, which may have different types,
+            e.g. "MyVec.xy" -> MyVec is l-value, but swizzle operator has different type)
+            */
+            AnalyzeLvalueSubExpr(expr, lvalueExpr, ast, param);
+        }
         else
         {
             ast = (ast != nullptr ? ast : expr);
-            if (param && param->declStmtRef)
-                Error(R_IllegalRValueAssignment(param->declStmtRef->ToString()), ast);
+            if (param)
+                Error(R_IllegalRvalueWrite(param->ident), ast);
             else
-                Error(R_IllegalRValueAssignment, ast);
+                Error(R_IllegalRvalueWrite, ast);
         }
     }
 }
 
-void HLSLAnalyzer::AnalyzeLValueExprObject(IdentExpr* identExpr, const AST* ast, VarDecl* param)
+void HLSLAnalyzer::AnalyzeLvalueSubExpr(Expr* expr, IdentExpr* lvalueSubExpr, const AST* ast, VarDecl* param)
 {
-    /* Analyze prefix expression as l-value */
-    AnalyzeLValueExpr(identExpr->prefixExpr.get(), ast);
+    /* If current l-value expression is not accessed as static member, then also analyze prefix expression as l-value */
+    if (!lvalueSubExpr->isStatic)
+        AnalyzeLvalueExpr(lvalueSubExpr->prefixExpr.get(), ast);
 
-    if (auto symbol = identExpr->FetchLvalueSymbolRef())
+    const AST* reportedAST = (ast != nullptr ? ast : lvalueSubExpr);
+
+    /*
+    For assignments of arguments to parameters:
+    Check if types are equal so no implicit type conversion is necessary, which would result in an r-value expression
+    */
+    if (param != nullptr)
     {
-        if (auto varDecl = symbol->As<VarDecl>())
-        {
-            /*
-            For assignments of arguments to parameters:
-            Check if types are equal so no implicit type conversion is necessary, which would result in an r-value expression
-            */
-            if (param != nullptr)
-            {
-                const auto& lhsTypeDen = identExpr->GetTypeDenoter();
-                const auto& rhsTypeDen = param->GetTypeDenoter();
+        /* Use original expression for type comparison */
+        const auto& lhsTypeDen = expr->GetTypeDenoter();
+        const auto& rhsTypeDen = param->GetTypeDenoter();
 
-                if (!lhsTypeDen->Equals(*rhsTypeDen))
-                {
-                    Error(
-                        R_IllegalLValueAssignmentToTypeCast(identExpr->ident, param->declStmtRef->ToString()),
-                        (ast != nullptr ? ast : identExpr)
-                    );
-                }
-            }
-
-            if (varDecl->declStmtRef->IsConstOrUniform())
-            {
-                /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
-                Error(
-                    R_IllegalLValueAssignmentToConst(
-                        identExpr->ident,
-                        (varDecl->declStmtRef->flags(VarDeclStmt::isImplicitConst) ? R_Implicitly : "")
-                    ),
-                    (ast != nullptr ? ast : identExpr)
-                );
-            }
-        }
+        if (!lhsTypeDen->Equals(*rhsTypeDen))
+            Error(R_IllegalLvalueWriteToTypeCast(lvalueSubExpr->ident, lhsTypeDen->ToString(), rhsTypeDen->ToString(), param->ident), reportedAST);
     }
-    else
+
+    if (auto varDecl = lvalueSubExpr->FetchVarDecl())
     {
-        Error(
-            R_MissingObjectExprSymbolRef(identExpr->ident),
-            (ast != nullptr ? ast : identExpr)
-        );
+        if (varDecl->declStmtRef->IsConstOrUniform())
+        {
+            /* Construct error message depending if the variable is implicitly or explicitly declared as constant */
+            if (varDecl->declStmtRef->flags(VarDeclStmt::isImplicitConst))
+                Error(R_IllegalLvalueWriteToImplicitConst(lvalueSubExpr->ident), reportedAST);
+            else
+                Error(R_IllegalLvalueWriteToConst(lvalueSubExpr->ident), reportedAST);
+        }
     }
 }
 
@@ -2025,7 +2017,7 @@ void HLSLAnalyzer::AnalyzeEntryPointSemantics(FunctionDecl* funcDecl, const std:
 
 void HLSLAnalyzer::AnalyzeEntryPointOutput(Expr* expr)
 {
-    if (auto identExpr = expr->FetchLvalueExpr())
+    if (auto identExpr = expr->FindLvalueExpr())
     {
         if (auto varDecl = identExpr->FetchVarDecl())
         {

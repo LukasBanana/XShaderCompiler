@@ -34,7 +34,6 @@ DECL_REPORT( FragmentShader,                    "fragment shader"               
 DECL_REPORT( ComputeShader,                     "compute shader"                                                                                                );
 DECL_REPORT( InvalidInputStream,                "invalid input stream"                                                                                          );
 DECL_REPORT( InvalidOutputStream,               "invalid output stream"                                                                                         );
-DECL_REPORT( Implicitly,                        "implicitly"                                                                                                    );
 DECL_REPORT( ButGot,                            "[, but got {0}]"                                                                                               );
 DECL_REPORT( NotImplementedYet,                 "[{0} ]not implemented yet[ (in '{1}')]"                                                                        );
 DECL_REPORT( DeclaredAt,                        "declared at ({0})"                                                                                             );
@@ -229,7 +228,7 @@ DECL_REPORT( TooManyRecursiveIncludesOfFile,    "too many recursive includes of 
 
 DECL_REPORT( FuncDeclStackUnderflow,            "function declaration stack underflow"                                                                          ); // internal error
 DECL_REPORT( CallExprStackUnderflow,            "call expression stack underflow"                                                                               ); // internal error
-DECL_REPORT( LValueExprStackUnderflow,          "l-value expression stack underflow"                                                                            ); // internal error
+DECL_REPORT( ExprFlagsStackUnderflow,           "expression flags stack underflow"                                                                              ); // internal error
 DECL_REPORT( StructDeclStackUnderflow,          "structure declaration stack underflow"                                                                         ); // internal error
 DECL_REPORT( UniformBufferDeclStackUnderflow,   "uniform buffer declaration stack underflow"                                                                    ); // internal error
 DECL_REPORT( VarDeclStmtStackUnderflow,         "variable declaration statement stack underflow"                                                                ); // internal error
@@ -454,9 +453,10 @@ DECL_REPORT( MissingGenericTypeDen,             "missing generic type denoter[ i
 DECL_REPORT( IllegalUseOfNormModifiers,         "'snorm' and 'unorm' type modifiers can only be used for floating-point types"                                  );
 DECL_REPORT( IllegalExprInReturnForVoidFunc,    "illegal expression in return statement for function with 'void' return type"                                   );
 DECL_REPORT( IllegalBufferTypeForEntryPoint,    "illegal buffer type for entry point[ {0}]"                                                                     );
-DECL_REPORT( IllegalLValueAssignmentToTypeCast, "illegal assignment to l-value '{0}' due to type mismatch[ with function parameter '{1}']"                      );
-DECL_REPORT( IllegalLValueAssignmentToConst,    "illegal assignment to l-value '{0}' that is[ {1}] declared as constant"                                        );
-DECL_REPORT( IllegalRValueAssignment,           "illegal assignment to r-value expression[ via function parameter '{0}']"                                       );
+DECL_REPORT( IllegalLvalueWriteToTypeCast,      "illegal assignment to l-value '{0}' of type <{1}> from [function parameter '{3}' of ]type <{2}>"               );
+DECL_REPORT( IllegalLvalueWriteToConst,         "illegal assignment to l-value '{0}' that is declared as constant"                                              );
+DECL_REPORT( IllegalLvalueWriteToImplicitConst, "illegal assignment to l-value '{0}' that is implicitly declared as constant"                                   );
+DECL_REPORT( IllegalRvalueWrite,                "illegal assignment to r-value expression[ from function parameter '{0}']"                                      );
 DECL_REPORT( IllegalNonStaticAccessToMember,    "illegal non-static access to static structure member[ '{0}']"                                                  );
 DECL_REPORT( IllegalStaticAccessToMember,       "illegal static access to non-static structure member[ '{0}']"                                                  );
 DECL_REPORT( IllegalNonStaticAccessToType,      "illegal non-static access to type[ '{0}']"                                                                     );

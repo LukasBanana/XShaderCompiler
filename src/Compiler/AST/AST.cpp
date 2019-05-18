@@ -86,24 +86,35 @@ void TypedAST::ResetTypeDenoter()
 
 VarDecl* Expr::FetchVarDecl() const
 {
-    if (auto lvalueExpr = FetchLvalueExpr())
-        return lvalueExpr->FetchVarDecl();
-    else
-        return nullptr;
+    return nullptr; // dummy
 }
 
-const IdentExpr* Expr::FetchLvalueExpr() const
+const Expr* Expr::FindRvalueExpr() const
 {
-    return nullptr;
+    return this; // dummy
 }
 
-IdentExpr* Expr::FetchLvalueExpr()
+Expr* Expr::FindRvalueExpr()
 {
     /*
     Use const function and cast the constness away,
     which is allowed here, since this is a non-const member function
     */
-    return const_cast<IdentExpr*>(const_cast<const Expr*>(this)->FetchLvalueExpr());
+    return const_cast<Expr*>(const_cast<const Expr*>(this)->FindRvalueExpr());
+}
+
+const IdentExpr* Expr::FindLvalueExpr() const
+{
+    return nullptr; // dummy
+}
+
+IdentExpr* Expr::FindLvalueExpr()
+{
+    /*
+    Use const function and cast the constness away,
+    which is allowed here, since this is a non-const member function
+    */
+    return const_cast<IdentExpr*>(const_cast<const Expr*>(this)->FindLvalueExpr());
 }
 
 IndexedSemantic Expr::FetchSemantic() const
@@ -2053,10 +2064,10 @@ const Expr* UnaryExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
-const IdentExpr* UnaryExpr::FetchLvalueExpr() const
+const IdentExpr* UnaryExpr::FindLvalueExpr() const
 {
     if (IsLvalueOp(op))
-        return expr->FetchLvalueExpr();
+        return expr->FindLvalueExpr();
     else
         return nullptr;
 }
@@ -2303,9 +2314,9 @@ const Expr* BracketExpr::Find(const FindPredicateConstFunctor& predicate, unsign
     return nullptr;
 }
 
-const IdentExpr* BracketExpr::FetchLvalueExpr() const
+const IdentExpr* BracketExpr::FindLvalueExpr() const
 {
-    return expr->FetchLvalueExpr();
+    return expr->FindLvalueExpr();
 }
 
 IndexedSemantic BracketExpr::FetchSemantic() const
@@ -2343,9 +2354,9 @@ const Expr* AssignExpr::Find(const FindPredicateConstFunctor& predicate, unsigne
     return nullptr;
 }
 
-const IdentExpr* AssignExpr::FetchLvalueExpr() const
+const IdentExpr* AssignExpr::FindLvalueExpr() const
 {
-    return lvalueExpr->FetchLvalueExpr();
+    return lvalueExpr->FindLvalueExpr();
 }
 
 
@@ -2387,7 +2398,16 @@ const Expr* IdentExpr::Find(const FindPredicateConstFunctor& predicate, unsigned
     return nullptr;
 }
 
-const IdentExpr* IdentExpr::FetchLvalueExpr() const
+const Expr* IdentExpr::FindRvalueExpr() const
+{
+    /* The identifier of a structure cannot be an r-value (e.g. MyStruct is not an r-value, but MyStruct::member is an r-value) */
+    if (symbolRef && symbolRef->Type() == AST::Types::StructDecl)
+        return nullptr;
+    else
+        return this;
+}
+
+const IdentExpr* IdentExpr::FindLvalueExpr() const
 {
     if (symbolRef)
     {
@@ -2400,11 +2420,11 @@ const IdentExpr* IdentExpr::FetchLvalueExpr() const
                 return this;
             case AST::Types::StructDecl:
                 /*
-                Fetch l-value from prefix if this is a base structure namespace expression,
+                Search l-value in prefix if this is a base structure namespace expression,
                 e.g. "obj.BaseStruct::member" -> "BaseStruct" is a base structure namespace.
                 */
                 if (prefixExpr)
-                    return prefixExpr->FetchLvalueExpr();
+                    return prefixExpr->FindLvalueExpr();
                 else
                     return nullptr;
             default:
@@ -2413,14 +2433,8 @@ const IdentExpr* IdentExpr::FetchLvalueExpr() const
     }
     else if (prefixExpr)
     {
-        /* Fetch l-value from prefix expression */
-        if (auto lvalueExpr = prefixExpr->FetchLvalueExpr())
-        {
-            if (IsSwizzle())
-                return this;
-            else
-                return lvalueExpr;
-        }
+        /* Search l-value in prefix expression */
+        return prefixExpr->FindLvalueExpr();
     }
     return this;
 }
@@ -2548,24 +2562,7 @@ bool IdentExpr::IsSwizzle() const
 
 VarDecl* IdentExpr::FetchVarDecl() const
 {
-    if (symbolRef != nullptr)
-        return FetchSymbol<VarDecl>();
-    else if (IsSwizzle())
-        return prefixExpr->FetchVarDecl();
-    else
-        return nullptr;
-}
-
-Decl* IdentExpr::FetchLvalueSymbolRef() const
-{
-    if (symbolRef != nullptr)
-        return symbolRef;
-    if (IsSwizzle())
-    {
-        if (auto prefixIdentExpr = prefixExpr->As<IdentExpr>())
-            return prefixIdentExpr->FetchLvalueSymbolRef();
-    }
-    return nullptr;
+    return FetchSymbol<VarDecl>();
 }
 
 
@@ -2597,9 +2594,9 @@ const Expr* SubscriptExpr::Find(const FindPredicateConstFunctor& predicate, unsi
     return nullptr;
 }
 
-const IdentExpr* SubscriptExpr::FetchLvalueExpr() const
+const IdentExpr* SubscriptExpr::FindLvalueExpr() const
 {
-    return prefixExpr->FetchLvalueExpr();
+    return prefixExpr->FindLvalueExpr();
 }
 
 std::size_t SubscriptExpr::NumIndices() const

@@ -123,7 +123,10 @@ bool IsBitwiseOp(const UnaryOp o);
 // Returns true if the specified unary operator is a post increment or decremenet operator (i.e. UnaryOp::PostInc or UnaryOp::PostDec).
 bool IsPostUnaryOp(const UnaryOp o);
 
-// Returns true if the specified unary operator is only for l-values (i.e. ++x, --x, x++, and x--).
+// Returns true if the specified unary operator is a write operation (i.e. ++x, --x, x++, and x--).
+bool IsWriteOp(const UnaryOp o);
+
+// Returns true if an expression with the specified unary operator can be used as l-value (i.e. ++x and --x).
 bool IsLvalueOp(const UnaryOp o);
 
 

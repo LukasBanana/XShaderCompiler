@@ -221,9 +221,14 @@ bool IsPostUnaryOp(const UnaryOp o)
     return (o == UnaryOp::PostInc || o == UnaryOp::PostDec);
 }
 
-bool IsLvalueOp(const UnaryOp o)
+bool IsWriteOp(const UnaryOp o)
 {
     return (o >= UnaryOp::Inc && o <= UnaryOp::PostDec);
+}
+
+bool IsLvalueOp(const UnaryOp o)
+{
+    return (o == UnaryOp::Inc || o == UnaryOp::Dec);
 }
 
 
