@@ -254,7 +254,7 @@ Variant PreProcessor::EvaluateExpr(const TokenPtrString& tokenString, const Toke
             ExprEvaluator exprEvaluator{ ExprEvaluator::EvaluateReducedBinaryExpr };
             value = exprEvaluator.Evaluate(
                 *conditionExpr,
-                [this](IdentExpr* expr) -> Variant
+                [](IdentExpr* expr) -> Variant
                 {
                     /* Undeclared identifiers default to zero for the pre-processor */
                     return Variant{ 0ll };
@@ -501,8 +501,6 @@ TokenPtrString PreProcessor::ExpandMacro(const Macro& macro, const std::vector<T
 
     auto ExpandTokenString = [&]() -> bool
     {
-        const auto& tkn = **tknIt;
-
         /* Check if current token is an identifier which matches one of the parameters of the macro */
         switch ((*tknIt)->Type())
         {
