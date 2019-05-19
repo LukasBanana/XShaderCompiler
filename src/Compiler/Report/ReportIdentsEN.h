@@ -533,10 +533,10 @@ DECL_REPORT( PressAnyKeyToContinue,             "press any key to continue ..." 
 DECL_REPORT( FailedToReadFile,                  "failed to read file: \"{0}\""                                                                                  );
 DECL_REPORT( FailedToWriteFile,                 "failed to write file: \"{0}\""                                                                                 );
 DECL_REPORT( FailedToIncludeFile,               "failed to include file: \"{0}\""                                                                               );
-DECL_REPORT( ValidateShader,                    "validate \"{0}\""                                                                                              );
+DECL_REPORT( ValidateShader,                    "validate[ \"{0}\"]"                                                                                            );
 DECL_REPORT( ValidationSuccessful,              "validation successful"                                                                                         );
 DECL_REPORT( ValidationFailed,                  "validation failed"                                                                                             );
-DECL_REPORT( CompileShader,                     "compile \"{0}\" to \"{1}\""                                                                                    );
+DECL_REPORT( CompileShader,                     "compile[ \"{0}\"][ to \"{1}\"]"                                                                                );
 DECL_REPORT( CompilationSuccessful,             "compilation successful"                                                                                        );
 DECL_REPORT( CompilationFailed,                 "compilation failed"                                                                                            );
 
@@ -548,6 +548,8 @@ DECL_REPORT( CmdHelpTarget,                     "Input shader target; valid targ
 DECL_REPORT( CmdHelpVersionIn,                  "Input shader version; default=HLSL5; valid versions:"                                                          );
 DECL_REPORT( CmdHelpVersionOut,                 "Shader output version; default=GLSL; valid versions:"                                                          );
 DECL_REPORT( CmdHelpOutput,                     "Shader output file (use '*' for default); default='<FILE>.<ENTRY>.<TARGET>'"                                   );
+DECL_REPORT( CmdHelpCout,                       "Writes the compiled shader to the standard output (Disables file output)"                                      );
+DECL_REPORT( CmdHelpCin,                        "Reads the target shader from the standard input"                                                               );
 DECL_REPORT( CmdHelpIncludePath,                "Adds PATH to the search include paths"                                                                         );
 DECL_REPORT( CmdHelpWarn,                       "Enables/disables the specified warning type; default={0}; valid types:"                                        );
 DECL_REPORT( CmdHelpDetailsWarn,                "all           => all kinds of warnings\n"               \

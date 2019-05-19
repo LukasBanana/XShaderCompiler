@@ -15,6 +15,9 @@
 #include <fstream>
 #include <algorithm>
 #include <cmath>
+#include <chrono>   // chrono::system_clock
+#include <ctime>    // localtime
+#include <iomanip>  // put_time
 
 #ifdef _WIN32
 #include <conio.h>
@@ -45,6 +48,15 @@ static void PrintBackdoorEasterEgg(std::ostream& output)
 }
 
 #endif
+
+static std::string GetFormattedDateTime()
+{
+    auto currentTime    = std::chrono::system_clock::now();
+    auto localTime      = std::chrono::system_clock::to_time_t(currentTime);
+    std::stringstream s;
+    s << std::put_time(std::localtime(&localTime), "%Y.%m.%d-%H.%M.%S");
+    return s.str();
+}
 
 Shell* Shell::instance_ = nullptr;
 
@@ -79,6 +91,22 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
         }
         return false;
     }
+
+    auto DoCompile = [this](const std::string& cmdName)
+    {
+        /* Compile specified shader file */
+        bool succeeded = Compile(cmdName);
+
+        if (succeeded)
+            state_.compileStatus.numSucceeded++;
+        else
+            state_.compileStatus.numFailed++;
+
+        /* Reset output filename and entry point */
+        state_.outputFilename.clear();
+        state_.inputDesc.entryPoint.clear();
+        state_.actionPerformed = true;
+    };
 
     try
     {
@@ -116,19 +144,13 @@ bool Shell::ExecuteCommandLine(CommandLine& cmdLine, bool enableBriefHelp)
             else
             {
                 /* Compile specified shader file */
-                bool succeeded = Compile(cmdName);
-
-                if (succeeded)
-                    state_.compileStatus.numSucceeded++;
-                else
-                    state_.compileStatus.numFailed++;
-
-                /* Reset output filename and entry point */
-                state_.outputFilename.clear();
-                state_.inputDesc.entryPoint.clear();
-                state_.actionPerformed = true;
+                DoCompile(cmdName);
             }
         }
+
+        /* Compile after all commands are processed, if "-cin" was specified to read from standard input */
+        if (state_.readStdin)
+            DoCompile({});
 
         if (!state_.actionPerformed)
         {
@@ -213,11 +235,17 @@ std::string Shell::GetDefaultOutputFilename(const std::string& filename) const
 {
     std::string filePart;
 
+    /* Get base filename */
+    if (filename.empty())
+        filePart = "shader-" + GetFormattedDateTime();
+    else
+        filePart = GetFilePart(filename);
+
     /* Get file part with new extension */
     if (IsLanguageMetal(state_.outputDesc.shaderVersion))
-        filePart = (GetFilePart(filename) + ".metal");
+        filePart += ("." + state_.inputDesc.entryPoint + ".metal");
     else
-        filePart = (GetFilePart(filename) + "." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
+        filePart += ("." + state_.inputDesc.entryPoint + "." + TargetToExtension(state_.inputDesc.shaderTarget));
 
     /* Remove path part */
     auto pathPart = GetPathPart(filePart);
@@ -255,13 +283,26 @@ bool Shell::Compile(const std::string& filename)
         }
 
         /* Open input stream */
-        state_.inputDesc.filename = filename;
+        if (state_.readStdin)
+        {
+            /* Read source shader from standard input stream */
+            *inputStream << std::string
+            {
+                std::istreambuf_iterator<char>(std::cin),
+                std::istreambuf_iterator<char>()
+            };
+        }
+        else
+        {
+            /* Read source shader from input file */
+            state_.inputDesc.filename = filename;
 
-        std::ifstream inputFile(filename);
-        if (!inputFile.good())
-            throw std::runtime_error(R_FailedToReadFile(filename));
+            std::ifstream inputFile(filename);
+            if (!inputFile.good())
+                throw std::runtime_error(R_FailedToReadFile(filename));
 
-        *inputStream << inputFile.rdbuf();
+            *inputStream << inputFile.rdbuf();
+        }
 
         std::stringstream outputStream;
 
@@ -286,9 +327,15 @@ bool Shell::Compile(const std::string& filename)
         if (state_.verbose)
         {
             if (state_.outputDesc.options.validateOnly)
-                output << R_ValidateShader(filename) << std::endl;
+            {
+                if (!filename.empty())
+                    output << R_ValidateShader(filename) << std::endl;
+            }
             else
-                output << R_CompileShader(filename, outputFilename) << std::endl;
+            {
+                if (!filename.empty() || !outputFilename.empty())
+                    output << R_CompileShader(filename, outputFilename) << std::endl;
+            }
         }
 
         /* Compile shader file */
@@ -304,25 +351,37 @@ bool Shell::Compile(const std::string& filename)
 
         if (succeeded)
         {
-            ScopedColor color { ColorFlags::Green | ColorFlags::Intens };
-
             if (!state_.outputDesc.options.validateOnly)
             {
-                if (state_.verbose)
-                    output << R_CompilationSuccessful() << std::endl;
-
-                /* Write result to output stream only on success */
-                std::ofstream outputFile(outputFilename);
-                if (outputFile.good())
-                    outputFile << outputStream.rdbuf();
+                if (state_.writeStdout)
+                {
+                    /* Print output stream to standard output */
+                    std::cout << outputStream.rdbuf();
+                }
                 else
-                    throw std::runtime_error(R_FailedToWriteFile(outputFilename));
+                {
+                    if (state_.verbose)
+                    {
+                        const ScopedColor color { ColorFlags::Green | ColorFlags::Intens };
+                        output << R_CompilationSuccessful() << std::endl;
+                    }
 
-                /* Store output filename after successful compilation */
-                lastOutputFilename_ = outputFilename;
+                    /* Write result to output stream only on success */
+                    std::ofstream outputFile{ outputFilename };
+                    if (outputFile.good())
+                        outputFile << outputStream.rdbuf();
+                    else
+                        throw std::runtime_error(R_FailedToWriteFile(outputFilename));
+
+                    /* Store output filename after successful compilation */
+                    lastOutputFilename_ = outputFilename;
+                }
             }
             else if (state_.verbose)
+            {
+                const ScopedColor color { ColorFlags::Green | ColorFlags::Intens };
                 output << R_ValidationSuccessful() << std::endl;
+            }
         }
         else
         {

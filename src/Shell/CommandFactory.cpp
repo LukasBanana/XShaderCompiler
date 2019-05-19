@@ -62,6 +62,8 @@ CommandFactory::CommandFactory()
         #endif
 
         OutputCommand,
+        CoutCommand,
+        CinCommand,
         WarnCommand,
         ShowASTCommand,
         ShowTimesCommand,

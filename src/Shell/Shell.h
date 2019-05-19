@@ -70,6 +70,8 @@ class Shell
 
         std::string             lastOutputFilename_;
 
+    private:
+
         static Shell*           instance_;
 
 };

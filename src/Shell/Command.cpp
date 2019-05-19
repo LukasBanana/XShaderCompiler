@@ -285,6 +285,55 @@ void OutputCommand::Run(CommandLine& cmdLine, ShellState& state)
 
 
 /*
+ * CoutCommand class
+ */
+
+std::vector<Command::Identifier> CoutCommand::Idents() const
+{
+    return { { "-cout" } };
+}
+
+HelpDescriptor CoutCommand::Help() const
+{
+    return
+    {
+        "-cout",
+        R_CmdHelpCout
+    };
+}
+
+void CoutCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.writeStdout = true;
+    state.outputDesc.options.validateOnly = false;
+}
+
+
+/*
+ * CinCommand class
+ */
+
+std::vector<Command::Identifier> CinCommand::Idents() const
+{
+    return { { "-cin" } };
+}
+
+HelpDescriptor CinCommand::Help() const
+{
+    return
+    {
+        "-cin",
+        R_CmdHelpCin
+    };
+}
+
+void CinCommand::Run(CommandLine& cmdLine, ShellState& state)
+{
+    state.readStdin = true;
+}
+
+
+/*
  * IncludePathCommand class
  */
 

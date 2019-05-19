@@ -69,6 +69,12 @@ struct ShellState
     // True, if any meaningful action has been performed (e.g. printed version or compiled any files).
     bool                            actionPerformed     = false;
 
+    // Writes the compiled shader to the standard output instead of a file.
+    bool                            writeStdout         = false;
+
+    // Reads the source shader from the standard input instead of a file.
+    bool                            readStdin           = false;
+
     // Status of the compilation results.
     CompileStatus                   compileStatus;
 };

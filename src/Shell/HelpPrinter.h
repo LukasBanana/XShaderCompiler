@@ -40,20 +40,26 @@ struct HelpDescriptor
     HelpDescriptor() = default;
 
     inline HelpDescriptor(
-        const std::string& usage, const std::string& brief,
-        const std::string& details = "", long category = HelpCategory::Common) :
-            usage    { usage    },
-            brief    { brief    },
-            details  { details  },
-            category { category }
+        const std::string&  usage,
+        const std::string&  brief,
+        const std::string&  details     = "",
+        long                category    = HelpCategory::Common)
+    :
+        usage    { usage    },
+        brief    { brief    },
+        details  { details  },
+        category { category }
     {
     }
 
     inline HelpDescriptor(
-        const std::string& usage, const std::string& brief, long category) :
-            usage    { usage    },
-            brief    { brief    },
-            category { category }
+        const std::string&  usage,
+        const std::string&  brief,
+        long                category)
+    :
+        usage    { usage    },
+        brief    { brief    },
+        category { category }
     {
     }
 
@@ -105,11 +111,15 @@ class HelpPrinter
             HelpDescriptor  desc;
         };
 
+    private:
+
         std::size_t GetMaxUsageLen(long categories = HelpCategory::All) const;
 
         void PrintEntry(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize) const;
         void PrintEntryCompact(std::ostream& output, const HelpDescriptor& helpDesc, std::size_t indentSize, std::size_t maxUsageLen) const;
         void PrintHelpDetails(std::ostream& output, const std::string& details, std::size_t indentSize) const;
+
+    private:
 
         std::vector<HelpEntry>  entries_;
 
