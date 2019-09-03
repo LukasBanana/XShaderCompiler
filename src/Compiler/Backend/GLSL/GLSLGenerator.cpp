@@ -1778,7 +1778,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     {
         const auto& interpModifiers = varDecl->declStmntRef->typeSpecifier->interpModifiers;
 
-        if (versionOut_ <= OutputShaderVersion::GLSL120)
+        if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
         {
             if (WarnEnabled(Warnings::Basic) && !interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
@@ -1938,7 +1938,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     {
         VarDeclStmnt* varDeclStmnt = (varDecl != nullptr ? varDecl->declStmntRef : nullptr);
 
-        if (versionOut_ <= OutputShaderVersion::GLSL120)
+        if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
         {
             if (WarnEnabled(Warnings::Basic) && varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
