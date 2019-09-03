@@ -925,7 +925,22 @@ IMPLEMENT_VISIT_PROC(SequenceExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    Write(ast->value);
+    bool literalWritten = false;
+
+    if (versionOut_ <= OutputShaderVersion::GLSL110 ||
+        versionOut_ == OutputShaderVersion::ESSL100) {
+        /* Write without trailing f/F */
+        if (ast->dataType == DataType::Float) {
+            if (ast->value.length() > 0 &&
+                (ast->value.back() == 'f' || ast->value.back() == 'F')) {
+                Write(ast->value.substr(0, ast->value.length() - 1));
+                literalWritten = true;
+            }
+        }
+    }
+
+    if(!literalWritten)
+        Write(ast->value);
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
