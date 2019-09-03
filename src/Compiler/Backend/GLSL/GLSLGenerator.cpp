@@ -2580,11 +2580,33 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
     {
         if (!IsWrappedIntrinsic(funcCall->intrinsic))
         {
-            /* Write GLSL intrinsic keyword */
-            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
-                Write(*keyword);
-            else
-                ErrorIntrinsic(funcCall->ident, funcCall);
+            bool useDefaultIntrinsic = true;
+
+            /* Support for old intrinsics (GLSL <= 120 & ESSL 100) */
+            if (versionOut_ <= OutputShaderVersion::GLSL120 ||
+                versionOut_ == OutputShaderVersion::ESSL100) {
+                useDefaultIntrinsic = false;
+
+                switch (funcCall->intrinsic)
+                {
+                case Intrinsic::Texture_Sample_2: Write("texture2D");      break;
+                case Intrinsic::Tex2DProj:        Write("textureProj");    break;
+                case Intrinsic::Tex2DLod:         Write("textureProj");    break;
+                case Intrinsic::TexCube_2:        Write("textureCube");    break;
+                case Intrinsic::TexCubeLod:       Write("textureCubeLod"); break;
+                default:
+                    useDefaultIntrinsic = true;
+                    break;
+                }
+            }
+
+            if (useDefaultIntrinsic) {
+                /* Write GLSL intrinsic keyword */
+                if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
+                    Write(*keyword);
+                else
+                    ErrorIntrinsic(funcCall->ident, funcCall);
+            }
         }
         else if (!funcCall->ident.empty())
         {
