@@ -2595,6 +2595,18 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
     {
         if (!IsWrappedIntrinsic(funcCall->intrinsic))
         {
+            /* Support for fwidth in ESSL 100 */
+            if (versionOut_ == OutputShaderVersion::ESSL100 &&
+                funcCall->intrinsic == Intrinsic::FWidth) {
+                // fwidth(x) => (abs(dFdx(x)) + abs(dFdy(x)))
+                Write("( abs(dFdx(");
+                WriteCallExprArguments(funcCall);
+                Write(")) + abs(dFdy(");
+                WriteCallExprArguments(funcCall);
+                Write(")) )");
+                return; // prevent writing expr arguments later
+            }
+
             bool useDefaultIntrinsic = true;
 
             /* Support for old intrinsics (GLSL <= 120 & ESSL 100) */
