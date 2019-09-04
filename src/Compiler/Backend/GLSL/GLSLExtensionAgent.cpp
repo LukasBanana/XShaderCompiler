@@ -312,6 +312,16 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     /* Check for special intrinsics */
     if (ast->intrinsic != Intrinsic::Undefined)
     {
+        if (targetGLSLVersion_ == OutputShaderVersion::ESSL100) {
+            if (ast->intrinsic == Intrinsic::FWidth ||
+                ast->intrinsic == Intrinsic::DDX ||
+                ast->intrinsic == Intrinsic::DDY) {
+                extensions_.insert(E_GL_OES_standard_derivatives);
+                if (onReportExtension_)
+                    onReportExtension_(R_GLSLExtensionAcquired(E_GL_OES_standard_derivatives, ToString(OutputShaderVersion::ESSL100), R_Intrinsic(ast->ident)), ast);
+            }
+        }
+
         auto it = intrinsicExtMap_.find(ast->intrinsic);
         if (it != intrinsicExtMap_.end())
             AcquireExtension(it->second, R_Intrinsic(ast->ident), ast);
