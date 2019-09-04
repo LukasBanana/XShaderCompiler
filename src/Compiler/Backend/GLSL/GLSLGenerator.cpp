@@ -1264,7 +1264,7 @@ void GLSLGenerator::WriteProgramHeaderVersion()
     {
         Write("#version " + std::to_string(versionNumber));
 
-        if (IsLanguageESSL(versionOut_))
+        if (IsLanguageESSL(versionOut_) && versionOut_ != OutputShaderVersion::ESSL100)
             Write(" es");
     }
     EndLn();
