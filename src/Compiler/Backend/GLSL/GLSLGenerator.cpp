@@ -124,7 +124,7 @@ void GLSLGenerator::GenerateCodePrimary(
 
 std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSemantic& semantic) const
 {
-    if (semantic == Semantic::Target && versionOut_ > OutputShaderVersion::GLSL120)
+    if (semantic == Semantic::Target && (versionOut_ > OutputShaderVersion::GLSL120 && versionOut_ != OutputShaderVersion::ESSL100))
         return MakeUnique<std::string>(semantic.ToString());
     else
         return SemanticToGLSLKeyword(semantic, IsVKSL());
@@ -925,7 +925,23 @@ IMPLEMENT_VISIT_PROC(SequenceExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    Write(ast->value);
+    bool literalWritten = false;
+
+    if (versionOut_ <= OutputShaderVersion::GLSL110 || versionOut_ == OutputShaderVersion::ESSL100)
+    {
+        /* Write without trailing f/F */
+        if (ast->dataType == DataType::Float)
+        {
+            if (ast->value.length() > 0 && (ast->value.back() == 'f' || ast->value.back() == 'F'))
+            {
+                Write(ast->value.substr(0, ast->value.length() - 1));
+                literalWritten = true;
+            }
+        }
+    }
+
+    if(!literalWritten)
+        Write(ast->value);
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
@@ -1249,7 +1265,7 @@ void GLSLGenerator::WriteProgramHeaderVersion()
     {
         Write("#version " + std::to_string(versionNumber));
 
-        if (IsLanguageESSL(versionOut_))
+        if (IsLanguageESSL(versionOut_) && versionOut_ != OutputShaderVersion::ESSL100)
             Write(" es");
     }
     EndLn();
@@ -2580,11 +2596,44 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
     {
         if (!IsWrappedIntrinsic(funcCall->intrinsic))
         {
-            /* Write GLSL intrinsic keyword */
-            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
-                Write(*keyword);
-            else
-                ErrorIntrinsic(funcCall->ident, funcCall);
+            bool useDefaultIntrinsic = true;
+
+            /* Support for old intrinsics (GLSL <= 120 & ESSL 100) */
+            if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
+            {
+                useDefaultIntrinsic = false;
+
+                switch (funcCall->intrinsic)
+                {
+                case Intrinsic::Texture_Sample_2:
+                    Write("texture2D");
+                    break;
+                case Intrinsic::Tex2DProj:
+                    Write("textureProj");
+                    break;
+                case Intrinsic::Tex2DLod:
+                    Write("textureProj");
+                    break;
+                case Intrinsic::TexCube_2:
+                    Write("textureCube");
+                    break;
+                case Intrinsic::TexCubeLod:
+                    Write("textureCubeLod");
+                    break;
+                default:
+                    useDefaultIntrinsic = true;
+                    break;
+                }
+            }
+
+            if (useDefaultIntrinsic)
+            {
+                /* Write GLSL intrinsic keyword */
+                if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
+                    Write(*keyword);
+                else
+                    ErrorIntrinsic(funcCall->ident, funcCall);
+            }
         }
         else if (!funcCall->ident.empty())
         {
