@@ -99,25 +99,34 @@ const std::map<std::string, int>& GetGLSLExtensionVersionMap()
         // NVX
         { E_GL_NVX_multiview_per_view_attributes,           110 },
 
-        // OES
-        { E_GL_OES_EGL_image_external,                      110 },
-        { E_GL_OES_geometry_point_size,                     110 },
-        { E_GL_OES_geometry_shader,                         110 },
-        { E_GL_OES_gpu_shader5,                             400 },
-        { E_GL_OES_primitive_bounding_box,                  110 },
-        { E_GL_OES_sample_variables,                        110 },
-        { E_GL_OES_shader_image_atomic,                     110 },
-        { E_GL_OES_shader_io_blocks,                        110 },
-        { E_GL_OES_shader_multisample_interpolation,        110 },
-        { E_GL_OES_standard_derivatives,                    110 },
-        { E_GL_OES_tessellation_point_size,                 400 },
-        { E_GL_OES_tessellation_shader,                     400 },
-        { E_GL_OES_texture_3D,                              110 },
-        { E_GL_OES_texture_buffer,                          110 },
-        { E_GL_OES_texture_cube_map_array,                  110 },
-        { E_GL_OES_texture_storage_multisample_2d_array,    110 },
+        // OES (ESSL only)
+        { E_GL_OES_EGL_image_external,                      300 },
+        { E_GL_OES_geometry_point_size,                     300 },
+        { E_GL_OES_geometry_shader,                         300 },
+        { E_GL_OES_gpu_shader5,                             300 },
+        { E_GL_OES_primitive_bounding_box,                  300 },
+        { E_GL_OES_sample_variables,                        300 },
+        { E_GL_OES_shader_image_atomic,                     300 },
+        { E_GL_OES_shader_io_blocks,                        300 },
+        { E_GL_OES_shader_multisample_interpolation,        300 },
+        { E_GL_OES_standard_derivatives,                    300 },
+        { E_GL_OES_tessellation_point_size,                 310 },
+        { E_GL_OES_tessellation_shader,                     310 },
+        { E_GL_OES_texture_3D,                              300 },
+        { E_GL_OES_texture_buffer,                          300 },
+        { E_GL_OES_texture_cube_map_array,                  300 },
+        { E_GL_OES_texture_storage_multisample_2d_array,    300 },
     };
     return refList;
+}
+
+int GetGLSLVersionNumber(const OutputShaderVersion version)
+{
+    if (version >= OutputShaderVersion::ESSL100 && version <= OutputShaderVersion::ESSL320)
+        return (static_cast<int>(version) - static_cast<int>(OutputShaderVersion::ESSL));
+    if (version == OutputShaderVersion::VKSL450)
+        return (static_cast<int>(version) - static_cast<int>(OutputShaderVersion::VKSL));
+    return static_cast<int>(version);
 }
 
 

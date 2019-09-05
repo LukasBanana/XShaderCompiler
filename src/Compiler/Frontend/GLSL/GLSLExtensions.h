@@ -9,6 +9,7 @@
 #define XSC_GLSL_EXTENSIONS_H
 
 
+#include <Xsc/Targets.h>
 #include <string>
 #include <map>
 
@@ -133,6 +134,9 @@ DECL_EXTENSION( GL_OES_texture_storage_multisample_2d_array     );
 
 // Returns a map of GLSL extension strings with their minimum required version number (default is 110).
 const std::map<std::string, int>& GetGLSLExtensionVersionMap();
+
+// Returns the version number of the specified output shader version, e.g. GLSL130 to 130, ESSL300 to 300.
+int GetGLSLVersionNumber(const OutputShaderVersion version);
 
 
 } // /namespace Xsc

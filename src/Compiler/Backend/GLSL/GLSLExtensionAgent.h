@@ -28,8 +28,6 @@ class GLSLExtensionAgent : private Visitor
 
     public:
 
-        GLSLExtensionAgent();
-
         // Returns a set of strings with all required extensions for the specified program and target output GLSL version.
         std::set<std::string> DetermineRequiredExtensions(
             Program&                program,
@@ -42,6 +40,8 @@ class GLSLExtensionAgent : private Visitor
         );
 
     private:
+
+        void EstablishIntrinsicExtMap();
 
         void AcquireExtension(const std::string& extension, const std::string& reason = "", const AST* ast = nullptr);
 
