@@ -124,7 +124,7 @@ void GLSLGenerator::GenerateCodePrimary(
 
 std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSemantic& semantic) const
 {
-    if (semantic == Semantic::Target && (versionOut_ > OutputShaderVersion::GLSL120 && versionOut_ != OutputShaderVersion::ESSL100))
+    if (semantic == Semantic::Target && !IsGLSL120OrESSL100())
         return MakeUnique<std::string>(semantic.ToString());
     else
         return SemanticToGLSLKeyword(semantic, IsVKSL());

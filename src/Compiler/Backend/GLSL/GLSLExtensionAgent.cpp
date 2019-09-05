@@ -21,32 +21,6 @@ namespace Xsc
  * GLSLExtensionAgent class
  */
 
-GLSLExtensionAgent::GLSLExtensionAgent()
-{
-    /* Establish intrinsic-to-extension map */
-    intrinsicExtMap_ = std::map<Intrinsic, const char*>
-    {
-        { Intrinsic::AsDouble,                  E_GL_ARB_gpu_shader_int64         },
-        { Intrinsic::AsFloat,                   E_GL_ARB_shader_bit_encoding      },
-        { Intrinsic::AsInt,                     E_GL_ARB_shader_bit_encoding      },
-        { Intrinsic::AsUInt_1,                  E_GL_ARB_shader_bit_encoding      },
-        { Intrinsic::CountBits,                 E_GL_ARB_gpu_shader5              },
-        { Intrinsic::DDXCoarse,                 E_GL_ARB_derivative_control       },
-        { Intrinsic::DDXFine,                   E_GL_ARB_derivative_control       },
-        { Intrinsic::DDYCoarse,                 E_GL_ARB_derivative_control       },
-        { Intrinsic::DDYFine,                   E_GL_ARB_derivative_control       },
-        { Intrinsic::FirstBitHigh,              E_GL_ARB_gpu_shader5              },
-        { Intrinsic::FirstBitLow,               E_GL_ARB_gpu_shader5              },
-        { Intrinsic::FrExp,                     E_GL_ARB_gpu_shader_fp64          },
-        { Intrinsic::LdExp,                     E_GL_ARB_gpu_shader_fp64          },
-        { Intrinsic::Texture_QueryLod,          E_GL_ARB_texture_query_lod        },
-        { Intrinsic::Texture_QueryLodUnclamped, E_GL_ARB_texture_query_lod        },
-        { Intrinsic::F16toF32,                  E_GL_ARB_shading_language_packing },
-        { Intrinsic::F32toF16,                  E_GL_ARB_shading_language_packing },
-        { Intrinsic::PackHalf2x16,              E_GL_ARB_shading_language_packing },
-    };
-}
-
 static OutputShaderVersion GetMinGLSLVersionForTarget(const ShaderTarget shaderTarget)
 {
     switch (shaderTarget)
@@ -78,6 +52,9 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
     allowExtensions_    = allowExtensions;
     explicitBinding_    = explicitBinding;
     onReportExtension_  = onReportExtension;
+
+    /* Establish intrinsic-to-extension map */
+    EstablishIntrinsicExtMap();
 
     /* Global layout extensions */
     switch (shaderTarget)
@@ -126,6 +103,40 @@ std::set<std::string> GLSLExtensionAgent::DetermineRequiredExtensions(
  * ======= Private: =======
  */
 
+void GLSLExtensionAgent::EstablishIntrinsicExtMap()
+{
+    /* Establish intrinsic-to-extension map */
+    intrinsicExtMap_ = std::map<Intrinsic, const char*>
+    {
+        { Intrinsic::AsDouble,                  E_GL_ARB_gpu_shader_int64         },
+        { Intrinsic::AsFloat,                   E_GL_ARB_shader_bit_encoding      },
+        { Intrinsic::AsInt,                     E_GL_ARB_shader_bit_encoding      },
+        { Intrinsic::AsUInt_1,                  E_GL_ARB_shader_bit_encoding      },
+        { Intrinsic::CountBits,                 E_GL_ARB_gpu_shader5              },
+        { Intrinsic::DDXCoarse,                 E_GL_ARB_derivative_control       },
+        { Intrinsic::DDXFine,                   E_GL_ARB_derivative_control       },
+        { Intrinsic::DDYCoarse,                 E_GL_ARB_derivative_control       },
+        { Intrinsic::DDYFine,                   E_GL_ARB_derivative_control       },
+        { Intrinsic::FirstBitHigh,              E_GL_ARB_gpu_shader5              },
+        { Intrinsic::FirstBitLow,               E_GL_ARB_gpu_shader5              },
+        { Intrinsic::FrExp,                     E_GL_ARB_gpu_shader_fp64          },
+        { Intrinsic::LdExp,                     E_GL_ARB_gpu_shader_fp64          },
+        { Intrinsic::Texture_QueryLod,          E_GL_ARB_texture_query_lod        },
+        { Intrinsic::Texture_QueryLodUnclamped, E_GL_ARB_texture_query_lod        },
+        { Intrinsic::F16toF32,                  E_GL_ARB_shading_language_packing },
+        { Intrinsic::F32toF16,                  E_GL_ARB_shading_language_packing },
+        { Intrinsic::PackHalf2x16,              E_GL_ARB_shading_language_packing },
+    };
+
+    /* Append special cases for ESSL 100 */
+    if (targetGLSLVersion_ == OutputShaderVersion::ESSL100)
+    {
+        intrinsicExtMap_[Intrinsic::FWidth] = E_GL_OES_standard_derivatives;
+        intrinsicExtMap_[Intrinsic::DDX   ] = E_GL_OES_standard_derivatives;
+        intrinsicExtMap_[Intrinsic::DDY   ] = E_GL_OES_standard_derivatives;
+    }
+}
+
 void GLSLExtensionAgent::AcquireExtension(const std::string& extension, const std::string& reason, const AST* ast)
 {
     /* Find extension in version map */
@@ -139,7 +150,7 @@ void GLSLExtensionAgent::AcquireExtension(const std::string& extension, const st
             /* Store minimum required GLSL version */
             minGLSLVersion_ = std::max(minGLSLVersion_, requiredVersion);
         }
-        else if (targetGLSLVersion_ < requiredVersion)
+        else if (GetGLSLVersionNumber(targetGLSLVersion_) < GetGLSLVersionNumber(requiredVersion))
         {
             if (allowExtensions_)
             {
@@ -312,16 +323,6 @@ IMPLEMENT_VISIT_PROC(CallExpr)
     /* Check for special intrinsics */
     if (ast->intrinsic != Intrinsic::Undefined)
     {
-        if (targetGLSLVersion_ == OutputShaderVersion::ESSL100)
-        {
-            if (ast->intrinsic == Intrinsic::FWidth || ast->intrinsic == Intrinsic::DDX || ast->intrinsic == Intrinsic::DDY)
-            {
-                extensions_.insert(E_GL_OES_standard_derivatives);
-                if (onReportExtension_)
-                    onReportExtension_(R_GLSLExtensionAcquired(E_GL_OES_standard_derivatives, ToString(OutputShaderVersion::ESSL100), R_Intrinsic(ast->ident)), ast);
-            }
-        }
-
         auto it = intrinsicExtMap_.find(ast->intrinsic);
         if (it != intrinsicExtMap_.end())
             AcquireExtension(it->second, R_Intrinsic(ast->ident), ast);
