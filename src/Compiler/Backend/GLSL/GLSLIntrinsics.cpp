@@ -260,10 +260,44 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL()
     };
 }
 
-static const auto g_intrinsicMapGLSL = GenerateIntrinsicMapGLSL();
-
-const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr)
+static std::map<Intrinsic, std::string> GenerateIntrinsicMapGLSL120()
 {
+    using T = Intrinsic;
+
+    return
+    {
+        { T::Tex1D_2,                          "texture1D"             },
+        { T::Tex1DBias,                        "texture1D"             },
+        { T::Tex1DLod,                         "texture1DLod"          },
+        { T::Tex1DProj,                        "texture1DProj"         },
+        { T::Tex2D_2,                          "texture2D"             },
+        { T::Tex2DBias,                        "texture2D"             },
+        { T::Tex2DLod,                         "texture2DLod"          },
+        { T::Tex2DProj,                        "texture2DProj"         },
+        { T::Tex3D_2,                          "texture3D"             },
+        { T::Tex3DBias,                        "texture3D"             },
+        { T::Tex3DLod,                         "texture3DLod"          },
+        { T::Tex3DProj,                        "textureProj"           },
+        { T::TexCube_2,                        "textureCube"           },
+        { T::TexCubeBias,                      "textureCube"           },
+        { T::TexCubeLod,                       "textureCubeLod"        },
+
+        { T::Texture_Sample_2,                 "texture2D"             },
+    };
+}
+
+static const auto g_intrinsicMapGLSL    = GenerateIntrinsicMapGLSL();
+static const auto g_intrinsicMapGLSL120 = GenerateIntrinsicMapGLSL120();
+
+const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr, bool useGLSL120)
+{
+    if (useGLSL120)
+    {
+        auto it = g_intrinsicMapGLSL120.find(intr);
+        if (it != g_intrinsicMapGLSL120.end())
+            return &(it->second);
+    }
+
     auto it = g_intrinsicMapGLSL.find(intr);
     return (it != g_intrinsicMapGLSL.end() ? &(it->second) : nullptr);
 }

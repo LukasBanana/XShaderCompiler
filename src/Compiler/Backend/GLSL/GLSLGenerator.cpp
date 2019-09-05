@@ -124,7 +124,7 @@ void GLSLGenerator::GenerateCodePrimary(
 
 std::unique_ptr<std::string> GLSLGenerator::SystemValueToKeyword(const IndexedSemantic& semantic) const
 {
-    if (semantic == Semantic::Target && versionOut_ > OutputShaderVersion::GLSL120)
+    if (semantic == Semantic::Target && (versionOut_ > OutputShaderVersion::GLSL120 && versionOut_ != OutputShaderVersion::ESSL100))
         return MakeUnique<std::string>(semantic.ToString());
     else
         return SemanticToGLSLKeyword(semantic, IsVKSL());
@@ -159,6 +159,11 @@ bool GLSLGenerator::IsESSL() const
 bool GLSLGenerator::IsVKSL() const
 {
     return IsLanguageVKSL(versionOut_);
+}
+
+bool GLSLGenerator::IsGLSL120OrESSL100() const
+{
+    return (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100);
 }
 
 bool GLSLGenerator::HasShadingLanguage420Pack() const
@@ -915,7 +920,9 @@ IMPLEMENT_VISIT_PROC(SequenceExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    Write(ast->value);
+    /* Literal suffixes not supported for GLSL 110 and ESSL 100 */
+    const bool enableSuffix = !(versionOut_ == OutputShaderVersion::GLSL110 || versionOut_ == OutputShaderVersion::ESSL100);
+    Write(ast->GetLiteralValue(enableSuffix));
 }
 
 IMPLEMENT_VISIT_PROC(TernaryExpr)
@@ -1208,7 +1215,7 @@ void GLSLGenerator::WriteProgramHeaderVersion()
     {
         Write("#version " + std::to_string(versionNumber));
 
-        if (IsLanguageESSL(versionOut_))
+        if (IsLanguageESSL(versionOut_) && versionOut_ != OutputShaderVersion::ESSL100)
             Write(" es");
     }
     EndLn();
@@ -1737,7 +1744,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     {
         const auto& interpModifiers = varDecl->declStmtRef->typeSpecifier->interpModifiers;
 
-        if (versionOut_ <= OutputShaderVersion::GLSL120)
+        if (IsGLSL120OrESSL100())
         {
             if (WarnEnabled(Warnings::Basic) && !interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
@@ -1901,7 +1908,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     {
         VarDeclStmt* varDeclStmt = (varDecl != nullptr ? varDecl->declStmtRef : nullptr);
 
-        if (versionOut_ <= OutputShaderVersion::GLSL120)
+        if (IsGLSL120OrESSL100())
         {
             if (WarnEnabled(Warnings::Basic) && varDeclStmt && !varDeclStmt->typeSpecifier->interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
@@ -2549,7 +2556,7 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
         if (!IsWrappedIntrinsic(funcCall->intrinsic))
         {
             /* Write GLSL intrinsic keyword */
-            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
+            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic, IsGLSL120OrESSL100()))
                 Write(*keyword);
             else
                 ErrorIntrinsic(funcCall->ident, funcCall);
