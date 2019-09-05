@@ -126,6 +126,8 @@ int GetGLSLVersionNumber(const OutputShaderVersion version)
         return (static_cast<int>(version) - static_cast<int>(OutputShaderVersion::ESSL));
     if (version == OutputShaderVersion::VKSL450)
         return (static_cast<int>(version) - static_cast<int>(OutputShaderVersion::VKSL));
+    if (version >= OutputShaderVersion::Metal1_0 && version <= OutputShaderVersion::Metal2_1)
+        return (static_cast<int>(version) - static_cast<int>(OutputShaderVersion::Metal));
     return static_cast<int>(version);
 }
 
