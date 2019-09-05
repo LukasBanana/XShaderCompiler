@@ -927,12 +927,13 @@ IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
     bool literalWritten = false;
 
-    if (versionOut_ <= OutputShaderVersion::GLSL110 ||
-        versionOut_ == OutputShaderVersion::ESSL100) {
+    if (versionOut_ <= OutputShaderVersion::GLSL110 || versionOut_ == OutputShaderVersion::ESSL100)
+    {
         /* Write without trailing f/F */
-        if (ast->dataType == DataType::Float) {
-            if (ast->value.length() > 0 &&
-                (ast->value.back() == 'f' || ast->value.back() == 'F')) {
+        if (ast->dataType == DataType::Float)
+        {
+            if (ast->value.length() > 0 && (ast->value.back() == 'f' || ast->value.back() == 'F'))
+            {
                 Write(ast->value.substr(0, ast->value.length() - 1));
                 literalWritten = true;
             }
@@ -2598,24 +2599,35 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
             bool useDefaultIntrinsic = true;
 
             /* Support for old intrinsics (GLSL <= 120 & ESSL 100) */
-            if (versionOut_ <= OutputShaderVersion::GLSL120 ||
-                versionOut_ == OutputShaderVersion::ESSL100) {
+            if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
+            {
                 useDefaultIntrinsic = false;
 
                 switch (funcCall->intrinsic)
                 {
-                case Intrinsic::Texture_Sample_2: Write("texture2D");      break;
-                case Intrinsic::Tex2DProj:        Write("textureProj");    break;
-                case Intrinsic::Tex2DLod:         Write("textureProj");    break;
-                case Intrinsic::TexCube_2:        Write("textureCube");    break;
-                case Intrinsic::TexCubeLod:       Write("textureCubeLod"); break;
+                case Intrinsic::Texture_Sample_2:
+                    Write("texture2D");
+                    break;
+                case Intrinsic::Tex2DProj:
+                    Write("textureProj");
+                    break;
+                case Intrinsic::Tex2DLod:
+                    Write("textureProj");
+                    break;
+                case Intrinsic::TexCube_2:
+                    Write("textureCube");
+                    break;
+                case Intrinsic::TexCubeLod:
+                    Write("textureCubeLod");
+                    break;
                 default:
                     useDefaultIntrinsic = true;
                     break;
                 }
             }
 
-            if (useDefaultIntrinsic) {
+            if (useDefaultIntrinsic)
+            {
                 /* Write GLSL intrinsic keyword */
                 if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
                     Write(*keyword);
