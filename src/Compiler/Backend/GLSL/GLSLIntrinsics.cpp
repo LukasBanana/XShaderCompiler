@@ -13,7 +13,7 @@ namespace Xsc
 {
 
 
-static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
+static std::map<Intrinsic, std::string> GenerateIntrinsicGLSLMap()
 {
     using T = Intrinsic;
 
@@ -260,11 +260,46 @@ static std::map<Intrinsic, std::string> GenerateIntrinsicMap()
     };
 }
 
-const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr)
+static std::map<Intrinsic, std::string> GenerateIntrinsicGLSL120Map()
 {
-    static const auto intrinsicMap = GenerateIntrinsicMap();
-    auto it = intrinsicMap.find(intr);
-    return (it != intrinsicMap.end() ? &(it->second) : nullptr);
+    using T = Intrinsic;
+
+    return
+    {
+        { T::Tex1D_2,                          "texture1D"             },
+        { T::Tex1DBias,                        "texture1D"             },
+        { T::Tex1DLod,                         "texture1DLod"          },
+        { T::Tex1DProj,                        "texture1DProj"         },
+        { T::Tex2D_2,                          "texture2D"             },
+        { T::Tex2DBias,                        "texture2D"             },
+        { T::Tex2DLod,                         "texture2DLod"          },
+        { T::Tex2DProj,                        "texture2DProj"         },
+        { T::Tex3D_2,                          "texture3D"             },
+        { T::Tex3DBias,                        "texture3D"             },
+        { T::Tex3DLod,                         "texture3DLod"          },
+        { T::Tex3DProj,                        "textureProj"           },
+        { T::TexCube_2,                        "textureCube"           },
+        { T::TexCubeBias,                      "textureCube"           },
+        { T::TexCubeLod,                       "textureCubeLod"        },
+
+        { T::Texture_Sample_2,                 "texture2D"             },
+    };
+}
+
+const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr, bool useGLSL120)
+{
+    static const auto intrinsicGLSLMap    = GenerateIntrinsicGLSLMap();
+    static const auto intrinsicGLSL120Map = GenerateIntrinsicGLSL120Map();
+
+    if (useGLSL120)
+    {
+        auto it = intrinsicGLSL120Map.find(intr);
+        if (it != intrinsicGLSL120Map.end())
+            return &(it->second);
+    }
+
+    auto it = intrinsicGLSLMap.find(intr);
+    return (it != intrinsicGLSLMap.end() ? &(it->second) : nullptr);
 }
 
 

@@ -1141,6 +1141,9 @@ struct LiteralExpr : public Expr
     // Returns the value of this literal if it is a string literal (excluding the quotation marks). Otherwise an empty string is returned.
     std::string GetStringValue() const;
 
+    // Returns the value either with or without suffixes (e.g. "1.0f" or "1.0").
+    std::string GetLiteralValue(bool enableSuffix = true) const;
+
     // Returns true if this is a NULL literal.
     bool IsNull() const;
 

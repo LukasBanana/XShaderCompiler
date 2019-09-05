@@ -1761,6 +1761,22 @@ std::string LiteralExpr::GetStringValue() const
         return "";
 }
 
+std::string LiteralExpr::GetLiteralValue(bool enableSuffix) const
+{
+    if (!enableSuffix && !value.empty())
+    {
+        /* Remove trailing f/F or u/U suffixes */
+        auto suffix = value.back();
+        if ((dataType == DataType::UInt  && (suffix == 'u' || suffix == 'U')) ||
+            (dataType == DataType::Float && (suffix == 'f' || suffix == 'F')))
+        {
+            /* Return value without suffix character */
+            return value.substr(0, value.size() - 1);
+        }
+    }
+    return value;
+}
+
 bool LiteralExpr::IsNull() const
 {
     return (dataType == DataType::Undefined && value == "NULL");

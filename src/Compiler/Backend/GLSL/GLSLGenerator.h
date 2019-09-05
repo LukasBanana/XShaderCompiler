@@ -67,6 +67,9 @@ class GLSLGenerator : public Generator
         // Returns true if the output shader language is VKSL (for Vulkan/SPIR-V).
         bool IsVKSL() const;
 
+        // Returns true if the output shader language is either GLSL 120 or ESSL 100 which are on a similar feature level.
+        bool IsGLSL120OrESSL100() const;
+
         // Returns true if the 'GL_ARB_shading_language_420pack' is explicitly available.
         bool HasShadingLanguage420Pack() const;
 

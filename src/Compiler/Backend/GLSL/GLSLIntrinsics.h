@@ -19,7 +19,7 @@ namespace Xsc
 
 
 // Returns GLSL keyword for the specified intrinsic.
-const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr);
+const std::string* IntrinsicToGLSLKeyword(const Intrinsic intr, bool useGLSL120 = false);
 
 
 } // /namespace Xsc

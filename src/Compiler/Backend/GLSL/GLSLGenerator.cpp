@@ -161,6 +161,11 @@ bool GLSLGenerator::IsVKSL() const
     return IsLanguageVKSL(versionOut_);
 }
 
+bool GLSLGenerator::IsGLSL120OrESSL100() const
+{
+    return (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100);
+}
+
 bool GLSLGenerator::HasShadingLanguage420Pack() const
 {
     return ( IsVKSL() || ( versionOut_ >= OutputShaderVersion::GLSL420 && versionOut_ <= OutputShaderVersion::GLSL450 ) );
@@ -925,23 +930,9 @@ IMPLEMENT_VISIT_PROC(SequenceExpr)
 
 IMPLEMENT_VISIT_PROC(LiteralExpr)
 {
-    bool literalWritten = false;
-
-    if (versionOut_ <= OutputShaderVersion::GLSL110 || versionOut_ == OutputShaderVersion::ESSL100)
-    {
-        /* Write without trailing f/F */
-        if (ast->dataType == DataType::Float)
-        {
-            if (ast->value.length() > 0 && (ast->value.back() == 'f' || ast->value.back() == 'F'))
-            {
-                Write(ast->value.substr(0, ast->value.length() - 1));
-                literalWritten = true;
-            }
-        }
-    }
-
-    if(!literalWritten)
-        Write(ast->value);
+    /* Literal suffixes not supported for GLSL 110 and ESSL 100 */
+    const bool enableSuffix = !(versionOut_ == OutputShaderVersion::GLSL110 || versionOut_ == OutputShaderVersion::ESSL100);
+    Write(ast->GetLiteralValue(enableSuffix));
 }
 
 IMPLEMENT_VISIT_PROC(TypeSpecifierExpr)
@@ -1794,7 +1785,7 @@ void GLSLGenerator::WriteGlobalInputSemanticsVarDecl(VarDecl* varDecl)
     {
         const auto& interpModifiers = varDecl->declStmntRef->typeSpecifier->interpModifiers;
 
-        if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
+        if (IsGLSL120OrESSL100())
         {
             if (WarnEnabled(Warnings::Basic) && !interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
@@ -1954,7 +1945,7 @@ void GLSLGenerator::WriteGlobalOutputSemanticsSlot(TypeSpecifier* typeSpecifier,
     {
         VarDeclStmnt* varDeclStmnt = (varDecl != nullptr ? varDecl->declStmntRef : nullptr);
 
-        if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
+        if (IsGLSL120OrESSL100())
         {
             if (WarnEnabled(Warnings::Basic) && varDeclStmnt && !varDeclStmnt->typeSpecifier->interpModifiers.empty())
                 Warning(R_InterpModNotSupportedForGLSL120, varDecl);
@@ -2596,44 +2587,11 @@ void GLSLGenerator::WriteCallExprStandard(CallExpr* funcCall)
     {
         if (!IsWrappedIntrinsic(funcCall->intrinsic))
         {
-            bool useDefaultIntrinsic = true;
-
-            /* Support for old intrinsics (GLSL <= 120 & ESSL 100) */
-            if (versionOut_ <= OutputShaderVersion::GLSL120 || versionOut_ == OutputShaderVersion::ESSL100)
-            {
-                useDefaultIntrinsic = false;
-
-                switch (funcCall->intrinsic)
-                {
-                case Intrinsic::Texture_Sample_2:
-                    Write("texture2D");
-                    break;
-                case Intrinsic::Tex2DProj:
-                    Write("textureProj");
-                    break;
-                case Intrinsic::Tex2DLod:
-                    Write("textureProj");
-                    break;
-                case Intrinsic::TexCube_2:
-                    Write("textureCube");
-                    break;
-                case Intrinsic::TexCubeLod:
-                    Write("textureCubeLod");
-                    break;
-                default:
-                    useDefaultIntrinsic = true;
-                    break;
-                }
-            }
-
-            if (useDefaultIntrinsic)
-            {
-                /* Write GLSL intrinsic keyword */
-                if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic))
-                    Write(*keyword);
-                else
-                    ErrorIntrinsic(funcCall->ident, funcCall);
-            }
+            /* Write GLSL intrinsic keyword */
+            if (auto keyword = IntrinsicToGLSLKeyword(funcCall->intrinsic, IsGLSL120OrESSL100()))
+                Write(*keyword);
+            else
+                ErrorIntrinsic(funcCall->ident, funcCall);
         }
         else if (!funcCall->ident.empty())
         {
