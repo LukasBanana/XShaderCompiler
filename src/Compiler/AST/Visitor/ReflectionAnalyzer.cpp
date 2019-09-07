@@ -470,7 +470,7 @@ int ReflectionAnalyzer::FindRecordIndex(const StructDecl* structDecl) const
 {
     auto it = recordIndicesMap_.find(structDecl);
     if (it != recordIndicesMap_.end())
-        return it->second;
+        return static_cast<int>(it->second);
     else
         return -1;
 }
